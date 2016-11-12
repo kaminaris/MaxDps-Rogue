@@ -1,0 +1,8 @@
+## Title: TDDps_Druid
+## Version: 1.2
+## Author: Kaminari
+## Interface: 70100
+## Dependencies: TDDps
+## LoadOnDemand: 1
+
+main.lua
