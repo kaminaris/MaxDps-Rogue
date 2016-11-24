@@ -45,18 +45,17 @@ end
 ----------------------------------------------
 function TDDps_Druid_EnableAddon(mode)
 	mode = mode or 1;
-	_TD["DPS_Description"] = "TD Druid DPS supports: Balance";
-	_TD["DPS_OnEnable"] = TDDps_Druid_CheckTalents;
+	TDDps.Description = "TD Druid DPS supports: Balance";
+	TDDps.ModuleOnEnable = TDDps_Druid_CheckTalents;
 	if mode == 1 then
-		_TD["DPS_NextSpell"] = TDDps_Druid_Balance;
+		TDDps.NextSpell = TDDps_Druid_Balance;
 	end;
 	if mode == 2 then
-		_TD["DPS_NextSpell"] = TDDps_Druid_Feral;
+		TDDps.NextSpell = TDDps_Druid_Feral;
 	end;
 	if mode == 3 then
-		_TD["DPS_NextSpell"] = TDDps_Druid_Guardian;
+		TDDps.NextSpell = TDDps_Druid_Guardian;
 	end;
-	TDDps_EnableAddon();
 end
 
 ----------------------------------------------
@@ -68,14 +67,12 @@ TDDps_Druid_Balance = function()
 	local lunar = UnitPower('player', SPELL_POWER_LUNAR_POWER);
 
 	-- detect which phase we are staring
-	if not newMoonPhase then
-		if TDButton_FindSpell(_NewMoon) then
-			newMoonPhase = _NewMoon;
-		elseif TDButton_FindSpell(_HalfMoon) then
-			newMoonPhase = _HalfMoon;
-		else
-			newMoonPhase = _FullMoon;
-		end
+	if TDButton.FindSpell(_NewMoon) then
+		newMoonPhase = _NewMoon;
+	elseif TDButton.FindSpell(_HalfMoon) then
+		newMoonPhase = _HalfMoon;
+	else
+		newMoonPhase = _FullMoon;
 	end
 
 	local moon = TD_TargetAura(_Moonfire, timeShift + 5);
@@ -87,7 +84,7 @@ TDDps_Druid_Balance = function()
 	local solarE, solarCharges = TD_Aura(_SolarEmpowerment, timeShift);
 	local lunarE, lunarCharges = TD_Aura(_LunarEmpowerment, timeShift);
 
-	TDButton_GlowCooldown(_CelestialAlignment, ca);
+	TDButton.GlowCooldown(_CelestialAlignment, ca);
 
 	if currentSpell == 'Full Moon' then
 		lunar = lunar + 40;
