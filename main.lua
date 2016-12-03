@@ -1,7 +1,4 @@
-﻿-- Author      : Kaminari
--- Create Date : 13:03 2015-04-20
-
--- Spells
+﻿-- Spells
 local _Moonfire = 8921;
 local _Sunfire = 93402;
 local _Starsurge = 78674;
@@ -30,61 +27,52 @@ local _FuryofElune = 202770;
 
 local newMoonPhase = false;
 
+MaxDps.Druid = {};
 
-----------------------------------------------
--- Pre enable, checking talents
-----------------------------------------------
-TDDps_Druid_CheckTalents = function()
+function MaxDps.Druid.CheckTalents()
 	--_isTalent = TD_TalentEnabled('Talent Name');
 	-- other checking functions
-
 end
 
-----------------------------------------------
--- Enabling Addon
-----------------------------------------------
-function TDDps_Druid_EnableAddon(mode)
+function MaxDps:EnableRotationModule(mode)
 	mode = mode or 1;
-	TDDps.Description = "TD Druid DPS supports: Balance";
-	TDDps.ModuleOnEnable = TDDps_Druid_CheckTalents;
+	MaxDps.Description = "Druid Module [Balance]";
+	MaxDps.ModuleOnEnable = MaxDps.Druid.CheckTalents;
 	if mode == 1 then
-		TDDps.NextSpell = TDDps_Druid_Balance;
+		MaxDps.NextSpell = MaxDps.Druid.Balance;
 	end;
 	if mode == 2 then
-		TDDps.NextSpell = TDDps_Druid_Feral;
+		MaxDps.NextSpell = MaxDps.Druid.Feral;
 	end;
 	if mode == 3 then
-		TDDps.NextSpell = TDDps_Druid_Guardian;
+		MaxDps.NextSpell = MaxDps.Druid.Guardian;
 	end;
 end
 
-----------------------------------------------
--- Main rotation: Balance
-----------------------------------------------
-TDDps_Druid_Balance = function()
-	local timeShift, currentSpell = TD_EndCast();
+function MaxDps.Druid.Balance()
+	local timeShift, currentSpell = MaxDps:EndCast();
 
 	local lunar = UnitPower('player', SPELL_POWER_LUNAR_POWER);
 
 	-- detect which phase we are staring
-	if TDButton.FindSpell(_NewMoon) then
+	if MaxDps:FindSpell(_NewMoon) then
 		newMoonPhase = _NewMoon;
-	elseif TDButton.FindSpell(_HalfMoon) then
+	elseif MaxDps:FindSpell(_HalfMoon) then
 		newMoonPhase = _HalfMoon;
 	else
 		newMoonPhase = _FullMoon;
 	end
 
-	local moon = TD_TargetAura(_Moonfire, timeShift + 5);
-	local sun = TD_TargetAura(_Sunfire, timeShift + 3);
+	local moon = MaxDps:TargetAura(_Moonfire, timeShift + 5);
+	local sun = MaxDps:TargetAura(_Sunfire, timeShift + 3);
 
-	local newmoon, newCharges = TD_SpellCharges(_NewMoon, timeShift);
-	local ca = TD_SpellAvailable(_CelestialAlignment, timeShift);
+	local newmoon, newCharges = MaxDps:SpellCharges(_NewMoon, timeShift);
+	local ca = MaxDps:SpellAvailable(_CelestialAlignment, timeShift);
 
-	local solarE, solarCharges = TD_Aura(_SolarEmpowerment, timeShift);
-	local lunarE, lunarCharges = TD_Aura(_LunarEmpowerment, timeShift);
+	local solarE, solarCharges = MaxDps:Aura(_SolarEmpowerment, timeShift);
+	local lunarE, lunarCharges = MaxDps:Aura(_LunarEmpowerment, timeShift);
 
-	TDButton.GlowCooldown(_CelestialAlignment, ca);
+	MaxDps:GlowCooldown(_CelestialAlignment, ca);
 
 	if currentSpell == 'Full Moon' then
 		lunar = lunar + 40;
@@ -106,7 +94,7 @@ TDDps_Druid_Balance = function()
 		return _Sunfire;
 	end
 
-	if lunar > 80 then
+	if lunar > 70 then
 		return _Starsurge;
 	end
 
@@ -126,20 +114,14 @@ TDDps_Druid_Balance = function()
 	return _SolarWrath;
 end
 
-----------------------------------------------
--- Main rotation: Feral
-----------------------------------------------
-TDDps_Druid_Feral = function()
-	local timeShift, currentSpell = TD_EndCast();
+function MaxDps.Druid.Feral()
+	local timeShift, currentSpell = MaxDps:EndCast();
 
 	return nil;
 end
 
-----------------------------------------------
--- Main rotation: Guardian
-----------------------------------------------
-TDDps_Druid_Guardian = function()
-	local timeShift, currentSpell = TD_EndCast();
+function MaxDps.Druid.Guardian()
+	local timeShift, currentSpell = MaxDps:EndCast();
 
 	return nil;
 end
