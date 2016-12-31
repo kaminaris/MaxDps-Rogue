@@ -1,5 +1,5 @@
 ## Title: MaxDps_Druid
-## Version: 7.1.0
+## Version: 7.1.0.1
 ## Author: Kaminari
 ## Interface: 70100
 ## Dependencies: MaxDps
