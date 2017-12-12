@@ -165,7 +165,7 @@ function MaxDps.Druid.Balance()
 end
 
 function MaxDps.Druid.Feral()
-	local timeShift, currentSpell = MaxDps:EndCast();
+	local timeShift, currentSpell, gcd = MaxDps:EndCast();
 
 	local energy = UnitPower('player', SPELL_POWER_ENERGY);
 	local combo = GetComboPoints('player', 'target');
@@ -177,40 +177,57 @@ function MaxDps.Druid.Feral()
 	local rip, ripCd = MaxDps:TargetAura(_Rip, timeShift);
 
 	local ph = MaxDps:TargetPercentHealth();
-
-	MaxDps:GlowCooldown(_AshamanesFrenzy, MaxDps:SpellAvailable(_AshamanesFrenzy, timeShift));
+	local ash, ashCd = MaxDps:SpellAvailable(_AshamanesFrenzy, timeShift);
+	MaxDps:GlowCooldown(_AshamanesFrenzy, ash);
 	MaxDps:GlowCooldown(_Berserk, MaxDps:SpellAvailable(_Berserk, timeShift));
 
 	if MaxDps:SpellAvailable(_TigersFury, timeShift) and (energy < 20 or berserk) then
 		return _TigersFury;
 	end
 
+	-- Keep Rip from falling off during execute range.
+	if rip and ripCd < 3 and (_isSabertooth or ph < 0.25) then
+		return _FerociousBite;
+	end
+
+	-- Use Healing Touch at 5 Combo Points, if Predatory Swiftness is about to fall off, at 2 Combo Points before
+	-- Ashamane's Frenzy, before Elune's Guidance is cast or before the Elune's Guidance buff gives you a 5th Combo
+	-- Point.
+	local pred, predCd = MaxDps:Aura(_PredatorySwiftness, timeShift);
+	if _isBloodtalons and pred and (
+		combo >= 5 or
+		predCd < 2 or
+		(not bt and combo == 2 and ashCd < gcd)
+	) then
+		return _Regrowth;
+	end
+
+	-- Use Savage Roar if it's expired and you're at 5 combo points or are about to use Brutal Slash
 	if _isSavageRoar and not MaxDps:Aura(_SavageRoar, timeShift + 3) and combo >= 5 then
 		return _SavageRoar;
+	end
+
+	-- AOE
+	-- Thrash has higher priority than finishers at 5 targets (NI)
+	-- Replace Rip with Swipe at 8 targets
+
+	-- Refresh Rip at 8 seconds or for a stronger Rip
+	if (not rip and combo > 0) or (combo > 0 and ripCd < 8 and ph > 0.25 and not _isSabertooth) or (rip and ripCd < 4
+			and	combo >= 5)
+	then
+		return _Rip;
+	end
+
+	if rip and ripCd > 5 and combo >= 5 then
+		return _FerociousBite;
 	end
 
 	if not MaxDps:TargetAura(_Rake, timeShift + 3) then
 		return _Rake;
 	end
 
-	if rip and ripCd < 4 and combo >= 5 and (_isSabertooth or ph < 0.25) then
-		return _FerociousBite;
-	end
-
-	if (not rip or ripCd < 4) and combo >= 5 then
-		return _Rip;
-	end
-
 	if _isLunarInspiration and not MaxDps:TargetAura(_Moonfire, timeShift + 4) then
 		return _Moonfire;
-	end
-
-	if _isBloodtalons and MaxDps:Aura(_PredatorySwiftness, timeShift) and combo >= 4 and not bt then
-		return _Regrowth;
-	end
-
-	if rip and ripCd > 5 and combo >= 5 then
-		return _FerociousBite;
 	end
 
 	return _Shred;
