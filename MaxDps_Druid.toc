@@ -1,6 +1,6 @@
 ## Title: MaxDps_Druid
-## Version: 7.3.0
-## Author: Kaminari
+## Version: 7.3.5
+## Author: Kaminaris
 ## Interface: 70300
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1

@@ -56,7 +56,6 @@ local _ClearCasting = 135700;
 local _Mangle = 33917;
 local _MangleProc = 93622;
 local _ThrashGuard = 77758;
-local _Swipe = 213764;
 local _Ironfur = 192081;
 local _FrenziedRegeneration = 22842;
 local _MarkOfUrsol = 192083;
@@ -66,19 +65,9 @@ local _GalacticGuardianBuff = 213708;
 
 local newMoonPhase = false;
 
-local _isSabertooth = false;
-local _isLunarInspiration = false;
-local _isSavageRoar = false;
-local _isBloodtalons = false;
-
 MaxDps.Druid = {};
 
 function MaxDps.Druid.CheckTalents()
-	MaxDps:CheckTalents();
-	_isSabertooth = MaxDps:HasTalent(_Sabertooth);
-	_isLunarInspiration = MaxDps:HasTalent(_LunarInspiration);
-	_isSavageRoar = MaxDps:HasTalent(_SavageRoar);
-	_isBloodtalons = MaxDps:HasTalent(_Bloodtalons);
 end
 
 function MaxDps:EnableRotationModule(mode)
@@ -87,18 +76,16 @@ function MaxDps:EnableRotationModule(mode)
 	MaxDps.ModuleOnEnable = MaxDps.Druid.CheckTalents;
 	if mode == 1 then
 		MaxDps.NextSpell = MaxDps.Druid.Balance;
-	end;
+	end ;
 	if mode == 2 then
 		MaxDps.NextSpell = MaxDps.Druid.Feral;
-	end;
+	end ;
 	if mode == 3 then
 		MaxDps.NextSpell = MaxDps.Druid.Guardian;
-	end;
+	end ;
 end
 
-function MaxDps.Druid.Balance()
-	local timeShift, currentSpell = MaxDps:EndCast();
-
+function MaxDps.Druid.Balance(_, timeShift, currentSpell, gcd, talents)
 	local lunar = UnitPower('player', SPELL_POWER_LUNAR_POWER);
 
 	-- detect which phase we are staring
@@ -144,11 +131,11 @@ function MaxDps.Druid.Balance()
 		return _Starsurge;
 	end
 
-	if newCharges > 1 then
+	if newCharges >= 2 then
 		return newMoonPhase;
 	end
 
-	if newCharges == 1 and (
+	if newCharges >= 1 and (
 		not MaxDps:SameSpell(currentSpell, _NewMoon) and
 		not MaxDps:SameSpell(currentSpell, _HalfMoon) and
 		not MaxDps:SameSpell(currentSpell, _FullMoon)
@@ -157,36 +144,42 @@ function MaxDps.Druid.Balance()
 		return newMoonPhase;
 	end
 
-	if lunarCharges >= 3 and not MaxDps:SameSpell(currentSpell, _LunarStrike) then
+	if solarCharges >= 2 or (solarCharges >= 1 and not MaxDps:SameSpell(currentSpell, _SolarWrath)) then
+		return _SolarWrath;
+	end
+
+	if lunarCharges >= 2 or (lunarCharges >= 1 and not MaxDps:SameSpell(currentSpell, _LunarStrike)) then
 		return _LunarStrike;
 	end
 
 	return _SolarWrath;
 end
 
-function MaxDps.Druid.Feral()
-	local timeShift, currentSpell, gcd = MaxDps:EndCast();
+function MaxDps.Druid.Feral(_, timeShift, currentSpell, gcd, talents)
 
 	local energy = UnitPower('player', SPELL_POWER_ENERGY);
 	local combo = GetComboPoints('player', 'target');
 
 	local clear = MaxDps:Aura(_ClearCasting, timeShift);
 	local bt, btCount = MaxDps:Aura(_Bloodtalons, timeShift);
-	local berserk = MaxDps:Aura(_Berserk, timeShift);
+	local berserk = talents[_IncarnationKingoftheJungle] and _IncarnationKingoftheJungle or _Berserk;
+
+	local bers = MaxDps:Aura(berserk, timeShift);
 
 	local rip, ripCd = MaxDps:TargetAura(_Rip, timeShift);
 
 	local ph = MaxDps:TargetPercentHealth();
 	local ash, ashCd = MaxDps:SpellAvailable(_AshamanesFrenzy, timeShift);
-	MaxDps:GlowCooldown(_AshamanesFrenzy, ash);
-	MaxDps:GlowCooldown(_Berserk, MaxDps:SpellAvailable(_Berserk, timeShift));
 
-	if MaxDps:SpellAvailable(_TigersFury, timeShift) and (energy < 20 or berserk) then
+	MaxDps:GlowCooldown(_AshamanesFrenzy, ash);
+	MaxDps:GlowCooldown(berserk, MaxDps:SpellAvailable(berserk, timeShift));
+
+	if MaxDps:SpellAvailable(_TigersFury, timeShift) and (energy < 20 or bers) then
 		return _TigersFury;
 	end
 
 	-- Keep Rip from falling off during execute range.
-	if rip and ripCd < 3 and (_isSabertooth or ph < 0.25) then
+	if rip and ripCd < 3 and (talents[_Sabertooth] or ph < 0.25) then
 		return _FerociousBite;
 	end
 
@@ -194,7 +187,8 @@ function MaxDps.Druid.Feral()
 	-- Ashamane's Frenzy, before Elune's Guidance is cast or before the Elune's Guidance buff gives you a 5th Combo
 	-- Point.
 	local pred, predCd = MaxDps:Aura(_PredatorySwiftness, timeShift);
-	if _isBloodtalons and pred and (
+
+	if talents[_Bloodtalons] and pred and (
 		combo >= 5 or
 		predCd < 2 or
 		(not bt and combo == 2 and ashCd < gcd)
@@ -203,7 +197,7 @@ function MaxDps.Druid.Feral()
 	end
 
 	-- Use Savage Roar if it's expired and you're at 5 combo points or are about to use Brutal Slash
-	if _isSavageRoar and not MaxDps:Aura(_SavageRoar, timeShift + 3) and combo >= 5 then
+	if talents[_SavageRoar] and not MaxDps:Aura(_SavageRoar, timeShift + 3) and combo >= 5 then
 		return _SavageRoar;
 	end
 
@@ -212,8 +206,12 @@ function MaxDps.Druid.Feral()
 	-- Replace Rip with Swipe at 8 targets
 
 	-- Refresh Rip at 8 seconds or for a stronger Rip
-	if (not rip and combo > 0) or (combo > 0 and ripCd < 8 and ph > 0.25 and not _isSabertooth) or (rip and ripCd < 4
-			and	combo >= 5)
+	if
+		(not rip and combo > 0)
+		or
+		(combo > 0 and ripCd < 8 and ph > 0.25 and not talents[_Sabertooth])
+		or
+		(rip and ripCd < 4 and combo >= 5)
 	then
 		return _Rip;
 	end
@@ -226,7 +224,7 @@ function MaxDps.Druid.Feral()
 		return _Rake;
 	end
 
-	if _isLunarInspiration and not MaxDps:TargetAura(_Moonfire, timeShift + 4) then
+	if talents[_LunarInspiration] and not MaxDps:TargetAura(_Moonfire, timeShift + 4) then
 		return _Moonfire;
 	end
 
@@ -234,8 +232,7 @@ function MaxDps.Druid.Feral()
 end
 
 -- Guardian rotation by Ryzux
-function MaxDps.Druid.Guardian()
-	local timeShift, currentSpell = MaxDps:EndCast();
+function MaxDps.Druid.Guardian(_, timeShift, currentSpell, gcd, talents)
 	local rage = UnitPower('player', SPELL_POWER_RAGE);
 
 	-- Spells
