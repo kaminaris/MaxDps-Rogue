@@ -1,4 +1,5 @@
-﻿-- Outlaw
+﻿
+-- Outlaw
 local _BladeFlurry = 13877;
 local _RolltheBones = 193316;
 local _TrueBearing = 193359;
@@ -42,8 +43,13 @@ local _CheatDeath = 31230;
 local _CrimsonVial = 185311;
 local _Stealth = 1784;
 local _HiddenBlade = 202753;
+local _Garrote = 202753;
+local _Kingsbane = 202753;
+local _ToxicBlade = 245388;
+local _Envenom = 202753;
+local _Mutilate = 202753;
 
---Assasination
+-- Assasination
 local _Rupture = 1943;
 local _Vendetta = 79140;
 local _Vanish = 1856;
@@ -75,49 +81,26 @@ local _CrimsonVial = 185311;
 local _Stealth = 1784;
 local _Berserking = 26297;
 
-
--- Sub
+-- Subtlety
 local _Nightblade = 195452;
 local _ShadowBlades = 121471;
 local _ShadowDance = 185313;
 local _EnvelopingShadows = 206237;
-local _MasterofShadows = 196976;
 local _Shadowstrike = 185438;
 local _Anticipation = 114015;
+local _MasterofShadows = 196976;
 local _SymbolsofDeath = 212283;
-local _DeathfromAbove = 152150;
-local _Vanish = 1856;
 local _GoremawsBite = 209783;
-local _Stealth = 1784;
 local _Eviscerate = 196819;
 local _Backstab = 53;
-local _DarkShadow = 245687;
-local _FinalityEviscerate = 197393;
-local _ShurikenStorm = 197835;
-local _Vigor = 14983;
-local _RelentlessStrikes = 58423;
-local _EnergeticStabbing = 197239;
-local _CheapShot = 1833;
-local _ShadowsWhisper = 242707;
-local _ShadowTechniques = 196912;
-local _Subterfuge = 108208;
-local _ShadowFocus = 108209;
-local _DeepeningShadows = 185314;
-local _MasteryExecutioner = 76808;
-local _Feint = 1966;
-local _Elusiveness = 79008;
-local _CloakofShadows = 31224;
-local _SeekerSwarm = 213238;
-local _FelNova = 206517;
-local _CheatDeath = 31230;
-local _CrimsonVial = 185311;
-local _FinalityNightblade = 197395;
-local _DeeperStratagem = 193531;
 
 -- Auras
 local _Stealth = 1784;
+local _GreenskinsWaterloggedWristcuffs = 209420;
+local _MasterAssassinsInitiative = 235022;
 
 MaxDps.Rogue = {};
+
 function MaxDps.Rogue.CheckTalents()
 end
 
@@ -137,52 +120,55 @@ function MaxDps:EnableRotationModule(mode)
 end
 
 function MaxDps.Rogue.Assassination(_, timeShift, currentSpell, gcd, talents)
-	local energy = UnitPower('player', SPELL_POWER_ENERGY);
-	local combo = GetComboPoints('player', 'target');
+
+	local energy = UnitPower('player', Enum.PowerType.Energy);
+	local combo = UnitPower('player', Enum.PowerType.ComboPoints);
 
 	local poison = talents[_AgonizingPoison] and _AgonizingPoison or _DeadlyPoison;
 
-	MaxDps:GlowCooldown(_Vendetta, energy < 30 and MaxDps:SpellAvailable(_Vendetta, timeShift));
+	MaxDps:GlowCooldown(_Vendetta, MaxDps:SpellAvailable(_Vendetta, timeShift));
 
 	if not MaxDps:Aura(poison, timeShift + 60) then
 		return poison;
 	end
 
-	local isStealth = MaxDps:PersistentAura(_Stealth) or MaxDps:Aura(_Vanish, timeShift);
-
-	if MaxDps:SpellAvailable(_Vanish, timeShift) and combo >= 5 then
-		return _Vanish;
-	end
-
-	if (combo >= 3 and not MaxDps:TargetAura(_Rupture, timeShift)) or
-			(combo >= 5 and not MaxDps:TargetAura(_Rupture, timeShift + 6) and isStealth) then
-		return _Rupture;
-	end
-
-	--kingsbane
-	if MaxDps:SpellAvailable(_Kingsbane, timeShift) and MaxDps:Aura(_Envenom, timeShift) and energy > 35 then
-		return _Kingsbane;
-	end
-
-	if not MaxDps:TargetAura(_Garrote, timeShift + 5) and energy >= 45 then
+	if MaxDps:PersistentAura(_Stealth, timeShift) then
 		return _Garrote;
 	end
 
-	if not MaxDps:Aura(_Envenom, timeShift + 1) and combo >= 4 then
+	if MaxDps:SpellAvailable(_Rupture, timeShift) and combo == 5 and not MaxDps:TargetAura(_Rupture, timeShift + 8) then
+		return _Rupture;
+	end
+
+	if MaxDps:SpellAvailable(_Garrote, timeShift) then
+		return _Garrote;
+	end
+
+	if MaxDps:SpellAvailable(_Kingsbane, timeShift) then
+		return _Kingsbane;
+	end
+
+	if MaxDps:SpellAvailable(_ToxicBlade, timeShift) then
+		return _ToxicBlade;
+	end
+
+	if MaxDps:SpellAvailable(_Envenom, timeShift) and combo >=4 and MaxDps:TargetAura(_Rupture, timeShift + 8) then
 		return _Envenom;
 	end
 
-	if energy > 95 then
+	if MaxDps:SpellAvailable(_Mutilate, timeShift) then
 		return _Mutilate;
-	else
-		return nil;
 	end
+
+	if talents[_Nightstalker] and combo == 5 then
+		return _Vanish;
+	end
+
 end
 
 function MaxDps.Rogue.Outlaw(_, timeShift, currentSpell, gcd, talents)
-
-	local energy = UnitPower('player', SPELL_POWER_ENERGY);
-	local combo = GetComboPoints('player', 'target');
+	local energy = UnitPower('player', Enum.PowerType.Energy);
+	local combo = UnitPower('player', Enum.PowerType.ComboPoints);
 
 	MaxDps:GlowCooldown(_AdrenalineRush, MaxDps:SpellAvailable(_AdrenalineRush, timeShift));
 	MaxDps:GlowCooldown(_CurseoftheDreadblades, MaxDps:SpellAvailable(_CurseoftheDreadblades, timeShift));
@@ -225,6 +211,13 @@ function MaxDps.Rogue.Outlaw(_, timeShift, currentSpell, gcd, talents)
 		return _MarkedforDeath;
 	end
 
+	if combo >= 5 and (
+		MaxDps:Aura(_GreenskinsWaterloggedWristcuffs, timeShift) or
+		MaxDps:Aura(_MasterAssassinsInitiative, timeShift)
+	) then
+		return _BetweentheEyes;
+	end
+
 	if (combo >= 6 or (combo >= 5 and rb.BS)) then
 		return _RunThrough;
 	end
@@ -237,72 +230,51 @@ function MaxDps.Rogue.Outlaw(_, timeShift, currentSpell, gcd, talents)
 end
 
 function MaxDps.Rogue.Subtlety(_, timeShift, currentSpell, gcd, talents)
-	MaxDps:GlowCooldown(_ShadowBlades, MaxDps:SpellAvailable(_ShadowBlades, timeShift));
-	MaxDps:GlowCooldown(_SymbolsofDeath, MaxDps:SpellAvailable(_SymbolsofDeath, timeShift));
+
+	local sdCd, sdCharges = MaxDps:SpellCharges(_ShadowDance, timeShift);
+
+	local isStealth = MaxDps:PersistentAura(_Stealth, timeShift) or MaxDps:PersistentAura(_ShadowDance, timeShift);
 
 	local energy = UnitPower('player', Enum.PowerType.Energy);
 	local combo = UnitPower('player', Enum.PowerType.ComboPoints);
 
-	local nightb, nightbCd = MaxDps:TargetAura(_Nightblade, timeShift);
-	local sd, sdCharges = MaxDps:SpellCharges(_ShadowDance, timeShift);
-
-	local isStealth = MaxDps:PersistentAura(_Stealth) or MaxDps:Aura(_Vanish, timeShift) or MaxDps:Aura(_ShadowDance, timeShift);
-
-	-- EDIT HERE IF YOU HAVE DIFFERENT SPELLS
-	local shadowStrike = _Shadowstrike;
-	if not MaxDps:FindSpell(_Shadowstrike) then
-		shadowStrike = _Backstab; -- EDIT SPELL THAT YOU HAVE SHADOWSTRIKE UNDER
+	local generator = _Backstab;
+	if MaxDps:FindSpell(_Shadowstrike) then
+		generator = _Shadowstrike;
 	end
 
-	-- DON'T EDIT BELOW THIS LINE
+	MaxDps:GlowCooldown(_ShadowDance, sdCd and energy > 50);
 
-	if isStealth then
-		if combo < 5 then
-			return shadowStrike;
-		end
+	local nbAura, nbAuraCd = MaxDps:TargetAura(_Nightblade, timeShift + 4);
 
-	end
-
-	if nightbCd < 2 then
-		if combo < 5 then
-			return _Backstab;
-		else
-			return _Nightblade;
-		end
-	end
-
-	if combo >= 5 and nightbCd < 5 then
+	if combo >= 5 and not nbAura then
 		return _Nightblade;
 	end
 
-	if sdCharges >= 1.8 and energy > 75 then
-		return _ShadowDance;
-	end
-
-	local dfa = MaxDps:SpellAvailable(_DeathfromAbove, timeShift);
-	if energy < 60 and talents[_DeathfromAbove] and dfa then
-		return _DeathfromAbove;
-	end
-
-	if combo <= 3 and MaxDps:SpellAvailable(_Vanish, timeShift) then
-		return _Vanish;
-	end
-
-	if not isStealth and combo < 3 and energy < 50 then
-		return _GoremawsBite;
-	end
-
-	if combo >= 5 and dfa then
-		return _DeathfromAbove;
-	end
-
-	if combo >= 5 then
+	if combo >=5 and nbAura then
 		return _Eviscerate;
 	end
 
-	if combo < 5 then
-		return _Backstab;
-	else
-		return nil;
+	if MaxDps:SpellAvailable(_ShadowBlades, timeShift) then
+		return _ShadowBlades;
 	end
+
+	if MaxDps:SpellAvailable(_SymbolsofDeath, timeShift) and sdCharges >= 1 and energy <= 60 then
+		return _SymbolsofDeath;
+	end
+
+	if talents[_DeathfromAbove] then
+		return _DeathfromAbove;
+	end
+
+	if MaxDps:SpellAvailable(_GoremawsBite, timeShift) and not isStealth and combo <= 3 and energy <= 50 then
+		return _GoremawsBite;
+	end
+
+	if talents[_DeathfromAbove] and combo >= 5 and MaxDps:Aura(_ShadowDance, timeShift)
+		and MaxDps:Aura(_SymbolsofDeath, timeShift) then
+		return _DeathfromAbove;
+	end
+
+	return generator;
 end
