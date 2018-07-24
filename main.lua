@@ -1,4 +1,11 @@
-﻿-- Spells
+﻿--- @type MaxDps
+if not MaxDps then
+	return ;
+end
+
+local Druid = MaxDps:NewModule('Druid');
+
+-- Spells
 local _Moonfire = 8921;
 local _Sunfire = 93402;
 local _Starsurge = 78674;
@@ -24,10 +31,14 @@ local _AstralCommunion = 202359;
 local _BlessingoftheAncients = 202360;
 local _BlessingofElune = 202737;
 local _FuryofElune = 202770;
+local _MoonkinMoonfire = 164812;
+local _MoonkinSunfire = 164815;
+local _WarriorofEluneAura = 202425;
 
 -- Feral
 local _SavageRoar = 52610;
 local _Rake = 1822;
+local _RakeDot = 155722;
 local _Rip = 1079;
 local _Sabertooth = 202031;
 local _FerociousBite = 22568;
@@ -37,7 +48,7 @@ local _AshamanesFrenzy = 210722;
 local _Shred = 5221;
 local _Bloodtalons = 155672;
 local _Regrowth = 8936;
-local _PredatorySwiftness = 16974;
+local _PredatorySwiftness = 69369;
 local _IncarnationKingoftheJungle = 102543;
 local _Prowl = 5215;
 local _Berserk = 106951;
@@ -51,6 +62,10 @@ local _Predator = 202021;
 local _ElunesGuidance = 202060;
 local _BrutalSlash = 202028;
 local _ClearCasting = 135700;
+local _FeralFrenzy = 274837;
+local _FeralMoonfire = 155625;
+local _CatForm = 768;
+local _MassEntanglement = 102359;
 
 -- Guardian
 local _Mangle = 33917;
@@ -63,60 +78,50 @@ local _RageOfTheSleeper = 200851;
 local _GalacticGuardian = 203964;
 local _GalacticGuardianBuff = 213708;
 
-local newMoonPhase = false;
+function Druid:Enable()
+	MaxDps:Print(MaxDps.Colors.Info .. 'Druid [Balance, Feral, Guardian, Restoration]');
 
-MaxDps.Druid = {};
+	if MaxDps.Spec == 1 then
+		MaxDps.NextSpell = Druid.Balance;
+	elseif MaxDps.Spec == 2 then
+		MaxDps.NextSpell = Druid.Feral;
+	elseif MaxDps.Spec == 3 then
+		MaxDps.NextSpell = Druid.Guardian;
+	elseif MaxDps.Spec == 4 then
+		MaxDps.NextSpell = Druid.Restoration;
+	end ;
 
-function MaxDps.Druid.CheckTalents()
+	return true;
 end
 
-function MaxDps:EnableRotationModule(mode)
-	mode = mode or 1;
-	MaxDps.Description = "Druid Module [Balance]";
-	MaxDps.ModuleOnEnable = MaxDps.Druid.CheckTalents;
-	if mode == 1 then
-		MaxDps.NextSpell = MaxDps.Druid.Balance;
-	end ;
-	if mode == 2 then
-		MaxDps.NextSpell = MaxDps.Druid.Feral;
-	end ;
-	if mode == 3 then
-		MaxDps.NextSpell = MaxDps.Druid.Guardian;
-	end ;
-end
+function Druid:Balance(timeShift, currentSpell, gcd, talents)
+	local lunar = UnitPower('player', Enum.PowerType.LunarPower);
 
-function MaxDps.Druid.Balance(_, timeShift, currentSpell, gcd, talents)
-	local lunar = UnitPower('player', SPELL_POWER_LUNAR_POWER);
-
-	-- detect which phase we are staring
-	if MaxDps:FindSpell(_NewMoon) then
-		newMoonPhase = _NewMoon;
-	elseif MaxDps:FindSpell(_HalfMoon) then
-		newMoonPhase = _HalfMoon;
-	else
-		newMoonPhase = _FullMoon;
-	end
-
-	local moon = MaxDps:TargetAura(_Moonfire, timeShift + 5);
-	local sun = MaxDps:TargetAura(_Sunfire, timeShift + 3);
-
-	local newmoon, newCharges = MaxDps:SpellCharges(_NewMoon, timeShift);
+	local moon = MaxDps:TargetAura(_MoonkinMoonfire, timeShift + 5);
+	local sun = MaxDps:TargetAura(_MoonkinSunfire, timeShift + 4);
+	local sf = MaxDps:TargetAura(_StellarFlare, timeShift + 5);
 
 	local solarE, solarCharges = MaxDps:Aura(_SolarEmpowerment, timeShift);
 	local lunarE, lunarCharges = MaxDps:Aura(_LunarEmpowerment, timeShift);
 
-	MaxDps:GlowCooldown(_CelestialAlignment, MaxDps:SpellAvailable(_CelestialAlignment, timeShift));
-
-	if MaxDps:SameSpell(currentSpell, _FullMoon) then
-		lunar = lunar + 40;
-	elseif MaxDps:SameSpell(currentSpell, _NewMoon) then
-		lunar = lunar + 10;
-	elseif MaxDps:SameSpell(currentSpell, _HalfMoon) then
-		lunar = lunar + 20;
-	elseif MaxDps:SameSpell(currentSpell, _SolarWrath) then
+	if currentSpell == _SolarWrath then
 		lunar = lunar + 8;
-	elseif MaxDps:SameSpell(currentSpell, _LunarStrike) then
+		solarCharges = solarCharges - 1;
+	elseif currentSpell == _LunarStrike then
 		lunar = lunar + 12;
+		lunarCharges = lunarCharges - 1;
+	end
+
+	if talents[_IncarnationChosenofElune] then
+		MaxDps:GlowCooldown(_IncarnationChosenofElune, MaxDps:SpellAvailable(_IncarnationChosenofElune, timeShift));
+	else
+		MaxDps:GlowCooldown(_CelestialAlignment, MaxDps:SpellAvailable(_CelestialAlignment, timeShift));
+	end
+
+
+	if talents[_WarriorofElune] then
+		MaxDps:GlowCooldown(_WarriorofElune, MaxDps:SpellAvailable(_WarriorofElune, timeShift)
+			and not MaxDps:Aura(_WarriorofEluneAura));
 	end
 
 	if not moon then
@@ -127,141 +132,104 @@ function MaxDps.Druid.Balance(_, timeShift, currentSpell, gcd, talents)
 		return _Sunfire;
 	end
 
+	if talents[_StellarFlare] and not sf and currentSpell ~= _StellarFlare then
+		return _StellarFlare;
+	end
+
 	if lunar > 70 then
 		return _Starsurge;
 	end
 
-	if newCharges >= 2 then
-		return newMoonPhase;
-	end
-
-	if newCharges >= 1 and (
-		not MaxDps:SameSpell(currentSpell, _NewMoon) and
-		not MaxDps:SameSpell(currentSpell, _HalfMoon) and
-		not MaxDps:SameSpell(currentSpell, _FullMoon)
-	)
-	then
-		return newMoonPhase;
-	end
-
-	if solarCharges >= 2 or (solarCharges >= 1 and not MaxDps:SameSpell(currentSpell, _SolarWrath)) then
+	if solarCharges >= 2 then
 		return _SolarWrath;
 	end
 
-	if lunarCharges >= 2 or (lunarCharges >= 1 and not MaxDps:SameSpell(currentSpell, _LunarStrike)) then
+	if lunarCharges >= 2 then
+		return _LunarStrike;
+	end
+
+	if solarCharges == 1 then
+		return _SolarWrath;
+	end
+
+	if lunarCharges == 1 then
 		return _LunarStrike;
 	end
 
 	return _SolarWrath;
 end
 
-function MaxDps.Druid.Feral(_, timeShift, currentSpell, gcd, talents)
+local testflag = true;
+function Druid:Feral(timeShift, currentSpell, gcd, talents)
+	local energy = UnitPower('player', Enum.PowerType.Energy);
+	local combo = UnitPower('player', Enum.PowerType.ComboPoints);
 
-	local energy = UnitPower('player', SPELL_POWER_ENERGY);
-	local combo = GetComboPoints('player', 'target');
-
-	local clear = MaxDps:Aura(_ClearCasting, timeShift);
-	local bt, btCount = MaxDps:Aura(_Bloodtalons, timeShift);
+	--Cooldowns
 	local berserk = talents[_IncarnationKingoftheJungle] and _IncarnationKingoftheJungle or _Berserk;
-
-	local bers = MaxDps:Aura(berserk, timeShift);
-
-	local rip, ripCd = MaxDps:TargetAura(_Rip, timeShift);
-
-	local ph = MaxDps:TargetPercentHealth();
-	local ash, ashCd = MaxDps:SpellAvailable(_AshamanesFrenzy, timeShift);
-
-	MaxDps:GlowCooldown(_AshamanesFrenzy, ash);
 	MaxDps:GlowCooldown(berserk, MaxDps:SpellAvailable(berserk, timeShift));
 
-	if MaxDps:SpellAvailable(_TigersFury, timeShift) and (energy < 20 or bers) then
-		return _TigersFury;
-	end
+	-- Player Aura
+	local pred = MaxDps:Aura(_PredatorySwiftness, timeShift);
+	local bers = MaxDps:Aura(berserk, timeShift);
+	local bt, btCount = MaxDps:Aura(_Bloodtalons, timeShift);
 
-	-- Keep Rip from falling off during execute range.
-	if rip and ripCd < 3 and (talents[_Sabertooth] or ph < 0.25) then
-		return _FerociousBite;
-	end
+	--Dot Aura
+	local rip = MaxDps:TargetAura(_Rip, timeShift);
+	local ph = MaxDps:TargetPercentHealth();
 
-	-- Use Healing Touch at 5 Combo Points, if Predatory Swiftness is about to fall off, at 2 Combo Points before
-	-- Ashamane's Frenzy, before Elune's Guidance is cast or before the Elune's Guidance buff gives you a 5th Combo
-	-- Point.
-	local pred, predCd = MaxDps:Aura(_PredatorySwiftness, timeShift);
-
-	if talents[_Bloodtalons] and pred and (
-		combo >= 5 or
-		predCd < 2 or
-		(not bt and combo == 2 and ashCd < gcd)
-	) then
+	-- Rotation
+	if talents[_Bloodtalons] and MaxDps:Aura(_PredatorySwiftness, timeShift) and combo >= 4 then --and MaxDps:Aura(_SavageRoar, timeShift + 5)
 		return _Regrowth;
 	end
 
-	-- Use Savage Roar if it's expired and you're at 5 combo points or are about to use Brutal Slash
-	if talents[_SavageRoar] and not MaxDps:Aura(_SavageRoar, timeShift + 3) and combo >= 5 then
-		return _SavageRoar;
+	if MaxDps:SpellAvailable(_TigersFury, timeShift) and (energy < 30 or bers) then
+		return _TigersFury;
 	end
 
-	-- AOE
-	-- Thrash has higher priority than finishers at 5 targets (NI)
-	-- Replace Rip with Swipe at 8 targets
+	if talents[_FeralFrenzy] and combo == 0 then
+		return _FeralFrenzy;
+	end
 
-	-- Refresh Rip at 8 seconds or for a stronger Rip
-	if
-		(not rip and combo > 0)
-		or
-		(combo > 0 and ripCd < 8 and ph > 0.25 and not talents[_Sabertooth])
-		or
-		(rip and ripCd < 4 and combo >= 5)
+	local ripPandemic = MaxDps:TargetAura(_Rip, timeShift + 5);
+
+	if (not MaxDps:TargetAura(_Rip, timeShift) and combo >= 5) or
+		(combo >= 5 and not ripPandemic and ph > 0.25 and not talents[_Sabertooth])
 	then
 		return _Rip;
 	end
 
-	if rip and ripCd > 5 and combo >= 5 then
+	if not ripPandemic and (talents[_Sabertooth] or ph < 0.25) and combo >= 5 then
 		return _FerociousBite;
 	end
 
-	if not MaxDps:TargetAura(_Rake, timeShift + 3) then
+	if talents[_SavageRoar] and not MaxDps:Aura(_SavageRoar, timeShift + 5) and combo >= 5 then
+		return _SavageRoar;
+	end
+
+	if combo >= 5 then
+		return _FerociousBite;
+	end
+
+	if not MaxDps:TargetAura(_RakeDot, timeShift + 3) then
 		return _Rake;
 	end
 
-	if talents[_LunarInspiration] and not MaxDps:TargetAura(_Moonfire, timeShift + 4) then
-		return _Moonfire;
+	if talents[_LunarInspiration] and not MaxDps:TargetAura(_FeralMoonfire, timeShift + 4) then
+		return _FeralMoonfire;
+	end
+
+	if talents[_BrutalSlash] and MaxDps:SpellAvailable(_BrutalSlash, timeShift) and combo < 5 then
+		return _BrutalSlash;
 	end
 
 	return _Shred;
 end
 
--- Guardian rotation by Ryzux
-function MaxDps.Druid.Guardian(_, timeShift, currentSpell, gcd, talents)
-	local rage = UnitPower('player', SPELL_POWER_RAGE);
+function Druid:Guardian(timeShift, currentSpell, gcd, talents)
+	local rage = UnitPower('player', Enum.PowerType.Rage);
+	return nil;
+end
 
-	-- Spells
-	local mangle = MaxDps:SpellAvailable(_Mangle, timeShift);
-	local mangleProc = MaxDps:Aura(_MangleProc, timeShift);
-	local thrash = MaxDps:SpellAvailable(_ThrashGuard, timeShift);
-	local moonfire = MaxDps:TargetAura(_Moonfire, timeShift + 5);
-	local gg = MaxDps:Aura(_GalacticGuardianBuff, timeShift);
-	local swipe = MaxDps:SpellAvailable(_Swipe, timeShift);
-
-	-- Defensives
-	MaxDps:GlowCooldown(_Ironfur, timeShift);
-	MaxDps:GlowCooldown(_RageOfTheSleeper, timeShift);
-
-	-- #1. Mangle on cooldown.
-	if mangle or mangleProc then
-		return _Mangle;
-	end
-
-	-- #2. Thrash on cooldown.
-	if thrash then
-		return _ThrashGuard;
-	end
-
-	-- #3. Moonfire if target doesn't have debuff or with Galactic Guardian proc.
-	if not moonfire or gg then
-		return _Moonfire;
-	end
-
-	-- #4. Swipe if anything else is available.
-	return _Swipe;
+function Druid:Restoration(timeShift, currentSpell, gcd, talents)
+	return nil;
 end
