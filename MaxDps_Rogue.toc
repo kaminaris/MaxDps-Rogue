@@ -1,8 +1,10 @@
 ## Title: MaxDps_Rogue
-## Version: 7.3.5
+## Version: 8.0.0
 ## Author: Kaminari
-## Interface: 70300
+## Interface: 80000
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1
+## X-Curse-Project-ID: 256432
+## X-WoWI-ID: 24649
 
 main.lua
