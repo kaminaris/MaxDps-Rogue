@@ -3,80 +3,100 @@ if not MaxDps then
 	return ;
 end
 
+local MaxDps = MaxDps;
+local UnitPower = UnitPower;
+
 local Druid = MaxDps:NewModule('Druid');
 
 -- Spells
-local _Moonfire = 8921;
-local _Sunfire = 93402;
-local _Starsurge = 78674;
-local _LunarEmpowerment = 164547;
-local _SolarEmpowerment = 164545;
-local _LunarStrike = 194153;
-local _SolarWrath = 190984;
-local _NewMoon = 202767;
-local _CelestialAlignment = 194223;
-local _IncarnationChosenofElune = 102560;
-local _HalfMoon = 202768;
-local _FullMoon = 202771;
-local _StellarFlare = 202347;
-local _Starfall = 191034;
-local _MasteryStarlight = 77492;
-local _StellarEmpowerment = 197637;
-local _Heroism = 32182;
-local _Bloodlust = 2825;
-local _Berserking = 26297;
-local _ForceofNature = 205636;
-local _WarriorofElune = 202425;
-local _AstralCommunion = 202359;
-local _BlessingoftheAncients = 202360;
-local _BlessingofElune = 202737;
-local _FuryofElune = 202770;
-local _MoonkinMoonfire = 164812;
-local _MoonkinSunfire = 164815;
-local _WarriorofEluneAura = 202425;
+local BL = {
+	Moonfire                 = 8921,
+	Sunfire                  = 93402,
+	Starsurge                = 78674,
+	LunarEmpowerment         = 164547,
+	SolarEmpowerment         = 164545,
+	LunarStrike              = 194153,
+	SolarWrath               = 190984,
+	NewMoon                  = 202767,
+	CelestialAlignment       = 194223,
+	IncarnationChosenOfElune = 102560,
+	HalfMoon                 = 202768,
+	FullMoon                 = 202771,
+	StellarFlare             = 202347,
+	Starfall                 = 191034,
+	MasteryStarlight         = 77492,
+	StellarEmpowerment       = 197637,
+	Heroism                  = 32182,
+	Bloodlust                = 2825,
+	Berserking               = 26297,
+	ForceOfNature            = 205636,
+	WarriorOfElune           = 202425,
+	AstralCommunion          = 202359,
+	BlessingoftheAncients    = 202360,
+	BlessingofElune          = 202737,
+	FuryofElune              = 202770,
+	MoonfireAura             = 164812,
+	SunfireAura              = 164815,
+	WarriorOfEluneAura       = 202425,
+};
+
 
 -- Feral
-local _SavageRoar = 52610;
-local _Rake = 1822;
-local _RakeDot = 155722;
-local _Rip = 1079;
-local _Sabertooth = 202031;
-local _FerociousBite = 22568;
-local _LunarInspiration = 155580;
-local _TigersFury = 5217;
-local _AshamanesFrenzy = 210722;
-local _Shred = 5221;
-local _Bloodtalons = 155672;
-local _Regrowth = 8936;
-local _PredatorySwiftness = 69369;
-local _IncarnationKingoftheJungle = 102543;
-local _Prowl = 5215;
-local _Berserk = 106951;
-local _Thrash = 106830;
-local _Swipe = 213764;
-local _MasteryRazorClaws = 77493;
-local _PrimalFury = 159286;
-local _JaggedWounds = 202032;
-local _OmenofClarity = 16864;
-local _Predator = 202021;
-local _ElunesGuidance = 202060;
-local _BrutalSlash = 202028;
-local _ClearCasting = 135700;
-local _FeralFrenzy = 274837;
-local _FeralMoonfire = 155625;
-local _CatForm = 768;
-local _MassEntanglement = 102359;
+local FR = {
+	SavageRoar                 = 52610,
+	Rake                       = 1822,
+	RakeDot                    = 155722,
+	Rip                        = 1079,
+	Sabertooth                 = 202031,
+	FerociousBite              = 22568,
+	LunarInspiration           = 155580,
+	TigersFury                 = 5217,
+	AshamanesFrenzy            = 210722,
+	Shred                      = 5221,
+	Bloodtalons                = 155672,
+	Regrowth                   = 8936,
+	PredatorySwiftness         = 69369,
+	IncarnationKingOfTheJungle = 102543,
+	Prowl                      = 5215,
+	Berserk                    = 106951,
+	Thrash                     = 106830,
+	Swipe                      = 213764,
+	MasteryRazorClaws          = 77493,
+	PrimalFury                 = 159286,
+	JaggedWounds               = 202032,
+	OmenofClarity              = 16864,
+	Predator                   = 202021,
+	ElunesGuidance             = 202060,
+	BrutalSlash                = 202028,
+	ClearCasting               = 135700,
+	FeralFrenzy                = 274837,
+	FeralMoonfire              = 155625,
+	CatForm                    = 768,
+	MassEntanglement           = 102359,
+};
 
 -- Guardian
-local _Mangle = 33917;
-local _MangleProc = 93622;
-local _ThrashGuard = 77758;
-local _Ironfur = 192081;
-local _FrenziedRegeneration = 22842;
-local _MarkOfUrsol = 192083;
-local _RageOfTheSleeper = 200851;
-local _GalacticGuardian = 203964;
-local _GalacticGuardianBuff = 213708;
+local GR = {
+	Mangle               = 33917,
+	MangleProc           = 93622,
+	ThrashGuard          = 77758,
+	Ironfur              = 192081,
+	FrenziedRegeneration = 22842,
+	MarkOfUrsol          = 192083,
+	RageOfTheSleeper     = 200851,
+	GalacticGuardian     = 203964,
+	GalacticGuardianBuff = 213708,
+};
+
+local spellMeta = {
+	__index = function(t, k)
+		print('Spell Key ' .. k .. ' not found!');
+	end
+}
+
+setmetatable(GR, spellMeta);
+setmetatable(BL, spellMeta);
+setmetatable(FR, spellMeta);
 
 function Druid:Enable()
 	MaxDps:Print(MaxDps.Colors.Info .. 'Druid [Balance, Feral, Guardian, Restoration]');
@@ -94,135 +114,135 @@ function Druid:Enable()
 	return true;
 end
 
-function Druid:Balance(timeShift, currentSpell, gcd, talents)
+function Druid:Balance()
+	local fd = MaxDps.FrameData;
+	local cooldown, buff, debuff, timeShift, talents, azerite, currentSpell =
+		fd.cooldown, fd.buff, fd.debuff, fd.timeShift, fd.talents, fd.azerite, fd.currentSpell;
+
 	local lunar = UnitPower('player', Enum.PowerType.LunarPower);
 
-	local moon = MaxDps:TargetAura(_MoonkinMoonfire, timeShift + 5);
-	local sun = MaxDps:TargetAura(_MoonkinSunfire, timeShift + 4);
-	local sf = MaxDps:TargetAura(_StellarFlare, timeShift + 5);
+	local solarCharges = buff[BL.SolarEmpowerment].count;
+	local lunarCharges = buff[BL.LunarEmpowerment].count;
 
-	local solarE, solarCharges = MaxDps:Aura(_SolarEmpowerment, timeShift);
-	local lunarE, lunarCharges = MaxDps:Aura(_LunarEmpowerment, timeShift);
-
-	if currentSpell == _SolarWrath then
+	if currentSpell == BL.SolarWrath then
 		lunar = lunar + 8;
 		solarCharges = solarCharges - 1;
-	elseif currentSpell == _LunarStrike then
+	elseif currentSpell == BL.LunarStrike then
 		lunar = lunar + 12;
 		lunarCharges = lunarCharges - 1;
 	end
 
-	if talents[_IncarnationChosenofElune] then
-		MaxDps:GlowCooldown(_IncarnationChosenofElune, MaxDps:SpellAvailable(_IncarnationChosenofElune, timeShift));
+	if talents[BL.IncarnationChosenOfElune] then
+		MaxDps:GlowCooldown(BL.IncarnationChosenOfElune, cooldown[BL.IncarnationChosenOfElune].ready);
 	else
-		MaxDps:GlowCooldown(_CelestialAlignment, MaxDps:SpellAvailable(_CelestialAlignment, timeShift));
+		MaxDps:GlowCooldown(BL.CelestialAlignment, cooldown[BL.CelestialAlignment].ready);
 	end
 
-
-	if talents[_WarriorofElune] then
-		MaxDps:GlowCooldown(_WarriorofElune, MaxDps:SpellAvailable(_WarriorofElune, timeShift)
-			and not MaxDps:Aura(_WarriorofEluneAura));
+	if talents[BL.WarriorOfElune] then
+		MaxDps:GlowCooldown(BL.WarriorOfElune, cooldown[BL.WarriorOfElune].ready and not buff[BL.WarriorOfEluneAura].up);
 	end
 
-	if not moon then
-		return _Moonfire;
+	if talents[BL.ForceOfNature] then
+		MaxDps:GlowCooldown(BL.ForceOfNature, cooldown[BL.ForceOfNature].ready);
 	end
 
-	if not sun then
-		return _Sunfire;
+	if debuff[BL.MoonfireAura].refreshable then
+		return BL.Moonfire;
 	end
 
-	if talents[_StellarFlare] and not sf and currentSpell ~= _StellarFlare then
-		return _StellarFlare;
+	if debuff[BL.SunfireAura].refreshable then
+		return BL.Sunfire;
+	end
+
+	if talents[BL.StellarFlare] and debuff[BL.StellarFlare].refreshable and currentSpell ~= BL.StellarFlare
+	then
+		return BL.StellarFlare;
 	end
 
 	if lunar > 70 then
-		return _Starsurge;
+		return BL.Starsurge;
 	end
 
 	if solarCharges >= 2 then
-		return _SolarWrath;
+		return BL.SolarWrath;
 	end
 
 	if lunarCharges >= 2 then
-		return _LunarStrike;
+		return BL.LunarStrike;
 	end
 
 	if solarCharges == 1 then
-		return _SolarWrath;
+		return BL.SolarWrath;
 	end
 
 	if lunarCharges == 1 then
-		return _LunarStrike;
+		return BL.LunarStrike;
 	end
 
-	return _SolarWrath;
+	return BL.SolarWrath;
 end
 
-local testflag = true;
-function Druid:Feral(timeShift, currentSpell, gcd, talents)
+function Druid:Feral()
+	local fd = MaxDps.FrameData;
+	local cooldown, buff, debuff, timeShift, talents, azerite, currentSpell =
+		fd.cooldown, fd.buff, fd.debuff, fd.timeShift, fd.talents, fd.azerite, fd.currentSpell;
+
 	local energy = UnitPower('player', Enum.PowerType.Energy);
 	local combo = UnitPower('player', Enum.PowerType.ComboPoints);
 
 	--Cooldowns
-	local berserk = talents[_IncarnationKingoftheJungle] and _IncarnationKingoftheJungle or _Berserk;
-	MaxDps:GlowCooldown(berserk, MaxDps:SpellAvailable(berserk, timeShift));
-
-	-- Player Aura
-	local pred = MaxDps:Aura(_PredatorySwiftness, timeShift);
-	local bers = MaxDps:Aura(berserk, timeShift);
-	local bt, btCount = MaxDps:Aura(_Bloodtalons, timeShift);
+	local berserk = talents[FR.IncarnationKingOfTheJungle] and FR.IncarnationKingOfTheJungle or FR.Berserk;
+	MaxDps:GlowCooldown(berserk, cooldown[berserk].ready);
 
 	--Dot Aura
-	local rip = MaxDps:TargetAura(_Rip, timeShift);
 	local ph = MaxDps:TargetPercentHealth();
 
 	-- Rotation
-	if talents[_Bloodtalons] and MaxDps:Aura(_PredatorySwiftness, timeShift) and combo >= 4 then --and MaxDps:Aura(_SavageRoar, timeShift + 5)
-		return _Regrowth;
+	if talents[FR.Bloodtalons] and buff[FR.PredatorySwiftness].up and combo >= 4 then --and MaxDps:Aura(FR.SavageRoar, timeShift + 5)
+		return FR.Regrowth;
 	end
 
-	if MaxDps:SpellAvailable(_TigersFury, timeShift) and (energy < 30 or bers) then
-		return _TigersFury;
+	if cooldown[FR.TigersFury].ready and (energy < 30 or buff[berserk].up) then
+		return FR.TigersFury;
 	end
 
-	if talents[_FeralFrenzy] and combo == 0 then
-		return _FeralFrenzy;
+	if talents[FR.FeralFrenzy] and combo == 0 then
+		return FR.FeralFrenzy;
 	end
 
-	local ripPandemic = MaxDps:TargetAura(_Rip, timeShift + 5);
+	local ripPandemic = debuff[FR.Rip].remains < 5;
 
-	if (not MaxDps:TargetAura(_Rip, timeShift) and combo >= 5) or
-		(combo >= 5 and not ripPandemic and ph > 0.25 and not talents[_Sabertooth])
+	if (not debuff[FR.Rip].up and combo >= 5) or
+		(combo >= 5 and not ripPandemic and ph > 0.25 and not talents[FR.Sabertooth])
 	then
-		return _Rip;
+		return FR.Rip;
 	end
 
-	if not ripPandemic and (talents[_Sabertooth] or ph < 0.25) and combo >= 5 then
-		return _FerociousBite;
+	if not ripPandemic and (talents[FR.Sabertooth] or ph < 0.25) and combo >= 5 then
+		return FR.FerociousBite;
 	end
 
-	if talents[_SavageRoar] and not MaxDps:Aura(_SavageRoar, timeShift + 5) and combo >= 5 then
-		return _SavageRoar;
+	if talents[FR.SavageRoar] and buff[FR.SavageRoar].remains < 5 and combo >= 5 then
+		return FR.SavageRoar;
 	end
 
 	if combo >= 5 then
-		return _FerociousBite;
+		return FR.FerociousBite;
 	end
 
-	if not MaxDps:TargetAura(_RakeDot, timeShift + 3) then
-		return _Rake;
+	if debuff[FR.RakeDot].remains < 3 then
+		return FR.Rake;
 	end
 
-	if talents[_LunarInspiration] and not MaxDps:TargetAura(_FeralMoonfire, timeShift + 4) then
-		return _FeralMoonfire;
+	if talents[FR.LunarInspiration] and debuff[FR.FeralMoonfire].refreshable then
+		return FR.FeralMoonfire;
 	end
 
-	if talents[_BrutalSlash] and MaxDps:SpellAvailable(_BrutalSlash, timeShift) and combo < 5 then
-		return _BrutalSlash;
+	if talents[FR.BrutalSlash] and cooldown[FR.BrutalSlash].ready and combo < 5 then
+		return FR.BrutalSlash;
 	end
 
-	return _Shred;
+	return FR.Shred;
 end
 
 function Druid:Guardian(timeShift, currentSpell, gcd, talents)
