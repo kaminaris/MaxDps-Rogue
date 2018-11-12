@@ -57,8 +57,10 @@ local SO = {
 	StealthAura        = 1784
 };
 
+-- Assassination
 local AS = {
 	Stealth          = 1784,
+	StealthAlt       = 115191,
 	MarkedForDeath   = 137619,
 	Vendetta         = 79140,
 	Subterfuge       = 108208,
@@ -203,7 +205,7 @@ function Rogue:Assassination()
 	local targets = MaxDps:SmartAoe();
 	local cpMaxSpend = 5 + (talents[AS.DeeperStratagem] and 1 or 0);
 
-	local stealthed = buff[AS.StealthAura].up or buff[AS.VanishAura].up;
+	local stealthed = buff[AS.StealthAura].up or buff[AS.StealthAlt].up or buff[AS.VanishAura].up;
 	local poisonedBleeds = Rogue:PoisonedBleeds(timeShift);
 	local energyRegenCombined = energyRegen + poisonedBleeds * 7 % (2 * spellHaste);
 
@@ -215,9 +217,7 @@ function Rogue:Assassination()
 	MaxDps:GlowCooldown(
 		AS.Vendetta,
 		cooldown[AS.Vendetta].ready and not stealthed and
-		debuff[AS.Rupture].up and
-		(not talents[AS.Subterfuge] or not azerite[A.ShroudedSuffocation] > 0) and
-		(not talents[AS.Nightstalker] or not talents[AS.Exsanguinate] or cooldown[AS.Exsanguinate].remains < 5 - (talents[AS.DeeperStratagem] and 2 or 0))
+		debuff[AS.Rupture].up and energy < 80
 	);
 
 	MaxDps:GlowCooldown(AS.Vanish, cooldown[AS.Vanish].ready and not stealthed);
@@ -232,7 +232,7 @@ function Rogue:Assassination()
 
 	-- stealth;
 	if not InCombatLockdown() and not stealthed then
-		return AS.Stealth;
+		return MaxDps:FindSpell(AS.Stealth) and AS.Stealth or AS.StealthAlt;
 	end
 
 	if stealthed then
@@ -441,6 +441,14 @@ function Rogue:AssassinationStealthed()
 		spellHistory[1] == AS.Rupture and
 		debuff[AS.Rupture].remains > 5 + 4 * cpMaxSpend
 	then
+		return AS.Garrote;
+	end
+
+	if combo >= 1 and not debuff[AS.Rupture].up then
+		return AS.Rupture;
+	end
+
+	if cooldown[AS.Garrote].ready then
 		return AS.Garrote;
 	end
 end
