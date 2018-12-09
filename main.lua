@@ -93,32 +93,34 @@ local AS = {
 };
 
 local SB = {
-	Stealth         = 1784,
-	MarkedForDeath  = 137619,
-	ShadowBlades    = 121471,
-	Nightblade      = 195452,
-	Vigor           = 14983,
-	MasterOfShadows = 196976,
-	ShadowFocus     = 108209,
-	Alacrity        = 193539,
-	DarkShadow      = 245687,
-	SecretTechnique = 280719,
-	ShurikenTornado = 277925,
-	ShurikenToss    = 114014,
-	Nightstalker    = 14062,
-	SymbolsOfDeath  = 212283,
-	ShurikenStorm   = 197835,
-	Gloomblade      = 200758,
-	Backstab        = 53,
-	ShadowDance     = 185313,
-	ShadowDanceAura = 185422,
-	Subterfuge      = 108208,
-	Eviscerate      = 196819,
-	Vanish          = 1856,
-	VanishAura      = 11327,
-	FindWeakness    = 91023,
-	Shadowstrike    = 185438,
-	DeeperStratagem = 193531,
+	Stealth           = 1784,
+	StealthSubterfuge = 115191,
+	SubterfugeAura    = 115192,
+	MarkedForDeath    = 137619,
+	ShadowBlades      = 121471,
+	Nightblade        = 195452,
+	Vigor             = 14983,
+	MasterOfShadows   = 196976,
+	ShadowFocus       = 108209,
+	Alacrity          = 193539,
+	DarkShadow        = 245687,
+	SecretTechnique   = 280719,
+	ShurikenTornado   = 277925,
+	ShurikenToss      = 114014,
+	Nightstalker      = 14062,
+	SymbolsOfDeath    = 212283,
+	ShurikenStorm     = 197835,
+	Gloomblade        = 200758,
+	Backstab          = 53,
+	ShadowDance       = 185313,
+	ShadowDanceAura   = 185422,
+	Subterfuge        = 108208,
+	Eviscerate        = 196819,
+	Vanish            = 1856,
+	VanishAura        = 11327,
+	FindWeakness      = 91023,
+	Shadowstrike      = 185438,
+	DeeperStratagem   = 193531,
 };
 
 local A = {
@@ -670,7 +672,10 @@ function Rogue:Subtlety()
 	local cpMaxSpend = 5 + (talents[SB.DeeperStratagem] and 1 or 0);
 	local priorityRotation = false;
 
-	local stealthed = buff[SB.Stealth].up or buff[SB.ShadowDanceAura].up or buff[SB.VanishAura].up;
+	local stealthed = buff[SB.Stealth].up or buff[SB.StealthSubterfuge].up or buff[SB.ShadowDanceAura].up or
+		buff[SB.VanishAura].up or buff[SB.SubterfugeAura].up;
+
+	local Stealth = talents[SB.Subterfuge] and SB.StealthSubterfuge or SB.Stealth;
 
 	fd.energy, fd.targets, fd.combo, fd.comboDeficit, fd.cpMaxSpend, fd.stealthed =
 	energy, targets, combo, comboDeficit, cpMaxSpend, stealthed;
@@ -679,7 +684,7 @@ function Rogue:Subtlety()
 
 	-- stealth;
 	if not InCombatLockdown() and not stealthed then
-		return AS.Stealth;
+		return Stealth;
 	end
 
 	local cd = Rogue:SubtletyCds();
@@ -755,7 +760,7 @@ function Rogue:SubtletyBuild()
 	end
 
 	-- shuriken_storm,if=spell_targets>=2;
-	if energy >= 35 and (targets >= 2) then
+	if energy >= 35 and targets >= 2 then
 		return SB.ShurikenStorm;
 	end
 
