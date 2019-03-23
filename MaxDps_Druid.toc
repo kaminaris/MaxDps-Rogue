@@ -1,10 +1,14 @@
 ## Title: MaxDps_Druid
-## Version: 8.0.1
+## Version: 8.1.5
 ## Author: Kaminaris
-## Interface: 80000
+## Interface: 80100
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1
 ## X-Curse-Project-ID: 103301
 ## X-WoWI-ID: 24641
 
-main.lua
+Main.lua
+Specialization/Balance.lua
+Specialization/Feral.lua
+Specialization/Guardian.lua
+Specialization/Restoration.lua
