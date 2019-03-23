@@ -92,7 +92,6 @@ function Druid:Balance()
 	local gcd = fd.gcd;
 	local timeToDie = fd.timeToDie;
 	local spellHistory = fd.spellHistory;
-	local spellHaste = MaxDps:AttackHaste();
 	local lunarPower = UnitPower('player', LunarPower);
 	local apCheck = true;
 	local solarWrathApCheck = true;
@@ -130,10 +129,10 @@ function Druid:Balance()
 		--end
 		MaxDps:GlowCooldown(
 			BL.Incarnation,
-			cooldown[BL.Incarnation].ready and (
-				debuff[BL.SunfireAura].remains > 8 and debuff[BL.MoonfireAura].remains > 12 and
-				(debuff[BL.StellarFlare].remains > 6 or not talents[BL.StellarFlare])
-			)
+			cooldown[BL.Incarnation].ready and
+			debuff[BL.SunfireAura].remains > 8 and
+			debuff[BL.MoonfireAura].remains > 12 and
+			(debuff[BL.StellarFlare].remains > 6 or not talents[BL.StellarFlare])
 		);
 	else
 		CaInc = BL.CelestialAlignment;
@@ -144,10 +143,14 @@ function Druid:Balance()
 		--) then
 		--	return BL.CelestialAlignment;
 		--end
-		MaxDps:GlowCooldown(BL.CelestialAlignment, cooldown[BL.CelestialAlignment].ready and (
-			lunarPower >= 40 and apCheck and (azerite[A.LivelySpirit] == 0 or buff[BL.LivelySpirit].up) and
-				(debuff[BL.SunfireAura].remains > 2 and debuff[BL.MoonfireAura].up and (debuff[BL.StellarFlare].up or not talents[BL.StellarFlare]))
-		));
+		MaxDps:GlowCooldown(
+			BL.CelestialAlignment,
+			cooldown[BL.CelestialAlignment].ready and
+			lunarPower >= 40 and
+			apCheck and
+			(azerite[A.LivelySpirit] == 0 or buff[BL.LivelySpirit].up) and
+			(debuff[BL.SunfireAura].remains > 2 and debuff[BL.MoonfireAura].up and (debuff[BL.StellarFlare].up or not talents[BL.StellarFlare]))
+		);
 	end
 
 	-- warrior_of_elune;
@@ -213,7 +216,8 @@ function Druid:Balance()
 		(talents[BL.Starlord] and
 			(buff[BL.Starlord].count < 3 or buff[BL.Starlord].remains >= 8 and buff[BL.ArcanicPulsar].count < 8) or
 			not talents[BL.Starlord] and (buff[BL.ArcanicPulsar].count < 8 or buff[CaInc].up)
-		) and targets < sfTargets and
+		) and
+			targets < sfTargets and
 			lunarCharges + solarCharges < 4 and
 			solarCharges < 3 and lunarCharges < 3 and
 			(not azSs or not buff[CaInc].up or spellHistory[1] ~= BL.Starsurge) or
@@ -257,10 +261,11 @@ function Druid:Balance()
 	--end
 
 	-- stellar_flare,target_if=refreshable,if=ap_check&floor(target.time_to_die%(2*spell_haste))>=5&(!variable.az_ss|!buff.ca_inc.up|!prev.stellar_flare);
-	if talents[BL.StellarFlare] and currentSpell ~= BL.StellarFlare and (
-		apCheck and math.floor(timeToDie % (2 * spellHaste)) >= 5 and
-			(not azSs or not buff[CaInc].up or currentSpell ~= BL.StellarFlare)
-	) then
+	if talents[BL.StellarFlare] and currentSpell ~= BL.StellarFlare and
+		spellHistory[1] ~= BL.StellarFlare and
+		debuff[BL.StellarFlare].refreshable and
+		(not azSs or not buff[CaInc].up)
+	then
 		return BL.StellarFlare;
 	end
 
@@ -281,86 +286,18 @@ function Druid:Balance()
 
 	-- lunar_strike,if=buff.solar_empowerment.stack<3&(ap_check|buff.lunar_empowerment.stack=3)&((buff.warrior_of_elune.up|buff.lunar_empowerment.up|spell_targets>=2&!buff.solar_empowerment.up)&(!variable.az_ss|!buff.ca_inc.up)|variable.az_ss&buff.ca_inc.up&prev.solar_wrath);
 	if solarCharges < 3 and (apCheck or lunarCharges == 3) and (
-		(buff[BL.WarriorOfElune].up or lunarCharges > 0 or targets >= 2 and solarCharges <= 0) and (not azSs or not buff[CaInc].up) or
+		(buff[BL.WarriorOfElune].up or lunarCharges > 0 or targets >= 2 and solarCharges <= 0) and
+		(not azSs or not buff[CaInc].up) or
 		azSs and buff[CaInc].up and currentSpell == BL.SolarWrath
 	) then
 		return BL.LunarStrike;
 	end
 
 	-- solar_wrath,if=variable.az_ss<3|!buff.ca_inc.up|!prev.solar_wrath;
-	if azerite[A.StreakingStars] < 3 or not buff[CaInc].up then
+	if azerite[A.StreakingStars] < 3 or not buff[CaInc].up or currentSpell ~= BL.SolarWrath then
 		return BL.SolarWrath;
 	end
 
 	-- sunfire;
 	return BL.Sunfire;
 end
-
---
---function Druid:Balance()
---	local fd = MaxDps.FrameData;
---	local cooldown, buff, debuff, timeShift, talents, azerite, currentSpell =
---	fd.cooldown, fd.buff, fd.debuff, fd.timeShift, fd.talents, fd.azerite, fd.currentSpell;
---
---	local lunar = UnitPower('player', Enum.PowerType.LunarPower);
---
---	local solarCharges = buff[BL.SolarEmpowerment].count;
---	local lunarCharges = buff[BL.LunarEmpowerment].count;
---
---	if currentSpell == BL.SolarWrath then
---		lunar = lunar + 8;
---		solarCharges = solarCharges - 1;
---	elseif currentSpell == BL.LunarStrike then
---		lunar = lunar + 12;
---		lunarCharges = lunarCharges - 1;
---	end
---
---	if talents[BL.Incarnation] then
---		MaxDps:GlowCooldown(BL.Incarnation, cooldown[BL.Incarnation].ready);
---	else
---		MaxDps:GlowCooldown(BL.CelestialAlignment, cooldown[BL.CelestialAlignment].ready);
---	end
---
---	if talents[BL.WarriorOfElune] then
---		MaxDps:GlowCooldown(BL.WarriorOfElune, cooldown[BL.WarriorOfElune].ready and not buff[BL.WarriorOfEluneAura].up);
---	end
---
---	if talents[BL.ForceOfNature] then
---		MaxDps:GlowCooldown(BL.ForceOfNature, cooldown[BL.ForceOfNature].ready);
---	end
---
---	if debuff[BL.MoonfireAura].refreshable then
---		return BL.Moonfire;
---	end
---
---	if debuff[BL.SunfireAura].refreshable then
---		return BL.Sunfire;
---	end
---
---	if talents[BL.StellarFlare] and debuff[BL.StellarFlare].refreshable and currentSpell ~= BL.StellarFlare
---	then
---		return BL.StellarFlare;
---	end
---
---	if lunar > 70 then
---		return BL.Starsurge;
---	end
---
---	if solarCharges >= 2 then
---		return BL.SolarWrath;
---	end
---
---	if lunarCharges >= 2 then
---		return BL.LunarStrike;
---	end
---
---	if solarCharges == 1 then
---		return BL.SolarWrath;
---	end
---
---	if lunarCharges == 1 then
---		return BL.LunarStrike;
---	end
---
---	return BL.SolarWrath;
---end

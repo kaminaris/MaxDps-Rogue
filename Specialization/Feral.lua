@@ -4,6 +4,7 @@ local _, addonTable = ...;
 if not MaxDps then return end
 
 local Druid = addonTable.Druid;
+local UnitPower = UnitPower;
 
 local FR = {
 	SavageRoar                 = 52610,
