@@ -67,6 +67,7 @@ local BL = {
 	LunarEmpowerment   = 164547,
 	SolarEmpowerment   = 164545,
 	ArcanicPulsar      = 287790,
+	LivelySpirit       = 279648,
 };
 
 local A = {
@@ -155,8 +156,15 @@ function Druid:Balance()
 
 	-- warrior_of_elune;
 	if talents[BL.WarriorOfElune] then
-		MaxDps:GlowCooldown(BL.WarriorOfElune, cooldown[BL.WarriorOfElune].ready and not buff[BL.WarriorOfEluneAura].up);
+		MaxDps:GlowCooldown(BL.WarriorOfElune, cooldown[BL.WarriorOfElune].ready and not buff[BL.WarriorOfElune].up);
 	end
+
+	-- innervate,if=azerite.lively_spirit.enabled&(cooldown.incarnation.remains<2|cooldown.celestial_alignment.remains<12);
+	MaxDps:GlowCooldown(
+		BL.Innervate,
+		cooldown[BL.Innervate].ready and azerite[A.LivelySpirit] > 0 and
+		(cooldown[BL.Incarnation].remains < 2 or cooldown[BL.CelestialAlignment].remains < 12)
+	);
 
 	if talents[BL.ForceOfNature] then
 		-- force_of_nature,if=(buff.ca_inc.up|cooldown.ca_inc.remains>30)&ap_check;
@@ -183,13 +191,6 @@ function Druid:Balance()
 	-- variable,name=sf_targets,op=sub,value=1,if=!azerite.arcanic_pulsar.enabled&!talent.starlord.enabled&talent.stellar_drift.enabled;
 	if azerite[A.ArcanicPulsar] == 0 and not talents[BL.Starlord] and talents[BL.StellarDrift] then
 		sfTargets = sfTargets - 1;
-	end
-
-	-- innervate,if=azerite.lively_spirit.enabled&(cooldown.incarnation.remains<2|cooldown.celestial_alignment.remains<12);
-	if cooldown[BL.Innervate].ready and azerite[A.LivelySpirit] > 0 and
-		(cooldown[BL.Incarnation].remains < 2 or cooldown[BL.CelestialAlignment].remains < 12)
-	then
-		return BL.Innervate;
 	end
 
 	-- fury_of_elune,if=(buff.ca_inc.up|cooldown.ca_inc.remains>30)&solar_wrath.ap_check;
