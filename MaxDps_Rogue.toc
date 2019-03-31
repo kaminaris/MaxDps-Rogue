@@ -1,5 +1,5 @@
 ## Title: MaxDps_Rogue
-## Version: 8.1.5
+## Version: 8.1.5.1
 ## Author: Kaminari
 ## Interface: 80100
 ## Dependencies: MaxDps

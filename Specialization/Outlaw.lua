@@ -146,7 +146,7 @@ function Rogue:Outlaw()
 		);
 	end
 
-	if Rogue.db.outlawMarkedAsCooldown then
+	if talents[OL.MarkedForDeath] and Rogue.db.outlawMarkedAsCooldown then
 		-- marked_for_death,target_if=min:target.time_to_die,if=raid_event.adds.up&(target.time_to_die<combo_points.deficit|!stealthed.rogue&combo_points.deficit>=cp_max_spend-1);
 		-- marked_for_death,if=raid_event.adds.in>30-raid_event.adds.duration&!stealthed.rogue&combo_points.deficit>=cp_max_spend-1;
 		MaxDps:GlowCooldown(
@@ -209,7 +209,7 @@ function Rogue:OutlawCds()
 	local comboPointsDeficit = fd.comboPointsDeficit;
 	local bladeFlurrySync = fd.bladeFlurrySync;
 
-	if not Rogue.db.outlawMarkedAsCooldown then
+	if talents[OL.MarkedForDeath] and not Rogue.db.outlawMarkedAsCooldown then
 		-- marked_for_death,target_if=min:target.time_to_die,if=raid_event.adds.up&(target.time_to_die<combo_points.deficit|!stealthed.rogue&combo_points.deficit>=cp_max_spend-1);
 		if cooldown[OL.MarkedForDeath].ready and (
 			timeToDie < comboPointsDeficit or not stealthed and comboPointsDeficit >= cpMaxSpend - 1
