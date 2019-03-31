@@ -9,4 +9,7 @@
 ## X-WoWI-ID: 24649
 
 Main.lua
+Config.lua
+Specialization\Assassination.lua
 Specialization\Outlaw.lua
+Specialization\Subtlety.lua

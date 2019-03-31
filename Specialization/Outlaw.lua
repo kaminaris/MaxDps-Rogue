@@ -7,6 +7,7 @@ local MaxDps = MaxDps;
 local UnitPower = UnitPower;
 local UnitPowerMax = UnitPowerMax;
 local GetPowerRegen = GetPowerRegen;
+local pairs = pairs;
 local ComboPoints = Enum.PowerType.ComboPoints;
 local Energy = Enum.PowerType.Energy;
 local Rogue = addonTable.Rogue;
@@ -56,6 +57,8 @@ local A = {
 setmetatable(OL, Rogue.spellMeta);
 setmetatable(A, Rogue.spellMeta);
 
+local Rtb = {'Broadside','GrandMelee','RuthlessPrecision','TrueBearing','SkullAndCrossbones','BuriedTreasure'};
+
 function Rogue:Outlaw()
 	local fd = MaxDps.FrameData;
 	local cooldown = fd.cooldown;
@@ -76,7 +79,6 @@ function Rogue:Outlaw()
 
 	local stealthed = buff[OL.StealthAura].up or buff[OL.VanishAura].up;
 
-	local Rtb = {'Broadside','GrandMelee','RuthlessPrecision','TrueBearing','SkullAndCrossbones','BuriedTreasure'};
 	local rtbBuffs = 0;
 	local rtbRemains = 0;
 	for _, i in pairs(Rtb) do
@@ -85,7 +87,7 @@ function Rogue:Outlaw()
 			rtbRemains = buff[OL[i]].remains;
 		end
 	end
-print(rtbBuffs)
+
 	-- variable,name=rtb_reroll,value=rtb_buffs<2&(buff.loaded_dice.up|!buff.grand_melee.up&!buff.ruthless_precision.up);
 	local rtbReroll = rtbBuffs < 2 and (buff[OL.LoadedDice].up or not buff[OL.GrandMelee].up and not buff[OL.RuthlessPrecision].up);
 
@@ -144,7 +146,7 @@ print(rtbBuffs)
 		);
 	end
 
-	if self.db.outlawMarkedAsCooldown then
+	if Rogue.db.outlawMarkedAsCooldown then
 		-- marked_for_death,target_if=min:target.time_to_die,if=raid_event.adds.up&(target.time_to_die<combo_points.deficit|!stealthed.rogue&combo_points.deficit>=cp_max_spend-1);
 		-- marked_for_death,if=raid_event.adds.in>30-raid_event.adds.duration&!stealthed.rogue&combo_points.deficit>=cp_max_spend-1;
 		MaxDps:GlowCooldown(
@@ -184,8 +186,7 @@ function Rogue:OutlawBuild()
 	local energy = fd.energy;
 
 	-- pistol_shot,if=buff.opportunity.up&(buff.keep_your_wits_about_you.stack<25|buff.deadshot.up);
-	if buff[OL.Opportunity].up and energy >= 20 and (buff[OL.KeepYourWitsAboutYou].count < 25 or buff[OL.Deadshot].up)
-	then
+	if buff[OL.Opportunity].up and (buff[OL.KeepYourWitsAboutYou].count < 25 or buff[OL.Deadshot].up) then
 		return OL.PistolShot;
 	end
 
@@ -208,7 +209,7 @@ function Rogue:OutlawCds()
 	local comboPointsDeficit = fd.comboPointsDeficit;
 	local bladeFlurrySync = fd.bladeFlurrySync;
 
-	if not self.db.outlawMarkedAsCooldown then
+	if not Rogue.db.outlawMarkedAsCooldown then
 		-- marked_for_death,target_if=min:target.time_to_die,if=raid_event.adds.up&(target.time_to_die<combo_points.deficit|!stealthed.rogue&combo_points.deficit>=cp_max_spend-1);
 		if cooldown[OL.MarkedForDeath].ready and (
 			timeToDie < comboPointsDeficit or not stealthed and comboPointsDeficit >= cpMaxSpend - 1
@@ -281,7 +282,7 @@ function Rogue:OutlawFinish()
 	end
 
 	-- dispatch;
-	if energy >= 35 and comboPoints >= 1 then
+	if comboPoints >= 1 then
 		return OL.Dispatch;
 	end
 end

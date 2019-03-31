@@ -13,10 +13,10 @@ Rogue.spellMeta = {
 	end
 }
 
-setmetatable(SB, Rogue.spellMeta);
-setmetatable(A, Rogue.spellMeta);
-
 function Rogue:Enable()
+	Rogue:InitializeDatabase();
+	Rogue:CreateConfig();
+
 	if MaxDps.Spec == 1 then
 		MaxDps.NextSpell = Rogue.Assassination;
 		MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Assassination');
