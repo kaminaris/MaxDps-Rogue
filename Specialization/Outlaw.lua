@@ -117,6 +117,7 @@ function Rogue:Outlaw()
 
 	fd.targets = targets;
 	fd.energy = energy;
+	fd.rtbBuffs = rtbBuffs;
 	fd.energyTimeToMax = energyTimeToMax;
 	fd.comboPoints = comboPoints;
 	fd.cpMaxSpend = cpMaxSpend;
@@ -272,7 +273,7 @@ function Rogue:OutlawFinish()
 	end
 
 	-- roll_the_bones,if=buff.roll_the_bones.remains<=3|variable.rtb_reroll;
-	if not talents[OL.SliceAndDice] and energy >= 25 and comboPoints >= 1 and (rtbRemains <= 3 or rtbReroll) then
+	if not talents[OL.SliceAndDice] and comboPoints >= 1 and (rtbRemains <= 3 or rtbReroll) then
 		return OL.RollTheBones;
 	end
 
