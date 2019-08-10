@@ -103,6 +103,7 @@ function Druid:Feral()
 	local Incarnation = talents[FR.Incarnation] and FR.Incarnation or FR.Berserk;
 	fd.Incarnation = Incarnation;
 
+	MaxDps:GlowEssences();
 	-- cat_form,if=!buff.cat_form.up;
 	if not buff[FR.CatForm].up then
 		return FR.CatForm;

@@ -119,6 +119,8 @@ function Druid:Balance()
 
 	local CaInc;
 
+	MaxDps:GlowEssences();
+
 	if talents[BL.Incarnation] then
 		CaInc = BL.Incarnation;
 		-- incarnation,if=dot.sunfire.remains>8&dot.moonfire.remains>12&(dot.stellar_flare.remains>6|!talent.stellar_flare.enabled);
