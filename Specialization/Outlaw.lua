@@ -128,6 +128,8 @@ function Rogue:Outlaw()
 	fd.rtbReroll = rtbReroll;
 	fd.rtbRemains = rtbRemains;
 
+	MaxDps:GlowEssences();
+
 	-- adrenaline_rush,if=!buff.adrenaline_rush.up&energy.time_to_max>1;
 	MaxDps:GlowCooldown(
 		OL.AdrenalineRush, cooldown[OL.AdrenalineRush].ready and not buff[OL.AdrenalineRush].up and energyTimeToMax > 1

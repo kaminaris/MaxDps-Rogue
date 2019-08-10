@@ -78,6 +78,7 @@ function Rogue:Subtlety()
 	fd.energy, fd.targets, fd.combo, fd.comboDeficit, fd.cpMaxSpend, fd.stealthed =
 	energy, targets, combo, comboDeficit, cpMaxSpend, stealthed;
 
+	MaxDps:GlowEssences();
 	MaxDps:GlowCooldown(SB.ShadowBlades, cooldown[SB.ShadowBlades].ready);
 
 	-- stealth;

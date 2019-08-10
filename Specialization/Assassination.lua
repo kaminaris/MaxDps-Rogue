@@ -117,6 +117,8 @@ function Rogue:Assassination()
 	energy, energyMax, energyRegen, energyTimeToMax, combo, comboMax, comboDeficit, stealthed, targets, energyRegenCombined, cpMaxSpend;
 	local effectiveEnergy = energy + energyRegen * timeShift;
 
+	MaxDps:GlowEssences();
+
 	-- vendetta,if=!stealthed.rogue&dot.rupture.ticking&(!talent.subterfuge.enabled|!azerite.shrouded_suffocation.enabled|dot.garrote.pmultiplier>1)&(!talent.nightstalker.enabled|!talent.exsanguinate.enabled|cooldown.exsanguinate.remains<5-2*talent.deeper_stratagem.enabled);
 	MaxDps:GlowCooldown(
 		AS.Vendetta,
