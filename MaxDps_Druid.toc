@@ -1,7 +1,7 @@
 ## Title: MaxDps_Druid
-## Version: 8.2.0
+## Version: 8.2.5
 ## Author: Kaminaris
-## Interface: 80200
+## Interface: 80205
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1
 ## X-Curse-Project-ID: 103301
