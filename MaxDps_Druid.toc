@@ -1,5 +1,5 @@
 ## Title: MaxDps_Druid
-## Version: 8.2.5
+## Version: 8.2.6
 ## Author: Kaminaris
 ## Interface: 80205
 ## Dependencies: MaxDps
