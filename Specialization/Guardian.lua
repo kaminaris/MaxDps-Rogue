@@ -42,6 +42,8 @@ local GR = {
 	SharpenedClaws       = 279943,
 
 	GuardiansWrath       = 279541,
+
+	--ConflictAndStrife = 23,
 };
 
 local A = {
@@ -174,9 +176,10 @@ function Druid:GuardianMulti()
 	local rageDeficit = fd.rageDeficit;
 
 	-- maul,if=essence.conflict_and_strife.major&!buff.sharpened_claws.up;
-	if rage >= 40 and (MaxDps.AzeriteEssences.major == GR.ConflictAndStrife and not buff[GR.SharpenedClaws].up) then
-		return GR.Maul;
-	end
+	-- cannot detect
+	--if rage >= 40 and (MaxDps.AzeriteEssences.major == GR.ConflictAndStrife and not buff[GR.SharpenedClaws].up) then
+	--	return GR.Maul;
+	--end
 
 	-- ironfur,if=(rage>=cost&azerite.layered_mane.enabled)|rage.deficit<10;
 	--if cooldown[GR.Ironfur].ready and rage >= 40 and ((rage >= cooldown[GR.Ironfur].cost and azerite[A.LayeredMane] > 0) or rageDeficit < 10) then
