@@ -1,7 +1,7 @@
 ## Title: MaxDps_Rogue
-## Version: 8.2.5
+## Version: 8.3.0
 ## Author: Kaminaris
-## Interface: 80205
+## Interface: 80300
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1
 ## SavedVariables: MaxDpsRogueOptions
