@@ -1,5 +1,5 @@
 ## Title: MaxDps_Druid
-## Version: 9.0.2
+## Version: 9.0.2.1
 ## Author: Kaminaris
 ## Interface: 90002
 ## Dependencies: MaxDps

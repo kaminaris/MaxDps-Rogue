@@ -51,6 +51,7 @@ local FR = {
 	SavageRoar        = 52610,
 	PrimalWrath       = 285381,
 	Sabertooth        = 202031,
+	RavenousFrenzy    = 323546,
 
 	SuddenAmbush      = 340698,
 
