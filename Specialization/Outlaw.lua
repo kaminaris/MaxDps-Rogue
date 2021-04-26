@@ -103,12 +103,12 @@ function Rogue:Outlaw()
 	end
 
 	if covenantId == NightFae then
-		MaxDps:GlowCooldown(FR.AncientAftershock, cooldown[FR.AncientAftershock].ready);
-	elseif covenantId == Necrolord then
-		MaxDps:GlowCooldown(FR.ConquerorsBanner, cooldown[FR.ConquerorsBanner].ready);
+		MaxDps:GlowCooldown(OL.AncientAftershock, cooldown[OL.AncientAftershock].ready);
 	elseif covenantId == Kyrian then
-		MaxDps:GlowCooldown(FR.SpearOfBastion, cooldown[FR.SpearOfBastion].ready);
+		MaxDps:GlowCooldown(OL.SpearOfBastion, cooldown[OL.SpearOfBastion].ready);
 	end
+
+	MaxDps:GlowCooldown(OL.AdrenalineRush, cooldown[OL.AdrenalineRush].ready);
 
 	if cooldown[OL.RollTheBones].ready and ((buff[OL.Broadside].remains <= 1.5 or buff[OL.TrueBearing].remains <= 1.5) or
 	not ((buff[RTB.Broadside].up and (buff[RTB.BuriedTreasure].up or buff[RTB.GrandMelee].up or buff[RTB.RuthlessPrecision].up or buff[RTB.SkullAndCrossbones].up or buff[RTB.TrueBearing].up)) or
@@ -172,14 +172,8 @@ function Rogue:OutlawCooldown()
 	local energyRegen = GetPowerRegen();
 	local energyTimeToMax = (energyMax - energy) / energyRegen;
 
-	local RTB_Buffs = (buff[RTB.Broadside].up and (buff[RTB.BuriedTreasure].up or buff[RTB.GrandMelee].up or buff[RTB.RuthlessPrecision].up or buff[RTB.SkullAndCrossbones].up or buff[RTB.TrueBearing].up))
-
 	if cooldown[OL.BladeFlurry].ready and targets >= 2 and not buff[OL.BladeFlurry].up then
 		return OL.BladeFlurry;
-	end
-
-	if cooldown[OL.AdrenalineRush].ready and MaxDps.db.global.enableCooldowns and not buff[OL.AdrenalineRush].up then
-		return OL.AdrenalineRush;
 	end
 
 	if talents[OL.BladeRush] and cooldown[OL.BladeRush].ready and (targets > 2 or energyTimeToMax > 2 or energy <= 30) then
