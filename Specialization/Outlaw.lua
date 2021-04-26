@@ -49,7 +49,8 @@ local OL = {
 
 	-- Covenant Abilities
 	Sepsis               = 328305,
-	SepsisAura           = 347037,
+	SepsisAura           = 347037,	
+	AncientAftershock	 = 326062,
 
 	Flagellation		 = 323654,
 
