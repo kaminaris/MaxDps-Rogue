@@ -1,5 +1,5 @@
 ## Title: MaxDps_Rogue
-## Version: 9.0.5-kz
+## Version: 9.0.6
 ## Author: Kaminaris
 ## Interface: 90005
 ## Dependencies: MaxDps
