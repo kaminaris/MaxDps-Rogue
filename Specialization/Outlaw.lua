@@ -54,8 +54,8 @@ local OL = {
 
 	Flagellation		 = 323654,
 
-	SerratedBoneSpear	 = 328547,
-	SerratedBoneSpearAura = 324073,
+	SerratedBoneSpike	 = 328547,
+	SerratedBoneSpikeAura = 324073,
 
 	EchoingReprimand = 323547,
 
@@ -104,9 +104,9 @@ function Rogue:Outlaw()
 	end
 
 	if covenantId == NightFae then
-		MaxDps:GlowCooldown(OL.AncientAftershock, cooldown[OL.AncientAftershock].ready);
+		MaxDps:GlowCooldown(OL.Sepsis, cooldown[OL.Sepsis].ready);
 	elseif covenantId == Kyrian then
-		MaxDps:GlowCooldown(OL.SpearOfBastion, cooldown[OL.SpearOfBastion].ready);
+		MaxDps:GlowCooldown(OL.EchoingReprimand, cooldown[OL.EchoingReprimand].ready);
 	end
 
 	MaxDps:GlowCooldown(OL.AdrenalineRush, cooldown[OL.AdrenalineRush].ready);
