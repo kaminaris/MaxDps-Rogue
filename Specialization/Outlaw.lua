@@ -106,7 +106,7 @@ function Rogue:Outlaw()
 	if covenantId == NightFae then
 		MaxDps:GlowCooldown(OL.AncientAftershock, cooldown[OL.AncientAftershock].ready);
 	elseif covenantId == Kyrian then
-		MaxDps:GlowCooldown(OL.SpearOfBastion, cooldown[OL.SpearOfBastion].ready);
+		MaxDps:GlowCooldown(OL.EchoingReprimand, cooldown[OL.EchoingReprimand].ready);
 	end
 
 	MaxDps:GlowCooldown(OL.AdrenalineRush, cooldown[OL.AdrenalineRush].ready);
