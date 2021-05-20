@@ -7,7 +7,6 @@ local MaxDps = MaxDps;
 local UnitPower = UnitPower;
 local UnitPowerMax = UnitPowerMax;
 local GetPowerRegen = GetPowerRegen;
-local InCombatLockdown = InCombatLockdown;
 local ComboPoints = Enum.PowerType.ComboPoints;
 local Energy = Enum.PowerType.Energy;
 local Rogue = addonTable.Rogue;
@@ -204,10 +203,6 @@ function Rogue:Assassination()
 			return AS.Sepsis;
 		end
 		
-		if cooldown[AS.Vendetta].ready and MaxDps.db.global.enableCooldowns and not stealthed and debuff[AS.Rupture].remains > 7 and debuff[AS.Vendetta].remains < 0.1 and vendettaNightstalkerCondition then
-			return AS.Vendetta;
-		end
-		
 		if talents[AS.Exsanguinate] and cooldown[AS.Exsanguinate].ready and not stealthed and (debuff[AS.Garrote].remains > 6 and debuff[AS.Rupture].remains > 2 + 4 * comboMax or timeToDie < debuff[AS.Rupture].remains * 0.5) and timeToDie > 4 then
 			return AS.Exsanguinate;
 		end
@@ -216,7 +211,7 @@ function Rogue:Assassination()
 			return AS.Shiv;
 		end
 		
-		if cooldown[AS.Vanish].ready and MaxDps.db.global.enableCooldowns then
+		if cooldown[AS.Vanish].ready then
 			if talents[AS.Exsanguinate] and talents[AS.Nightstalker] and combo >= 4 and cooldown[AS.Exsanguinate].remains < 1 then
 				return AS.Vanish; end
 			if talents[AS.Exsanguinate] and not talents[AS.Nightstalker] and combo >= 4 and debuff[AS.Vendetta].up then
