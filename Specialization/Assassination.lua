@@ -191,7 +191,7 @@ function Rogue:Assassination()
 
 	--cds
 	if (not talents[AS.MasterAssassin] or debuff[AS.Garrote].remains > 6) then
-		if cooldown[AS.MarkedForDeath].ready and talents[AS.MarkedForDeath] and (comboPoints <= 1 or timeToDie <= 2) then
+		if cooldown[AS.MarkedForDeath].ready and talents[AS.MarkedForDeath] and (combo <= 1 or timeToDie <= 2) then
 			return AS.MarkedForDeath;
 		end
 		
@@ -274,7 +274,7 @@ function Rogue:AssassinationDirect()
 
 	-- envenom,if=combo_points>=4+talent.deeper_stratagem.enabled&(debuff.vendetta.up|debuff.toxic_blade.up|energy.deficit<=25+variable.energy_regen_combined|!variable.single_target)&(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2);
 	if combo >= 4 + (talents[AS.DeeperStratagem] and 1 or 0) and
-		(debuff[AS.Vendetta].up or debuff[AS.ToxicBlade].up or energyDeficit <= 25 + energyRegenCombined or targets >= 2) and
+		(debuff[AS.Vendetta].up or debuff[AS.ToxicBlade].up or energyDeficit <= 25 + energyRegenCombined or targets >= 2 or timeToDie < 5) and
 		(not talents[AS.Exsanguinate] or cooldown[AS.Exsanguinate].remains > 2)
 	then
 		return AS.Envenom;
