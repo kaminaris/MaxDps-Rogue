@@ -243,7 +243,7 @@ function Rogue:Assassination()
 		return AS.Garrote;
 	end
 	
-	if talents[AS.CrimsonTempest] and targets >= 2 and debuff[AS.CrimsonTempest].remains < 2 + targets and combo >= 4 and energyRegenCombined > 20 and (debuff[AS.Rupture].remains > 0.5 or not cooldown[AS.Vendette].ready) then
+	if talents[AS.CrimsonTempest] and targets >= 2 and debuff[AS.CrimsonTempest].remains < 2 + targets and combo >= 4 and energyRegenCombined > 20 and (debuff[AS.Rupture].remains > 0.5 or not cooldown[AS.Vendetta].ready) then
 		return AS.CrimsonTempest;
 	end
 	
