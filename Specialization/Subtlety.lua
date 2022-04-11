@@ -77,6 +77,8 @@ end
 
 function Rogue:SubtletySingle()
 	local fd = MaxDps.FrameData;
+	local azerite, timeShift, timeToDie =
+	fd.azerite, fd.timeShift, fd.timeToDie;
 	local cooldown = fd.cooldown;
 	local buff = fd.buff;
 	local debuff = fd.debuff;
@@ -109,16 +111,16 @@ function Rogue:SubtletySingle()
 	if buff[SB.Stealth].up and energy >= 40 then
 		return SB.Shadowstrike;
 	end
-	if cooldown[SB.ShadowDance].ready and not buff[SB.ShadowDanceBuff].up then
+	if cooldown[SB.ShadowDance].ready and not buff[SB.ShadowDanceBuff].up and timeToDie >= 8 then
 		return SB.ShadowDance;
 	end
-	if buff[SB.ShadowDanceBuff].up and cooldown[SB.SymbolsOfDeath].ready then
+	if buff[SB.ShadowDanceBuff].up and cooldown[SB.SymbolsOfDeath].ready and timeToDie >= 10 then
 		return SB.SymbolsOfDeath;
 	end
 	if buff[SB.SliceAndDice].refreshable and comboDeficit == 0 and energy >= 25 then
 		return SB.SliceAndDice;
 	end
-	if debuff[SB.Rupture].refreshable and comboDeficit == 0 and energy >= 25 then
+	if debuff[SB.Rupture].refreshable and comboDeficit == 0 and energy >= 25 and timeToDie >= 28  then
 		return SB.Rupture;
 	end
 	--SYMBOLS OF DEATH AND SECRET TECHNIQUE SYNERGY
@@ -138,6 +140,8 @@ end
 
 function Rogue:SubtletyAOE()
 	local fd = MaxDps.FrameData;
+	local azerite, timeShift, timeToDie =
+	fd.azerite, fd.timeShift, fd.timeToDie;
 	local cooldown = fd.cooldown;
 	local buff = fd.buff;
 	local debuff = fd.debuff;
@@ -170,26 +174,26 @@ function Rogue:SubtletyAOE()
 	if buff[SB.SliceAndDice].refreshable and comboDeficit == 0 and targets <= 6 then
 		return SB.SliceAndDice;
 	end
-	if debuff[SB.Rupture].refreshable and comboDeficit == 0 and targets <= 5 then
+	if debuff[SB.Rupture].refreshable and comboDeficit == 0 and targets <= 5 and timeToDie >= 28 then
 		return SB.Rupture;
 	end
-	if targets >=4 and cooldown[SB.SymbolsOfDeath].ready then
+	if cooldown[SB.ShadowDance].ready and not buff[SB.ShadowDanceBuff].up and timeToDie >= 8 then
+		return SB.ShadowDance;
+	end
+	if cooldown[SB.SymbolsOfDeath].ready and timeToDie >= 10 then
 		return SB.SymbolsOfDeath;
 	end
-	if targets >=4 and talents[SB.SecretTechnique] and cooldown[SB.SecretTechnique].ready then
+	if talents[SB.SecretTechnique] and cooldown[SB.SecretTechnique].ready then
 		return SB.SecretTechnique;
 	end
-	if cooldown[SB.ShurikenTornado].ready then
+	if cooldown[SB.ShurikenTornado].ready and not buff[SB.ShurikenTornado].up then
 		return SB.ShurikenTornado;
+	end
+	if buff[SB.ShurikenTornado].up and buff[SB.ShurikenTornado].remains >=1 then
+		return SB.BlackPowder;
 	end
 	if (combo >= 5 and talents[SB.DeeperStratagem]) or (combo >= 4) then
 		return SB.BlackPowder;
-	end
-	if buff[SB.ShadowDanceBuff].up and targets >= 3 then
-		return SB.ShurikenStorm;
-	end
-	if energy >= 35 then
-		return SB.ShurikenStorm;
 	end
 
 end
