@@ -107,6 +107,7 @@ function Rogue:Outlaw()
 	
 	fd.RTB_Reroll, fd.RTB_VanishTracker = RTB_Reroll, RTB_VanishTracker;
 	
+	MaxDps:GlowCooldown(OL.Dreadblades, talents[OL.Dreadblades] and cooldown[OL.Dreadblades].ready and not buff[OL.Dreadblades].up);
 	MaxDps:GlowCooldown(OL.AdrenalineRush, cooldown[OL.AdrenalineRush].ready and not buff[OL.AdrenalineRush].up);
 	MaxDps:GlowCooldown(OL.Vanish, cooldown[OL.Vanish].ready and energy >= 50 and ((comboPoints <= comboPointsMax - 2 and not buff[OL.Broadside].up) or (buff[OL.Broadside].up and comboPoints <= comboPointsMax - 3)) and RTB_VanishTracker);
 
