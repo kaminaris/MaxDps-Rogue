@@ -36,7 +36,8 @@ local SB = {
 	Flagellation		 = 323654,
 	SerratedBoneSpear	 = 328547,
 	SerratedBoneSpearAura = 324073,
-	EchoingReprimand 	 = 323547,
+	EchoingReprimandTalent	= 385616,
+	EchoingReprimandCovenant= 323547,
 };
 
 local CN = {
@@ -94,8 +95,12 @@ function Rogue:SubtletySingle()
 		return SB.Sepsis;
 	end
 
-	if covenantId == CN.Kyrian and cooldown[SB.EchoingReprimand].ready then
-		return SB.EchoingReprimand;
+	if talents[SB.EchoingReprimandTalent] and cooldown[SB.EchoingReprimandTalent].ready then
+		return SB.EchoingReprimandTalent;
+	end
+	
+	if not talents[SB.EchoingReprimandTalent] and covenantId == CN.Kyrian and cooldown[SB.EchoingReprimandCovenant].ready then
+		return SB.EchoingReprimandCovenant;
 	end
 
 	if covenantId == CN.Necrolord and energy >= 15 and cooldown[SB.SerratedBoneSpear].charges >= 1 and not debuff[SB.SerratedBoneSpearAura].up then
@@ -155,8 +160,12 @@ function Rogue:SubtletyAOE()
 		return SB.Sepsis;
 	end
 
-	if covenantId == CN.Kyrian and cooldown[SB.EchoingReprimand].ready then
-		return SB.EchoingReprimand;
+	if talents[SB.EchoingReprimandTalent] and cooldown[SB.EchoingReprimandTalent].ready then
+		return SB.EchoingReprimandTalent;
+	end
+	
+	if not talents[SB.EchoingReprimandTalent] and covenantId == CN.Kyrian and cooldown[SB.EchoingReprimandCovenant].ready then
+		return SB.EchoingReprimandCovenant;
 	end
 
 	if covenantId == CN.Necrolord and energy >= 15 and cooldown[SB.SerratedBoneSpear].charges >= 1 and not debuff[SB.SerratedBoneSpearAura].up then
