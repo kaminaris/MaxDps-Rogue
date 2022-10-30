@@ -64,8 +64,8 @@ function Rogue:CreateConfig()
 		of:DoLayout();
 	end);
 
-	InterfaceOptions_AddCategory(optionsFrame);
-	InterfaceCategoryList_Update();
-	InterfaceOptionsOptionsFrame_RefreshCategories();
-	InterfaceAddOnsList_Update();
+	--InterfaceOptions_AddCategory(optionsFrame);
+	--InterfaceCategoryList_Update();
+	--InterfaceOptionsOptionsFrame_RefreshCategories();
+	--InterfaceAddOnsList_Update();
 end

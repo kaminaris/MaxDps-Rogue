@@ -9,49 +9,47 @@ local MaxDps = MaxDps;
 local Rogue = addonTable.Rogue;
 
 local OL = {
-	Stealth              = 1784,
-	MarkedForDeath       = 137619,
-	LoadedDice           = 256170,
-	SnakeEyes            = 275863,
-	GhostlyStrike        = 196937,
-	DeeperStratagem      = 193531,
-
-	SkullAndCrossbones   = 199603,
-	TrueBearing          = 193359,
-	RuthlessPrecision    = 193357,
-	GrandMelee           = 193358,
-	BuriedTreasure       = 199600,
-	Broadside            = 193356,
-
-	BladeFlurry          = 13877,
-	Opportunity          = 195627,
-	QuickDraw            = 196938,
-	PistolShot           = 185763,
-	KeepYourWitsAboutYou = 288988,
-	Deadshot             = 272940,
-	SinisterStrike       = 193315,
-	KillingSpree         = 51690,
-	BladeRush            = 271877,
-	Vanish               = 1856,
-	Ambush               = 8676,
-	AdrenalineRush       = 13750,
-	RollTheBones         = 315508,
-	SliceAndDice         = 315496,
-	BetweenTheEyes       = 315341,
-	Dispatch             = 2098,
-	DirtyTricks			 = 108216,
-	Gouge				 = 1776,
-	
-	Sepsis               = 328305,
-	SepsisAura           = 347037,
-	Flagellation		 = 323654,
-	SerratedBoneSpear	 = 328547,
-	SerratedBoneSpearAura = 324073,
-	EchoingReprimand 	 = 323547,
-
-	StealthAura          = 1784,
-	VanishAura           = 11327,
-	InstantPoison        = 315584
+	AdrenalineRush			= 13750,
+	Ambush					= 8676,
+	BetweenTheEyes			= 315341,
+	BladeFlurry				= 13877,
+	BladeRush				= 271877,
+	Broadside				= 193356,
+	BuriedTreasure			= 199600,
+	Deadshot				= 272940,
+	DeeperStratagem			= 193531,
+	DirtyTricks				=108216,
+	Dispatch				= 2098,
+	Dreadblades				= 343142,
+	EchoingReprimandTalent	= 385616,
+	EchoingReprimandCovenant= 323547,
+	Flagellation 			= 323654,
+	GhostlyStrike			= 196937,
+	Gouge					= 1776,
+	GrandMelee				= 193358,
+	InstantPoison			= 315584,
+	KeepYourWitsAboutYou	= 288988,
+	KillingSpree			= 51690,
+	LoadedDice				= 256170,
+	MarkedForDeath			= 137619,
+	Opportunity				= 195627,
+	PistolShot				= 185763,
+	QuickDraw				= 196938,
+	RollTheBones			= 315508,
+	RuthlessPrecision		= 193357,
+	Sepsis					= 328305,
+	SepsisAura				= 347037,
+	SerratedBoneSpear		= 328547,
+	SerratedBoneSpearAura	= 324073,
+	SinisterStrike			= 193315,
+	SkullAndCrossbones		= 199603,
+	SliceAndDice			= 315496,
+	SnakeEyes				= 275863,
+	Stealth					= 1784,
+	StealthAura				= 1784,
+	TrueBearing				= 193359,
+	Vanish					= 1856,
+	VanishAura				= 11327
 };
 
 local RTB = {
@@ -251,8 +249,12 @@ function Rogue:OutlawBuilder()
 		return OL.GhostlyStrike;
 	end
 	
-	if covenantId == CN.Kyrian and cooldown[OL.EchoingReprimand].ready then
-		return OL.EchoingReprimand;
+	if talents[OL.EchoingReprimandTalent] and cooldown[OL.EchoingReprimandTalent].ready then
+		return OL.EchoingReprimandTalent;
+	end
+	
+	if not talents[OL.EchoingReprimandTalent] and covenantId == CN.Kyrian and cooldown[OL.EchoingReprimandCovenant].ready then
+		return OL.EchoingReprimandCovenant;
 	end
 	
 	if covenantId == CN.Necrolord and energy >= 15 and cooldown[OL.SerratedBoneSpear].charges >= 1 and 

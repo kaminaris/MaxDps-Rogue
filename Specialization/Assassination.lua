@@ -14,56 +14,49 @@ local Rogue = addonTable.Rogue;
 
 -- Assassination
 local AS = {
-	Vanish			 = 1856,
-	MarkedForDeath   = 137619,
-	Vendetta         = 79140,
-	Subterfuge       = 108208,
-	Garrote          = 703,
-	Rupture          = 1943,
-	Nightstalker     = 14062,
-	Exsanguinate     = 200806,
-	DeeperStratagem  = 193531,
-	
-	MasterAssassin   = 255989,
-	ToxicBlade       = 245388,
-	PoisonedKnife    = 185565,
-	FanOfKnives      = 51723,
-	HiddenBlades     = 270061,
-	Blindside        = 111240,
-	BlindsideAura    = 121153,
-	VenomRush        = 152152,
-	CrimsonTempest   = 121411,
-	Mutilate         = 1329,
-	Envenom          = 32645,
-	Shiv			 = 5938,
-	Ambush           = 8676,
-
-	SharpenedBlades  = 272916,
-	InternalBleeding = 154904,
-	SliceAndDice	 = 315496,
-	
-	--Covenant
-	Sepsis               = 328305,
-	SepsisAura           = 347037,
-	Flagellation		 = 323654,
-	SerratedBoneSpear	 = 328547,
-	SerratedBoneSpearAura = 324073,
-	EchoingReprimand 	 = 323547,
-
-	-- Auras
-	Stealth         	 = 1784,
-	StealthSub			 = 115191,
-	VanishAura           = 11327,
-	InstantPoison        = 315584,
-	DeadlyPoison     	 = 2823,
-	DeadlyPoisonAura 	 = 2818,
-	ShivAura			 = 319504,
-	SubterfugeAura		 = 115192,
-	HiddenBladesAura	 = 270070,
-	MasterAssassinAura   = 256735,
-	
-	--Lego
-	MarkOfTheMasterAssassin	= 7111,
+	Ambush				= 8676,			
+	Blindside			= 111240,			
+	BlindsideAura		= 121153,			
+	CrimsonTempest		= 121411,			
+	DeadlyPoison		= 2823,		
+	DeadlyPoisonAura	= 2818,		
+	DeeperStratagem		= 193531,			
+	EchoingReprimandTalent	= 385616,
+	EchoingReprimandCovenant= 323547,	
+	Envenom				= 32645,			
+	Exsanguinate		= 200806,			
+	FanOfKnives			= 51723,			
+	Flagellation		= 323654,	
+	Garrote				= 703,			
+	HiddenBlades		= 270061,			
+	HiddenBladesAura	= 270070,		
+	InstantPoison		= 315584,			
+	InternalBleeding	= 154904,			
+	MarkedForDeath		= 137619,			
+	MarkOfTheMasterAssassin	= 7111,		
+	MasterAssassin		= 255989,			
+	MasterAssassinAura	= 256735,			
+	Mutilate			= 1329,			
+	Nightstalker		= 14062,			
+	PoisonedKnife		= 185565,			
+	Rupture				= 1943,			
+	Sepsis				= 328305,			
+	SepsisAura			= 347037,			
+	SerratedBoneSpear	= 328547,		
+	SerratedBoneSpearAura = 324073,			
+	SharpenedBlades		= 272916,			
+	Shiv				= 5938,
+	ShivAura			= 319504,
+	SliceAndDice		= 315496,		
+	Stealth				= 1784,		
+	StealthSub			= 115191,
+	Subterfuge			= 108208,			
+	SubterfugeAura		= 115192,	
+	ToxicBlade			= 245388,			
+	Vanish				= 1856,
+	VanishAura			= 11327,			
+	Vendetta			= 79140,			
+	VenomRush			= 152152
 };
 
 local CN = {
@@ -300,8 +293,12 @@ function Rogue:AssassinationDirect()
 		return AS.FanOfKnives;
 	end
 
-	if covenantId == CN.Kyrian and useFiller and cooldown[AS.Vendetta].remains > 10 then
-		return AS.EchoingReprimand;
+	if talents[AS.EchoingReprimandTalent] and useFiller and cooldown[AS.Vendetta].remains > 10 then
+		return AS.EchoingReprimandTalent;
+	end
+	
+	if not talents[AS.EchoingReprimandTalent] and covenantId == CN.Kyrian and useFiller and cooldown[AS.Vendetta].remains > 10 then
+		return AS.EchoingReprimandCovenant;
 	end
 	
 	if useFiller and buff[AS.BlindsideAura].up then
