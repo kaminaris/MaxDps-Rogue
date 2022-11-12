@@ -30,3 +30,14 @@ function Rogue:Enable()
 
 	return true;
 end
+
+function Rogue:EnergyCost(spellId)
+	local spellTable = GetSpellPowerCost(spellId);
+	if spellTable ~= nil then
+		if spellTable[2] ~= nil then
+			return spellTable[2].cost
+		else
+			return spellTable[1].cost
+		end
+	end
+end
