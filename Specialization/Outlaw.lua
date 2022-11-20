@@ -337,9 +337,9 @@ function Rogue:OutlawCds()
 	end
 
 	-- vanish,if=!runeforge.mark_of_the_master_assassin&!runeforge.invigorating_shadowdust&!runeforge.deathly_shadows&!stealthed.all&!buff.take_em_by_surprise.up&(variable.finish_condition&buff.slice_and_dice.up|variable.ambush_condition&!buff.slice_and_dice.up)
-	if cooldown[OL.Vanish].ready and (not stealthed and not buff[OL.TakeEmBySurprise].up and ( finishCondition and buff[OL.SliceAndDice].up or ambushCondition and not buff[OL.SliceAndDice].up )) then
-		return OL.Vanish
-	end
+	--if cooldown[OL.Vanish].ready and (not stealthed and not buff[OL.TakeEmBySurprise].up and ( finishCondition and buff[OL.SliceAndDice].up or ambushCondition and not buff[OL.SliceAndDice].up )) then
+	--	return OL.Vanish
+	--end
 	
 	-- adrenaline_rush,if=!buff.adrenaline_rush.up&(!talent.improved_adrenaline_rush|combo_points<=2)
 	if talents[OL.AdrenalineRush] and cooldown[OL.AdrenalineRush].ready and (not buff[OL.AdrenalineRush].up and ( not talents[OL.ImprovedAdrenalineRush] or comboPoints <= 2 )) then
