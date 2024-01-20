@@ -77,7 +77,7 @@ echoingReprimand.up = function(comboPoints)
 	local buff = MaxDps.FrameData.buff
 
 	for i in pairs(echoingReprimand.auras) do
-		local aura = echoingReprimand.auras[i];
+		local aura = echoingReprimand.auras[i]
 		if buff[aura.id].up and aura.cp == comboPoints then
 			return aura
 		end

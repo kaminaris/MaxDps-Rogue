@@ -1,12 +1,12 @@
-local _, addonTable = ...;
+local _, addonTable = ...
 
 --- @type MaxDps
 if not MaxDps then
 	return
 end
 
-local MaxDps = MaxDps;
-local Rogue = addonTable.Rogue;
+local MaxDps = MaxDps
+local Rogue = addonTable.Rogue
 
 local OL = {
 	AdrenalineRush = 13750,
@@ -55,9 +55,9 @@ local OL = {
 	Vanish = 1856,
 	ViciousWound = 115774,
 	Weaponmaster = 200733
-};
+}
 
-setmetatable(OL, Rogue.spellMeta);
+setmetatable(OL, Rogue.spellMeta)
 
 local echoingReprimand = {
 	auras = {
@@ -78,13 +78,13 @@ local echoingReprimand = {
 			cp = 5
 		}
 	}
-};
+}
 
 echoingReprimand.up = function(comboPoints)
 	local buff = MaxDps.FrameData.buff
 
 	for i in pairs(echoingReprimand.auras) do
-		local aura = echoingReprimand.auras[i];
+		local aura = echoingReprimand.auras[i]
 		if buff[aura.id].up and aura.cp == comboPoints then
 			return aura
 		end
@@ -107,13 +107,13 @@ end
 local function calculateRtbBuffCount()
 	local buff = MaxDps.FrameData.buff
 
-	local rollTheBonesBuffCount = 0;
-	if buff[OL.SkullAndCrossbones].up then rollTheBonesBuffCount = rollTheBonesBuffCount + 1; end
-	if buff[OL.TrueBearing].up        then rollTheBonesBuffCount = rollTheBonesBuffCount + 1; end
-	if buff[OL.RuthlessPrecision].up  then rollTheBonesBuffCount = rollTheBonesBuffCount + 1; end
-	if buff[OL.GrandMelee].up         then rollTheBonesBuffCount = rollTheBonesBuffCount + 1; end
-	if buff[OL.BuriedTreasure].up     then rollTheBonesBuffCount = rollTheBonesBuffCount + 1; end
-	if buff[OL.Broadside].up          then rollTheBonesBuffCount = rollTheBonesBuffCount + 1; end
+	local rollTheBonesBuffCount = 0
+	if buff[OL.SkullAndCrossbones].up then rollTheBonesBuffCount = rollTheBonesBuffCount + 1 end
+	if buff[OL.TrueBearing].up        then rollTheBonesBuffCount = rollTheBonesBuffCount + 1 end
+	if buff[OL.RuthlessPrecision].up  then rollTheBonesBuffCount = rollTheBonesBuffCount + 1 end
+	if buff[OL.GrandMelee].up         then rollTheBonesBuffCount = rollTheBonesBuffCount + 1 end
+	if buff[OL.BuriedTreasure].up     then rollTheBonesBuffCount = rollTheBonesBuffCount + 1 end
+	if buff[OL.Broadside].up          then rollTheBonesBuffCount = rollTheBonesBuffCount + 1 end
 
 	return rollTheBonesBuffCount
 end
@@ -133,12 +133,12 @@ function Rogue:Outlaw()
 	fd.comboPointsDeficit = comboPointsDeficit
 	local energy = UnitPower('player', Enum.PowerType.Energy)
 	fd.energy = energy
-	local energyMax = UnitPowerMax('player', Enum.PowerType.Energy);
-	local energyRegen = GetPowerRegen();
+	local energyMax = UnitPowerMax('player', Enum.PowerType.Energy)
+	local energyRegen = GetPowerRegen()
 	fd.energyDeficit = energyMax - energy
 	fd.energyRegen = energyRegen
 	fd.energyTimeToMax = (energyMax - energy) / energyRegen
-	local effectiveComboPoints = calculateEffectiveComboPoints(comboPoints);
+	local effectiveComboPoints = calculateEffectiveComboPoints(comboPoints)
 	local rtbBuffCount = calculateRtbBuffCount()
 	local stealthed = IsStealthed()
 

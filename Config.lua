@@ -1,14 +1,14 @@
-local _, addonTable = ...;
-local StdUi = LibStub('StdUi');
+local _, addonTable = ...
+local StdUi = LibStub('StdUi')
 
 --- @type MaxDps
 if not MaxDps then return end
-local MaxDps = MaxDps;
-local Rogue = addonTable.Rogue;
+local MaxDps = MaxDps
+local Rogue = addonTable.Rogue
 
 local defaultOptions = {
 	outlawMarkedAsCooldown = false,
-};
+}
 
 function Rogue:GetConfig()
 	local config = {
@@ -29,43 +29,43 @@ function Rogue:GetConfig()
 				},
 			},
 		},
-	};
+	}
 
-	return config;
+	return config
 end
 
 
 function Rogue:InitializeDatabase()
-	if self.db then return end;
+	if self.db then return end
 
 	if not MaxDpsRogueOptions then
-		MaxDpsRogueOptions = defaultOptions;
+		MaxDpsRogueOptions = defaultOptions
 	end
 
-	self.db = MaxDpsRogueOptions;
+	self.db = MaxDpsRogueOptions
 end
 
 function Rogue:CreateConfig()
 	if self.optionsFrame then
-		return;
+		return
 	end
 
-	local optionsFrame = StdUi:PanelWithTitle(nil, 100, 100, 'Rogue Options');
-	self.optionsFrame = optionsFrame;
-	optionsFrame:Hide();
-	optionsFrame.name = 'Rogue';
-	optionsFrame.parent = 'MaxDps';
+	local optionsFrame = StdUi:PanelWithTitle(nil, 100, 100, 'Rogue Options')
+	self.optionsFrame = optionsFrame
+	optionsFrame:Hide()
+	optionsFrame.name = 'Rogue'
+	optionsFrame.parent = 'MaxDps'
 
-	StdUi:BuildWindow(self.optionsFrame, self:GetConfig());
+	StdUi:BuildWindow(self.optionsFrame, self:GetConfig())
 
-	StdUi:EasyLayout(optionsFrame, { padding = { top = 40 } });
+	StdUi:EasyLayout(optionsFrame, { padding = { top = 40 } })
 
 	optionsFrame:SetScript('OnShow', function(of)
-		of:DoLayout();
-	end);
+		of:DoLayout()
+	end)
 
-	--InterfaceOptions_AddCategory(optionsFrame);
-	--InterfaceCategoryList_Update();
-	--InterfaceOptionsOptionsFrame_RefreshCategories();
-	--InterfaceAddOnsList_Update();
+	--InterfaceOptions_AddCategory(optionsFrame)
+	--InterfaceCategoryList_Update()
+	--InterfaceOptionsOptionsFrame_RefreshCategories()
+	--InterfaceAddOnsList_Update()
 end
