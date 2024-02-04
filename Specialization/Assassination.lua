@@ -1,56 +1,153 @@
 local _, addonTable = ...
-
---- @type MaxDps
+local Rogue = addonTable.Rogue
+local MaxDps = _G.MaxDps
 if not MaxDps then return end
 
-local MaxDps = MaxDps
 local UnitPower = UnitPower
+local UnitHealth = UnitHealth
+local UnitAura = UnitAura
+local GetSpellDescription = GetSpellDescription
+local UnitHealthMax = UnitHealthMax
 local UnitPowerMax = UnitPowerMax
-local GetPowerRegen = GetPowerRegen
-local ComboPoints = Enum.PowerType.ComboPoints
-local Energy = Enum.PowerType.Energy
-local Rogue = addonTable.Rogue
+local SpellHaste
+local SpellCrit
 
-local AS = {
-	Ambush = 8676,
-	AmplifyingPoison = 381664,
-	BlindsideBuff = 121153,
-	CrimsonTempest = 121411,
-	DashingScoundrel = 381797,
-	DeadlyPoison = 2823,
-	DeadlyPoisonDot = 2818,
-	Deathmark = 360194,
-	DeeperStratagem = 193531,
-	Doomblade = 381673,
-	DragontemperedBlades = 381801,
-	EchoingReprimand = 385616,
-	Envenom = 32645,
-	Exsanguinate = 200806,
-	FanOfKnives = 51723,
-	Garrote = 703,
-	ImprovedGarrote = 381632,
-	ImprovedGarroteBuff = 392401,
-	IndiscriminateCarnage = 381802,
-	InternalBleeding	= 154904,
-	Kingsbane = 385627,
-	MarkedForDeath = 137619,
-	MasterAssassin = 255989,
-	MasterAssassinBuff = 256735,
-	Mutilate = 1329,
-	MutilatedFlesh = 340431,
-	Rupture = 1943,
-	Sepsis = 385408,
-	SerratedBoneSpike = 385424,
-	SerratedBoneSpikeDot = 394036,
-	ShadowDance = 185313,
-	Shiv = 5938,
-	SliceAndDice = 315496,
-	Stealth = 1784,
-	ThistleTea = 381623,
-	Vanish = 1856,
-}
+local ManaPT = Enum.PowerType.Mana
+local RagePT = Enum.PowerType.Rage
+local FocusPT = Enum.PowerType.Focus
+local EnergyPT = Enum.PowerType.Energy
+local ComboPointsPT = Enum.PowerType.ComboPoints
+local RunesPT = Enum.PowerType.Runes
+local RunicPowerPT = Enum.PowerType.RunicPower
+local SoulShardsPT = Enum.PowerType.SoulShards
+local LunarPowerPT = Enum.PowerType.LunarPower
+local HolyPowerPT = Enum.PowerType.HolyPower
+local MaelstromPT = Enum.PowerType.Maelstrom
+local ChiPT = Enum.PowerType.Chi
+local InsanityPT = Enum.PowerType.Insanity
+local ArcaneChargesPT = Enum.PowerType.ArcaneCharges
+local FuryPT = Enum.PowerType.Fury
+local PainPT = Enum.PowerType.Pain
+local EssencePT = Enum.PowerType.Essence
+local RuneBloodPT = Enum.PowerType.RuneBlood
+local RuneFrostPT = Enum.PowerType.RuneFrost
+local RuneUnholyPT = Enum.PowerType.RuneUnholy
 
-setmetatable(AS, Rogue.spellMeta)
+local fd
+local ttd
+local gcd
+local cooldown
+local buff
+local debuff
+local talents
+local targets
+local targetHP
+local targetmaxHP
+local targethealthPerc
+local curentHP
+local maxHP
+local healthPerc
+local timeInCombat
+local className, classFilename, classId = UnitClass('player')
+local currentSpec = GetSpecialization()
+local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or 'None'
+local classtable
+
+local Energy
+local EnergyMax
+local EnergyDeficit
+local EnergyRegen
+local EnergyRegenCombined
+local EnergyTimeToMax
+local EnergyPerc
+local ComboPoints
+local ComboPointsMax
+local ComboPointsDeficit
+local PoisonedBleeds
+
+local trinket_sync_slot
+local single_target
+local regen_saturated
+local not_pooling
+local sepsis_sync_remains
+local deathmark_ma_condition
+local deathmark_kingsbane_condition
+local deathmark_condition
+local use_filler
+local scent_effective_max_stacks
+local scent_saturation
+
+local Assassination = {}
+
+local function CheckSpellCosts(spell,spellstring)
+    --if MaxDps.learnedSpells[spell] == nil then
+    --	return false
+    --end
+    if spellstring == 'TouchofDeath' then
+        if targethealthPerc < 15 then
+            return true
+        else
+            return false
+        end
+    end
+    local costs = GetSpellPowerCost(spell)
+    if type(costs) ~= 'table' and spellstring then print('no cost found for ',spellstring) return true end
+    for i,costtable in pairs(costs) do
+        if UnitPower('player', costtable.type) < costtable.cost then
+            return false
+        end
+    end
+    return true
+end
+
+
+
+local function CheckEquipped(checkName)
+    for i=1,14 do
+        local itemID = GetInventoryItemID('player', i)
+        local itemName = itemID and GetItemInfo(itemID) or ''
+        if checkName == itemName then
+            return true
+        end
+    end
+    return false
+end
+
+
+
+
+local function CheckTrinketNames(checkName)
+    --if slot == 1 then
+    --    slot = 13
+    --end
+    --if slot == 2 then
+    --    slot = 14
+    --end
+    for i=13,14 do
+        local itemID = GetInventoryItemID('player', i)
+        local itemName = GetItemInfo(itemID)
+        if checkName == itemName then
+            return true
+        end
+    end
+    return false
+end
+
+
+local function CheckTrinketCooldown(slot)
+    if slot == 1 then
+        slot = 13
+    end
+    if slot == 2 then
+        slot = 14
+    end
+    local itemID = GetInventoryItemID('player', slot)
+    local startTime, duration, enable = GetItemCooldown(itemID)
+    if duration == 0 then return true else return false end
+end
+
+
+
 
 local echoingReprimand = {
 	auras = {
@@ -73,417 +170,406 @@ local echoingReprimand = {
 	}
 }
 
-echoingReprimand.up = function(comboPoints)
-	local buff = MaxDps.FrameData.buff
 
+local echoingReprimandUp = function(comboPoints)
 	for i in pairs(echoingReprimand.auras) do
 		local aura = echoingReprimand.auras[i]
 		if buff[aura.id].up and aura.cp == comboPoints then
 			return aura
 		end
 	end
-
 	return false
 end
 
+
 local function calculateEffectiveComboPoints(comboPoints)
 	if comboPoints > 1 and comboPoints < 6 then
-		local aura = echoingReprimand.up(comboPoints)
+		local aura = echoingReprimandUp(comboPoints)
 		if aura then
 			return MaxDps.FrameData.cpMaxSpend
 		end
 	end
-
 	return comboPoints
-end
-
-
-function Rogue:Assassination()
-	local fd = MaxDps.FrameData
-	local buff, timeShift = fd.buff, fd.timeShift
-
-	local energy = UnitPower('player', Energy)
-	fd.energy = energy
-	local energyMax = UnitPowerMax('player', Energy)
-	fd.energyMax = energyMax
-	fd.energyDeficit = energyMax - energy
-	local energyRegen = GetPowerRegen()
-	fd.energyRegen = energyRegen
-	fd.energyTimeToMax = (energyMax - energy) / energyRegen
-
-	local comboPoints = UnitPower('player', ComboPoints)
-	fd.comboPoints = comboPoints
-	fd.effectiveComboPoints = calculateEffectiveComboPoints(comboPoints)
-
-	fd.cpMaxSpend = UnitPowerMax('player', ComboPoints)
-	fd.comboPointsDeficit = fd.cpMaxSpend - comboPoints
-
-	fd.targets = MaxDps:SmartAoe()
-
-	--local stealthed = buff[AS.Stealth].up or buff[AS.StealthSub].up or buff[AS.VanishAura].up
-	local poisonedBleeds = Rogue:PoisonedBleeds(timeShift)
-
-	local spellHaste = MaxDps:AttackHaste()
-	fd.spellHaste = spellHaste
-	local energyRegenCombined = energyRegen + poisonedBleeds * 7 % (2 * spellHaste)
-	fd.energyRegenCombined = energyRegenCombined
-	fd.regenSaturated = energyRegenCombined > 35
-
-	local stealthed = IsStealthed()
-	fd.stealthed = stealthed
-	fd.effectiveEnergy = energy + energyRegen * timeShift
-	local inCombat = UnitAffectingCombat("player")
-	fd.inCombat = inCombat
-
-	if not buff[AS.DeadlyPoison].up then
-		return AS.DeadlyPoison
-	end
-
-	if not inCombat and buff[AS.DeadlyPoison].remains < 300 then
-		return AS.DeadlyPoison
-	end
-
-	-- call_action_list,name=stealthed,if=stealthed.rogue|stealthed.improved_garrote
-	if stealthed or buff[AS.ImprovedGarroteBuff].up then
-		local result = Rogue:AssassinationStealthed()
-		if result then
-			return result
-		end
-	end
-
-	-- call_action_list,name=cds
-	local result = Rogue:AssassinationCds()
-	if result then
-		return result
-	end
-
-	-- slice_and_dice,if=!buff.slice_and_dice.up&combo_points>=2
-	if energy >= 25 and comboPoints >= 1 and (not buff[AS.SliceAndDice].up and comboPoints >= 2) then
-		return AS.SliceAndDice
-	end
-
-	-- envenom,if=buff.slice_and_dice.up&buff.slice_and_dice.remains<5&combo_points>=4
-	if energy >= 35 and comboPoints >= 1 and (buff[AS.SliceAndDice].up and buff[AS.SliceAndDice].remains < 5 and comboPoints >= 4) then
-		return AS.Envenom
-	end
-
-	-- call_action_list,name=dot
-	result = Rogue:AssassinationDot()
-	if result then
-		return result
-	end
-
-	-- call_action_list,name=direct
-	result = Rogue:AssassinationDirect()
-	if result then
-		return result
-	end
-end
-
-function Rogue:AssassinationCds()
-	local fd = MaxDps.FrameData
-	local cooldown = fd.cooldown
-	local buff = fd.buff
-	local debuff = fd.debuff
-	local talents = fd.talents
-	local targets = fd.targets
-	local stealthed = fd.stealthed
-	local timeToDie = fd.timeToDie
-	local cpMaxSpend = fd.cpMaxSpend
-	local comboPointsDeficit = fd.comboPointsDeficit
-    local energyDeficit = fd.energyDeficit
-
-	local energy = fd.energy
-
-	-- marked_for_death,line_cd=1.5,target_if=min:target.time_to_die,if=raid_event.adds.up&(!variable.single_target|target.time_to_die<30)&(target.time_to_die<combo_points.deficit*1.5|combo_points.deficit>=cp_max_spend)
-	if talents[AS.MarkedForDeath] and cooldown[AS.MarkedForDeath].ready and (( targets > 1 or timeToDie < 30 ) and ( timeToDie < comboPointsDeficit * 1.5 or comboPointsDeficit >= cpMaxSpend )) then
-		return AS.MarkedForDeath
-	end
-
-	-- sepsis,if=!stealthed.rogue&dot.garrote.ticking&(target.time_to_die>10|fight_remains<10)
-	if talents[AS.Sepsis] and cooldown[AS.Sepsis].ready and energy >= 25 and (not stealthed and debuff[AS.Garrote].up and timeToDie > 10) then
-		return AS.Sepsis
-	end
-
-	-- variable,name=deathmark_exsanguinate_condition,value=!talent.exsanguinate|cooldown.exsanguinate.remains>15|exsanguinated.rupture|exsanguinated.garrote
-	local deathmarkExsanguinateCondition = not talents[AS.Exsanguinate] or cooldown[AS.Exsanguinate].remains > 15
-	-- variable,name=deathmark_ma_condition,value=!talent.master_assassin.enabled|dot.garrote.ticking|covenant.venthyr&combo_points.deficit=0
-	local deathmarkMaCondition = (not talents[AS.MasterAssassin] or debuff[AS.Garrote].up) and comboPointsDeficit == 0
-	-- variable,name=deathmark_condition,value=!stealthed.rogue&dot.rupture.ticking&!debuff.deathmark.up&variable.deathmark_exsanguinate_condition&variable.deathmark_ma_condition&variable.deathmark_covenant_condition
-	local deathmarkCondition = not stealthed and debuff[AS.Rupture].up and not debuff[AS.Deathmark].up and deathmarkExsanguinateCondition and deathmarkMaCondition
-
-	-- deathmark,if=variable.deathmark_condition
-	if talents[AS.Deathmark] and cooldown[AS.Deathmark].ready and deathmarkCondition then
-		return AS.Deathmark
-	end
-
-	-- kingsbane,if=(debuff.shiv.up|cooldown.shiv.remains<6)&buff.envenom.up&(cooldown.deathmark.remains>=50|dot.deathmark.ticking)
-	if talents[AS.Kingsbane] and cooldown[AS.Kingsbane].ready and energy >= 35 and (( debuff[AS.Shiv].up or cooldown[AS.Shiv].remains < 6 ) and buff[AS.Envenom].up and ( cooldown[AS.Deathmark].remains >= 50 or debuff[AS.Deathmark].up )) then
-	    return AS.Kingsbane
-	end
-
-	-- exsanguinate,if=!stealthed.rogue&!stealthed.improved_garrote&!dot.deathmark.ticking&(!dot.garrote.refreshable&dot.rupture.remains>4+4*cp_max_spend|dot.rupture.remains*0.5>target.time_to_die)&target.time_to_die>4
-	if talents[AS.Exsanguinate] and cooldown[AS.Exsanguinate].ready and energy >= 25 and (not stealthed and not buff[AS.ImprovedGarroteBuff].up and not debuff[AS.Deathmark].up and ( not debuff[AS.Garrote].refreshable and debuff[AS.Rupture].remains > 4 + 4 * cpMaxSpend or debuff[AS.Rupture].remains * 0.5 > timeToDie ) and timeToDie > 4) then
-	    return AS.Exsanguinate
-	end
-
-	-- shiv,if=talent.kingsbane&!debuff.shiv.up&dot.kingsbane.ticking&dot.garrote.ticking&dot.rupture.ticking&(!talent.crimson_tempest.enabled|variable.single_target|dot.crimson_tempest.ticking)
-	if cooldown[AS.Shiv].ready and energy >= 20 and (talents[AS.Kingsbane] and not debuff[AS.Shiv].up and debuff[AS.Kingsbane].up and debuff[AS.Garrote].up and debuff[AS.Rupture].up and ( not talents[AS.CrimsonTempest] or targets < 2 or debuff[AS.CrimsonTempest].up )) then
-	    return AS.Shiv
-	end
-
-	-- shiv,if=!talent.kingsbane&!covenant.night_fae&!debuff.shiv.up&dot.garrote.ticking&dot.rupture.ticking&(!talent.crimson_tempest.enabled|variable.single_target|dot.crimson_tempest.ticking)
-	if cooldown[AS.Shiv].ready and energy >= 20 and (not talents[AS.Kingsbane] and not debuff[AS.Shiv].up and debuff[AS.Garrote].up and debuff[AS.Rupture].up and ( not talents[AS.CrimsonTempest] or targets < 2 or debuff[AS.CrimsonTempest].up )) then
-	    return AS.Shiv
-	end
-
-	-- thistle_tea,if=energy.deficit>=100&!buff.thistle_tea.up&(charges=3|debuff.deathmark.up|fight_remains<cooldown.deathmark.remains)
-	if talents[AS.ThistleTea] and cooldown[AS.ThistleTea].ready and (energyDeficit >= 100 and not buff[AS.ThistleTea].up and ( cooldown[AS.ThistleTea].charges == 3 or debuff[AS.Deathmark].up or timeToDie < cooldown[AS.Deathmark].remains )) then
-	    return AS.ThistleTea
-	end
-
-	-- indiscriminate_carnage,if=(spell_targets.fan_of_knives>desired_targets|spell_targets.fan_of_knives>1&raid_event.adds.in>60)&(!talent.improved_garrote|cooldown.vanish.remains>45)
-	if talents[AS.IndiscriminateCarnage] and cooldown[AS.IndiscriminateCarnage].ready and (targets > 1 and ( not talents[AS.ImprovedGarrote] or cooldown[AS.Vanish].remains > 45 )) then
-	    return AS.IndiscriminateCarnage
-	end
-
-	-- call_action_list,name=vanish,if=!stealthed.all&master_assassin_remains=0
-	if not stealthed and not buff[AS.MasterAssassinBuff].up then
-        local result = Rogue:AssassinationVanish()
-        if result then
-            return result
-        end
-	end
-end
-
-function Rogue:AssassinationDirect()
-	local fd = MaxDps.FrameData
-	local cooldown = fd.cooldown
-	local buff = fd.buff
-	local debuff = fd.debuff
-	local talents = fd.talents
-	local targets = fd.targets
-	local timeToDie = fd.timeToDie
-	local effectiveComboPoints = fd.effectiveComboPoints
-	local energy = fd.energy
-    local energyDeficit = fd.energyDeficit
-    local energyRegenCombined = fd.energyRegenCombined
-	local comboPoints = fd.comboPoints
-	local comboPointsDeficit = fd.comboPointsDeficit
-	local cpMaxSpend = fd.cpMaxSpend
-	local stealthed = fd.stealthed
-
-	-- envenom,if=effective_combo_points>=4+talent.deeper_stratagem.enabled&(debuff.deathmark.up|debuff.shiv.up|debuff.amplifying_poison.stack>=10|buff.flagellation_buff.up|energy.deficit<=25+energy.regen_combined|!variable.single_target|effective_combo_points>cp_max_spend)&(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2)
-	if energy >= 35
-			and comboPoints >= 1
-			and (
-				effectiveComboPoints >= (4 + (talents[AS.DeeperStratagem] and 1 or 0))
-						and (
-							debuff[AS.Deathmark].up
-									or debuff[AS.Shiv].up
-									or debuff[AS.AmplifyingPoison].count >= 10
-									or (energyDeficit <= 25 + energyRegenCombined)
-									or targets > 1
-									or effectiveComboPoints > cpMaxSpend
-						) and ( not talents[AS.Exsanguinate] or cooldown[AS.Exsanguinate].remains > 2 )
-			)
-	then
-		return AS.Envenom
-	end
-
-    local masterAssassinRemains = buff[AS.MasterAssassinBuff].remains
-
-	-- variable,name=use_filler,value=combo_points.deficit>1|energy.deficit<=25+energy.regen_combined|!variable.single_target
-	local useFiller = comboPointsDeficit > 1 or energyDeficit <= 25 + energyRegenCombined or targets > 1
-
-	-- serrated_bone_spike,if=variable.use_filler&!dot.serrated_bone_spike_dot.ticking
-	if talents[AS.SerratedBoneSpike] and cooldown[AS.SerratedBoneSpike].ready and energy >= 15 and (useFiller and not debuff[AS.SerratedBoneSpikeDot].up) then
-		return AS.SerratedBoneSpike
-	end
-
-	-- serrated_bone_spike,target_if=min:target.time_to_die+(dot.serrated_bone_spike_dot.ticking*600),if=variable.use_filler&!dot.serrated_bone_spike_dot.ticking
-	if talents[AS.SerratedBoneSpike] and cooldown[AS.SerratedBoneSpike].ready and energy >= 15 and (useFiller and not debuff[AS.SerratedBoneSpikeDot].up) then
-		return AS.SerratedBoneSpike
-	end
-
-	-- serrated_bone_spike,if=variable.use_filler&master_assassin_remains<0.8&(fight_remains<=5|cooldown.serrated_bone_spike.max_charges-charges_fractional<=0.25)
-	if talents[AS.SerratedBoneSpike] and cooldown[AS.SerratedBoneSpike].ready and energy >= 15 and (useFiller and masterAssassinRemains < 0.8 and ( timeToDie <= 5 or cooldown[AS.SerratedBoneSpike].maxCharges - cooldown[AS.SerratedBoneSpike].charges <= 0.25 )) then
-	return AS.SerratedBoneSpike
-	end
-
-	-- fan_of_knives,target_if=!dot.deadly_poison_dot.ticking&(!priority_rotation|dot.garrote.ticking|dot.rupture.ticking),if=variable.use_filler&spell_targets.fan_of_knives>=3
-	if energy >= 35 and (useFiller and targets >= 3) then
-	    return AS.FanOfKnives
-	end
-
-	-- echoing_reprimand,if=variable.use_filler&variable.deathmark_cooldown_remains>10
-	if talents[AS.EchoingReprimand] and cooldown[AS.EchoingReprimand].ready and energy >= 10 and (useFiller and cooldown[AS.Deathmark].remains > 10) then
-	    return AS.EchoingReprimand
-	end
-
-	-- ambush,if=variable.use_filler&(master_assassin_remains=0&!runeforge.doomblade|buff.blindside.up)
-	if energy >= 50 and (useFiller and ( masterAssassinRemains == 0 and buff[AS.BlindsideBuff].up )) then
-	    return AS.Ambush
-	end
-
-	-- mutilate,if=variable.use_filler
-	if energy >= 50 and (useFiller) then
-	    return AS.Mutilate
-	end
-end
-
-function Rogue:AssassinationDot()
-	local fd = MaxDps.FrameData
-	local cooldown = fd.cooldown
-	local buff = fd.buff
-	local debuff = fd.debuff
-	local talents = fd.talents
-	local targets = fd.targets
-	local timeToDie = fd.timeToDie
-	local energy = fd.energy
-	local effectiveComboPoints = fd.effectiveComboPoints
-	local comboPoints = fd.comboPoints
-	local comboPointsDeficit = fd.comboPointsDeficit
-	local cpMaxSpend = fd.cpMaxSpend
-	local spellHaste = fd.spellHaste
-	local tickTime = 2 * spellHaste
-	local energyRegenCombined = fd.energyRegenCombined
-	local regenSaturated = fd.regenSaturated
-
-    local masterAssassinRemains = buff[AS.MasterAssassinBuff].remains
-
-	-- variable,name=skip_rupture,value=debuff.deathmark.up&(debuff.shiv.up|master_assassin_remains>0)&dot.rupture.remains>2
-	local skipRupture = debuff[AS.Deathmark].up and ( debuff[AS.Shiv].up or masterAssassinRemains > 0 ) and debuff[AS.Rupture].remains > 2
-
-	-- garrote,if=talent.exsanguinate.enabled&!will_lose_exsanguinate&dot.garrote.pmultiplier<=1&cooldown.exsanguinate.remains<2&spell_targets.fan_of_knives=1&raid_event.adds.in>6&dot.garrote.remains*0.5<target.time_to_die
-	if cooldown[AS.Garrote].ready and energy >= 45 and (talents[AS.Exsanguinate] and cooldown[AS.Exsanguinate].remains < 2 and debuff[AS.Garrote].remains * 0.5 < timeToDie) then
-	    return AS.Garrote
-	end
-
-	-- rupture,if=talent.exsanguinate.enabled&!will_lose_exsanguinate&dot.rupture.pmultiplier<=1&(effective_combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1&dot.rupture.remains*0.5<target.time_to_die)
-	if energy >= 25 and comboPoints >= 1 and (talents[AS.Exsanguinate] and ( effectiveComboPoints >= cpMaxSpend and cooldown[AS.Exsanguinate].remains < 1 and debuff[AS.Rupture].remains * 0.5 < timeToDie )) then
-	    return AS.Rupture
-	end
-
-	-- garrote,if=refreshable&combo_points.deficit>=1&(pmultiplier<=1|remains<=tick_time&spell_targets.fan_of_knives>=3)&(!will_lose_exsanguinate|remains<=tick_time*2&spell_targets.fan_of_knives>=3)&(target.time_to_die-remains)>4&master_assassin_remains=0
-	if cooldown[AS.Garrote].ready and energy >= 45 and (debuff[AS.Garrote].refreshable and comboPointsDeficit >= 1 and ( debuff[AS.Garrote].remains <= tickTime ) and ( debuff[AS.Garrote].remains <= tickTime * 2 ) and ( timeToDie - debuff[AS.Garrote].remains ) > 4 and masterAssassinRemains == 0) then
-	    return AS.Garrote
-	end
-
-	-- crimson_tempest,target_if=min:remains,if=spell_targets>=2&effective_combo_points>=4&energy.regen_combined>20&(!cooldown.deathmark.ready|dot.rupture.ticking)&remains<(2+3*(spell_targets>=4))
-	if talents[AS.CrimsonTempest] and comboPoints >= 1 and energy >= 35 and (effectiveComboPoints >= 4 and energyRegenCombined > 20 and ( not cooldown[AS.Deathmark].ready or debuff[AS.Rupture].up ) and debuff[AS.CrimsonTempest].remains < ( 2 + 3 * ( targets >= 4 and 1 or 0 ) )) then
-		return AS.CrimsonTempest
-	end
-
-	-- rupture,if=!variable.skip_rupture&effective_combo_points>=4&refreshable&(pmultiplier<=1|remains<=tick_time&spell_targets.fan_of_knives>=3)&(!will_lose_exsanguinate|remains<=tick_time*2&spell_targets.fan_of_knives>=3)&target.time_to_die-remains>(4+(runeforge.dashing_scoundrel*5)+(runeforge.doomblade*5)+(variable.regen_saturated*6))
-	if energy >= 25 and comboPoints >= 1 and (not skipRupture and effectiveComboPoints >= 4 and debuff[AS.Rupture].refreshable and ( debuff[AS.Rupture].remains <= tickTime ) and ( debuff[AS.Rupture].remains <= tickTime * 2 ) and timeToDie - debuff[AS.Rupture].remains > ( 4 + ( (regenSaturated and 1 or 0) * 6 ) )) then
-		return AS.Rupture
-	end
-
-	-- crimson_tempest,if=spell_targets>=2&effective_combo_points>=4&remains<2+3*(spell_targets>=4)
-	if talents[AS.CrimsonTempest] and comboPoints >= 1 and energy >= 35 and (effectiveComboPoints >= 4 and debuff[AS.CrimsonTempest].remains < 2 + 3 * ( targets >= 4 and 1 or 0 )) then
-		return AS.CrimsonTempest
-	end
-
-	-- crimson_tempest,if=spell_targets=1&(!runeforge.dashing_scoundrel|rune_word.frost.enabled)&effective_combo_points>=(cp_max_spend-1)&refreshable&!will_lose_exsanguinate&!debuff.shiv.up&debuff.amplifying_poison.stack<15&target.time_to_die-remains>4
-	if talents[AS.CrimsonTempest] and comboPoints >= 1 and energy >= 35 and (effectiveComboPoints >= ( cpMaxSpend - 1 ) and debuff[AS.CrimsonTempest].refreshable and not debuff[AS.Shiv].up and debuff[AS.AmplifyingPoison].count < 15 and timeToDie - debuff[AS.CrimsonTempest].remains > 4) then
-		return AS.CrimsonTempest
-	end
-end
-
-function Rogue:AssassinationStealthed()
-	local fd = MaxDps.FrameData
-	local cooldown = fd.cooldown
-	local buff = fd.buff
-	local debuff = fd.debuff
-	local talents = fd.talents
-	local targets = fd.targets
-	local timeToDie = fd.timeToDie
-	local energy = fd.energy
-
-	-- indiscriminate_carnage,if=spell_targets.fan_of_knives>desired_targets|spell_targets.fan_of_knives>1&raid_event.adds.in>60
-	if talents[AS.IndiscriminateCarnage] and cooldown[AS.IndiscriminateCarnage].ready and (targets > 1) then
-		return AS.IndiscriminateCarnage
-	end
-
-	-- garrote,target_if=min:remains,if=stealthed.improved_garrote&!will_lose_exsanguinate&(remains<12%exsanguinated_rate|pmultiplier<=1)&target.time_to_die-remains>2
-	if cooldown[AS.Garrote].ready and energy >= 45 and (buff[AS.ImprovedGarroteBuff].up and ( debuff[AS.Garrote].refreshable ) and timeToDie - debuff[AS.Garrote].remains > 2) then
-		return AS.Garrote
-	end
-
-	-- garrote,if=talent.exsanguinate.enabled&stealthed.improved_garrote&active_enemies=1&!will_lose_exsanguinate&improved_garrote_remains<1.3
-	if cooldown[AS.Garrote].ready and energy >= 45 and (talents[AS.Exsanguinate] and buff[AS.ImprovedGarroteBuff].up and targets <= 1 and buff[AS.ImprovedGarroteBuff].remains < 1.3) then
-		return AS.Garrote
-	end
-end
-
-function Rogue:AssassinationVanish()
-	local fd = MaxDps.FrameData
-	local cooldown = fd.cooldown
-	local debuff = fd.debuff
-	local talents = fd.talents
-	local targets = fd.targets
-	local comboPoints = fd.comboPoints
-	local comboPointsDeficit = fd.comboPointsDeficit
-
-	-- vanish,if=talent.improved_garrote&cooldown.garrote.up&!exsanguinated.garrote&dot.garrote.pmultiplier<=1&(debuff.deathmark.up|cooldown.deathmark.remains<4)&combo_points.deficit>=(spell_targets.fan_of_knives>?4)
-	if cooldown[AS.Vanish].ready and (talents[AS.ImprovedGarrote] and cooldown[AS.Garrote].up and ( debuff[AS.Deathmark].up or cooldown[AS.Deathmark].remains < 4 ) ) then
-		return AS.Vanish
-	end
-
-	-- vanish,if=talent.improved_garrote&cooldown.garrote.up&!exsanguinated.garrote&dot.garrote.pmultiplier<=1&spell_targets.fan_of_knives>(3-talent.indiscriminate_carnage)&(!talent.indiscriminate_carnage|cooldown.indiscriminate_carnage.ready)
-	if cooldown[AS.Vanish].ready and (talents[AS.ImprovedGarrote] and cooldown[AS.Garrote].up and ( not talents[AS.IndiscriminateCarnage] or cooldown[AS.IndiscriminateCarnage].ready )) then
-		return AS.Vanish
-	end
-
-	-- vanish,if=!talent.improved_garrote&(talent.master_assassin.enabled|runeforge.mark_of_the_master_assassin)&!dot.rupture.refreshable&dot.garrote.remains>3&debuff.deathmark.up&(debuff.shiv.up|debuff.deathmark.remains<4|dot.sepsis.ticking)&dot.sepsis.remains<3
-	if cooldown[AS.Vanish].ready and (not talents[AS.ImprovedGarrote] and talents[AS.MasterAssassin] and not debuff[AS.Rupture].refreshable and debuff[AS.Garrote].remains > 3 and debuff[AS.Deathmark].up and ( debuff[AS.Shiv].up or debuff[AS.Deathmark].remains < 4 or debuff[AS.Sepsis].up ) and debuff[AS.Sepsis].remains < 3) then
-		return AS.Vanish
-	end
-
-	-- shadow_dance,if=talent.improved_garrote&cooldown.garrote.up&!exsanguinated.garrote&dot.garrote.pmultiplier<=1&(debuff.deathmark.up|cooldown.deathmark.remains<4|cooldown.deathmark.remains>60)&combo_points.deficit>=(spell_targets.fan_of_knives>?4)
-	if cooldown[AS.ShadowDance].ready and (talents[AS.ImprovedGarrote] and cooldown[AS.Garrote].up and ( debuff[AS.Deathmark].up or cooldown[AS.Deathmark].remains < 4 or cooldown[AS.Deathmark].remains > 60 ) ) then
-		return AS.ShadowDance
-	end
-
-	-- shadow_dance,if=!talent.improved_garrote&(talent.master_assassin.enabled|runeforge.mark_of_the_master_assassin)&!dot.rupture.refreshable&dot.garrote.remains>3&(debuff.deathmark.up|cooldown.deathmark.remains>60)&(debuff.shiv.up|debuff.deathmark.remains<4|dot.sepsis.ticking)&dot.sepsis.remains<3
-	if cooldown[AS.ShadowDance].ready and (not talents[AS.ImprovedGarrote] and talents[AS.MasterAssassin] and not debuff[AS.Rupture].refreshable and debuff[AS.Garrote].remains > 3 and ( debuff[AS.Deathmark].up or cooldown[AS.Deathmark].remains > 60 ) and ( debuff[AS.Shiv].up or debuff[AS.Deathmark].remains < 4 or debuff[AS.Sepsis].up ) and debuff[AS.Sepsis].remains < 3) then
-		return AS.ShadowDance
-	end
 end
 
 
 function Rogue:PoisonedBleeds(timeShift)
 	local poisoned = 0
-	local debuff = MaxDps.FrameData.debuff
-
 	local usedNamePlates = false
-
 	for i, frame in pairs(C_NamePlate.GetNamePlates()) do
 		usedNamePlates = true
 		local unit = frame.UnitFrame.unit
-
 		if frame:IsVisible() then
-			MaxDps:CollectAura(unit, timeShift, debuff, 'PLAYER|HARMFUL')
-
-			if debuff[AS.DeadlyPoisonDot].up then
-				poisoned = poisoned +
-						debuff[AS.Rupture].count +
-						debuff[AS.MutilatedFlesh].count +
-						debuff[AS.SerratedBoneSpike].count +
-						debuff[AS.Garrote].count +
-						debuff[AS.InternalBleeding].count
-			end
+			--MaxDps:CollectAura(unit, timeShift, debuff, 'PLAYER|HARMFUL')
+			--if debuff[classtable.DeadlyPoisonDot].up then
+			--	poisoned = poisoned +
+			--			debuff[classtable.Rupture].count +
+			--			debuff[classtable.MutilatedFlesh].count +
+			--			debuff[classtable.SerratedBoneSpike].count +
+			--			debuff[classtable.Garrote].count +
+			--			debuff[classtable.InternalBleeding].count
+			--end
+            if debuff[classtable.DeadlyPoisonDot].up then
+                for index=0,40 do
+                    local auraData = C_UnitAuras.GetAuraDataBySlot(unit, index)
+                    if auraData then
+                        if (auraData.spellId == classtable.Rupture or
+                            auraData.spellId == classtable.MutilatedFlesh or
+                            auraData.spellId == classtable.SerratedBoneSpike or
+                            auraData.spellId == classtable.Garrote or
+                            auraData.spellId == classtable.InternalBleeding
+                        ) then
+                            poisoned = poisoned + 1
+                        end
+                    end
+                end
+            end
 		end
 	end
-
 	if not usedNamePlates then
-		poisoned = debuff[AS.Rupture].count +
-				debuff[AS.MutilatedFlesh].count +
-				debuff[AS.SerratedBoneSpike].count +
-				debuff[AS.Garrote].count +
-				debuff[AS.InternalBleeding].count
+		poisoned = debuff[classtable.Rupture].count +
+				debuff[classtable.MutilatedFlesh].count +
+				debuff[classtable.SerratedBoneSpike].count +
+				debuff[classtable.Garrote].count +
+				debuff[classtable.InternalBleeding].count
 	end
-
 	return poisoned
+end
+
+
+local function PreCombatUpdate()
+end
+
+function Assassination:precombat()
+    --if (MaxDps:FindSpell(classtable.ApplyPoison) and CheckSpellCosts(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
+    --    return classtable.ApplyPoison
+    --end
+    --if (MaxDps:FindSpell(classtable.Flask) and CheckSpellCosts(classtable.Flask, 'Flask')) and cooldown[classtable.Flask].ready then
+    --    return classtable.Flask
+    --end
+    --if (MaxDps:FindSpell(classtable.Augmentation) and CheckSpellCosts(classtable.Augmentation, 'Augmentation')) and cooldown[classtable.Augmentation].ready then
+    --    return classtable.Augmentation
+    --end
+    --if (MaxDps:FindSpell(classtable.Food) and CheckSpellCosts(classtable.Food, 'Food')) and cooldown[classtable.Food].ready then
+    --    return classtable.Food
+    --end
+    --if (MaxDps:FindSpell(classtable.SnapshotStats) and CheckSpellCosts(classtable.SnapshotStats, 'SnapshotStats')) and cooldown[classtable.SnapshotStats].ready then
+    --    return classtable.SnapshotStats
+    --end
+    --if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
+    --    return classtable.Stealth
+    --end
+    --if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and cooldown[classtable.SliceandDice].ready then
+    --    return classtable.SliceandDice
+    --end
+end
+function Assassination:cds()
+    deathmark_ma_condition = not talents[classtable.MasterAssassin] or debuff[classtable.GarroteDeBuff].up
+    deathmark_kingsbane_condition = not talents[classtable.Kingsbane] or cooldown[classtable.Kingsbane].remains <= 2
+    deathmark_condition = not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and debuff[classtable.RuptureDeBuff].up and buff[classtable.EnvenomBuff].up and not debuff[classtable.DeathmarkDeBuff].up and deathmark_ma_condition and deathmark_kingsbane_condition
+    if (MaxDps:FindSpell(classtable.Sepsis) and CheckSpellCosts(classtable.Sepsis, 'Sepsis') and talents[classtable.Sepsis]) and (debuff[classtable.RuptureDeBuff].remains >20 and ( not talents[classtable.ImprovedGarrote] and debuff[classtable.GarroteDeBuff].up or talents[classtable.ImprovedGarrote] and cooldown[classtable.Garrote].up and debuff[classtable.GarroteDeBuff].remains <= 1 ) and ( ttd >10 or ttd <10 )) and cooldown[classtable.Sepsis].ready then
+        return classtable.Sepsis
+    end
+    local itemsCheck = Assassination:items()
+    if itemsCheck then
+        return itemsCheck
+    end
+    if (MaxDps:FindSpell(classtable.Deathmark) and CheckSpellCosts(classtable.Deathmark, 'Deathmark')) and (deathmark_condition or ttd <= 20) and cooldown[classtable.Deathmark].ready then
+        return classtable.Deathmark
+    end
+    local shivCheck = Assassination:shiv()
+    if shivCheck then
+        return shivCheck
+    end
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (talents[classtable.Kingsbane] and buff[classtable.EnvenomBuff].up and ( cooldown[classtable.Deathmark].remains >= 50 or deathmark_condition )) and cooldown[classtable.ShadowDance].ready then
+        return classtable.ShadowDance
+    end
+    if (MaxDps:FindSpell(classtable.Kingsbane) and CheckSpellCosts(classtable.Kingsbane, 'Kingsbane') and talents[classtable.Kingsbane]) and (( debuff[classtable.ShivDeBuff].up or cooldown[classtable.Shiv].remains <6 ) and buff[classtable.EnvenomBuff].up and ( cooldown[classtable.Deathmark].remains >= 50 or debuff[classtable.DeathmarkDeBuff].up ) or ttd <= 15) and cooldown[classtable.Kingsbane].ready then
+        return classtable.Kingsbane
+    end
+    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (not buff[classtable.ThistleTeaBuff].up and ( EnergyDeficit >= 100 + EnergyRegenCombined and ( not talents[classtable.Kingsbane] or cooldown[classtable.ThistleTea].charges >= 2 ) or ( debuff[classtable.KingsbaneDeBuff].up and debuff[classtable.KingsbaneDeBuff].remains <6 or not talents[classtable.Kingsbane] and debuff[classtable.DeathmarkDeBuff].up ) or ttd <cooldown[classtable.ThistleTea].charges * 6 )) and cooldown[classtable.ThistleTea].ready then
+        return classtable.ThistleTea
+    end
+    local misc_cdsCheck = Assassination:misc_cds()
+    if misc_cdsCheck then
+        return misc_cdsCheck
+    end
+    if (not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and buff[classtable.MasterAssassin].remains == 0) then
+        local vanishCheck = Assassination:vanish()
+        if vanishCheck then
+            return Assassination:vanish()
+        end
+    end
+    if (MaxDps:FindSpell(classtable.ColdBlood) and CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (ComboPoints >= 4) and cooldown[classtable.ColdBlood].ready then
+        return classtable.ColdBlood
+    end
+end
+function Assassination:direct()
+    if (MaxDps:FindSpell(classtable.Envenom) and CheckSpellCosts(classtable.Envenom, 'Envenom')) and (calculateEffectiveComboPoints(ComboPoints) >= 4 + (cooldown[classtable.Deathmark].ready and 1 or 0) and ( not_pooling or debuff[classtable.AmplifyingPoisonDeBuff].count >= 20 or calculateEffectiveComboPoints(ComboPoints) >ComboPointsMax or not single_target )) and cooldown[classtable.Envenom].ready then
+        return classtable.Envenom
+    end
+    use_filler = ComboPointsDeficit >1 or not_pooling or not single_target
+    if (MaxDps:FindSpell(classtable.Mutilate) and CheckSpellCosts(classtable.Mutilate, 'Mutilate')) and (talents[classtable.CausticSpatter] and debuff[classtable.RuptureDeBuff].up and ( not debuff[classtable.CausticSpatterDeBuff].up or debuff[classtable.CausticSpatterDeBuff].remains <= 2 ) and use_filler and not single_target) and cooldown[classtable.Mutilate].ready then
+        return classtable.Mutilate
+    end
+    if (MaxDps:FindSpell(classtable.Ambush) and CheckSpellCosts(classtable.Ambush, 'Ambush')) and (talents[classtable.CausticSpatter] and debuff[classtable.RuptureDeBuff].up and ( not debuff[classtable.CausticSpatterDeBuff].up or debuff[classtable.CausticSpatterDeBuff].remains <= 2 ) and use_filler and not single_target) and cooldown[classtable.Ambush].ready then
+        return classtable.Ambush
+    end
+    if (MaxDps:FindSpell(classtable.SerratedBoneSpike) and CheckSpellCosts(classtable.SerratedBoneSpike, 'SerratedBoneSpike')) and (use_filler and not debuff[classtable.SerratedBoneSpikeDebuffDeBuff].up) and cooldown[classtable.SerratedBoneSpike].ready then
+        return classtable.SerratedBoneSpike
+    end
+    if (MaxDps:FindSpell(classtable.SerratedBoneSpike) and CheckSpellCosts(classtable.SerratedBoneSpike, 'SerratedBoneSpike')) and (use_filler and not debuff[classtable.SerratedBoneSpikeDebuffDeBuff].up) and cooldown[classtable.SerratedBoneSpike].ready then
+        return classtable.SerratedBoneSpike
+    end
+    if (MaxDps:FindSpell(classtable.SerratedBoneSpike) and CheckSpellCosts(classtable.SerratedBoneSpike, 'SerratedBoneSpike')) and (use_filler and buff[classtable.MasterAssassin].remains <0.8 and ( ttd <= 5 or cooldown[classtable.SerratedBoneSpike].maxCharges - cooldown[classtable.SerratedBoneSpike].charges <= 0.25 )) and cooldown[classtable.SerratedBoneSpike].ready then
+        return classtable.SerratedBoneSpike
+    end
+    if (MaxDps:FindSpell(classtable.SerratedBoneSpike) and CheckSpellCosts(classtable.SerratedBoneSpike, 'SerratedBoneSpike')) and (use_filler and buff[classtable.MasterAssassin].remains <0.8 and not single_target and debuff[classtable.ShivDeBuff].up) and cooldown[classtable.SerratedBoneSpike].ready then
+        return classtable.SerratedBoneSpike
+    end
+    if (MaxDps:FindSpell(classtable.EchoingReprimand) and CheckSpellCosts(classtable.EchoingReprimand, 'EchoingReprimand')) and (use_filler or ttd <20) and cooldown[classtable.EchoingReprimand].ready then
+        return classtable.EchoingReprimand
+    end
+    if (MaxDps:FindSpell(classtable.FanofKnives) and CheckSpellCosts(classtable.FanofKnives, 'FanofKnives')) and (use_filler and ( targets >= 2 + (IsStealthed() or buff[classtable.ShadowDanceBuff].up and 1 or 0) + (talents[classtable.DragontemperedBlades] and 1 or 0) )) and cooldown[classtable.FanofKnives].ready then
+        return classtable.FanofKnives
+    end
+    if (MaxDps:FindSpell(classtable.FanofKnives) and CheckSpellCosts(classtable.FanofKnives, 'FanofKnives')) and (use_filler and targets >= 3) and cooldown[classtable.FanofKnives].ready then
+        return classtable.FanofKnives
+    end
+    if (MaxDps:FindSpell(classtable.Ambush) and CheckSpellCosts(classtable.Ambush, 'Ambush')) and (use_filler and ( buff[classtable.BlindsideBuff].up or buff[classtable.SepsisBuffBuff].remains <= 1 or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) ) and ( not debuff[classtable.KingsbaneDeBuff].up or not debuff[classtable.DeathmarkDeBuff].up or buff[classtable.BlindsideBuff].up )) and cooldown[classtable.Ambush].ready then
+        return classtable.Ambush
+    end
+    if (MaxDps:FindSpell(classtable.Mutilate) and CheckSpellCosts(classtable.Mutilate, 'Mutilate')) and (use_filler and targets == 2) and cooldown[classtable.Mutilate].ready then
+        return classtable.Mutilate
+    end
+    if (MaxDps:FindSpell(classtable.Mutilate) and CheckSpellCosts(classtable.Mutilate, 'Mutilate')) and (use_filler) and cooldown[classtable.Mutilate].ready then
+        return classtable.Mutilate
+    end
+end
+function Assassination:dot()
+    scent_effective_max_stacks = ( targets * (talents[classtable.ScentofBlood] and 1 or 0) * 2 )
+    scent_saturation = buff[classtable.ScentofBloodBuff].count >= (scent_effective_max_stacks and 1 or 0)
+    if (MaxDps:FindSpell(classtable.CrimsonTempest) and CheckSpellCosts(classtable.CrimsonTempest, 'CrimsonTempest') and talents[classtable.CrimsonTempest]) and (targets >= 3 + (MaxDps.tier and MaxDps.tier[31].count >= 4) and debuff[classtable.CrimsonTempest].refreshable and debuff[classtable.CrimsonTempest].remains <= 1 and calculateEffectiveComboPoints(ComboPoints) >= 4 and EnergyRegenCombined >25 and not cooldown[classtable.Deathmark].ready and ttd - buff[classtable.CrimsonTempest].remains >6) and cooldown[classtable.CrimsonTempest].ready then
+        return classtable.CrimsonTempest
+    end
+    if (MaxDps:FindSpell(classtable.Garrote) and CheckSpellCosts(classtable.Garrote, 'Garrote')) and (ComboPointsDeficit >= 1 and ( debuff[classtable.Garrote].remains <= 1 ) and debuff[classtable.Garrote].refreshable and ttd - debuff[classtable.Garrote].remains >12) and cooldown[classtable.Garrote].ready then
+        return classtable.Garrote
+    end
+    if (MaxDps:FindSpell(classtable.Garrote) and CheckSpellCosts(classtable.Garrote, 'Garrote')) and (ComboPointsDeficit >= 1 and ( debuff[classtable.Garrote].remains <= 1 ) and debuff[classtable.Garrote].refreshable and not regen_saturated and targets >= 2 and ttd - debuff[classtable.Garrote].remains >12) and cooldown[classtable.Garrote].ready then
+        return classtable.Garrote
+    end
+    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (calculateEffectiveComboPoints(ComboPoints) >= 4 and ( debuff[classtable.Rupture].remains <= 1 ) and debuff[classtable.Rupture].refreshable and ttd - debuff[classtable.Rupture].remains >( 4 + ( (talents[classtable.DashingScoundrel] and 1 or 0) * 5 ) + ( regen_saturated and 1 or 0 * 6 ) )) and cooldown[classtable.Rupture].ready then
+        return classtable.Rupture
+    end
+    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (calculateEffectiveComboPoints(ComboPoints) >= 4 and ( debuff[classtable.Rupture].remains <= 1 ) and debuff[classtable.Rupture].refreshable and ( not regen_saturated or not scent_saturation ) and ttd - debuff[classtable.Rupture].remains >( 4 + ( (talents[classtable.DashingScoundrel] and 1 or 0) * 5 ) + ( regen_saturated and 1 or 0 * 6 ) )) and cooldown[classtable.Rupture].ready then
+        return classtable.Rupture
+    end
+    if (MaxDps:FindSpell(classtable.Garrote) and CheckSpellCosts(classtable.Garrote, 'Garrote')) and (debuff[classtable.Garrote].refreshable and ComboPointsDeficit >= 1 and ( debuff[classtable.Garrote].remains <= 1 or debuff[classtable.Garrote].remains <= debuff[classtable.Garrote].duration and targets >= 3 ) and ( debuff[classtable.Garrote].remains <= debuff[classtable.Garrote].duration * 2 and targets >= 3 ) and ( ttd - debuff[classtable.Garrote].remains ) >4 and buff[classtable.MasterAssassin].remains == 0) and cooldown[classtable.Garrote].ready then
+        return classtable.Garrote
+    end
+end
+function Assassination:items()
+end
+function Assassination:misc_cds()
+    --if (MaxDps:FindSpell(classtable.Potion) and CheckSpellCosts(classtable.Potion, 'Potion')) and (MaxDps:Bloodlust() or ttd <30 or debuff[classtable.DeathmarkDeBuff].up) and cooldown[classtable.Potion].ready then
+    --    return classtable.Potion
+    --end
+end
+function Assassination:shiv()
+    if (MaxDps:FindSpell(classtable.Shiv) and CheckSpellCosts(classtable.Shiv, 'Shiv')) and (talents[classtable.Kingsbane] and not talents[classtable.LightweightShiv] and buff[classtable.EnvenomBuff].up and not debuff[classtable.ShivDeBuff].up and debuff[classtable.GarroteDeBuff].up and debuff[classtable.RuptureDeBuff].up and ( debuff[classtable.KingsbaneDeBuff].up and debuff[classtable.KingsbaneDeBuff].remains <8 or cooldown[classtable.Kingsbane].remains >= 24 ) and ( not talents[classtable.CrimsonTempest] or single_target or debuff[classtable.CrimsonTempestDeBuff].up ) or ttd <= cooldown[classtable.Shiv].charges * 8) and cooldown[classtable.Shiv].ready then
+        return classtable.Shiv
+    end
+    if (MaxDps:FindSpell(classtable.Shiv) and CheckSpellCosts(classtable.Shiv, 'Shiv')) and (talents[classtable.Kingsbane] and talents[classtable.LightweightShiv] and buff[classtable.EnvenomBuff].up and not debuff[classtable.ShivDeBuff].up and debuff[classtable.GarroteDeBuff].up and debuff[classtable.RuptureDeBuff].up and ( debuff[classtable.KingsbaneDeBuff].up or cooldown[classtable.Kingsbane].remains <= 1 ) or ttd <= cooldown[classtable.Shiv].charges * 8) and cooldown[classtable.Shiv].ready then
+        return classtable.Shiv
+    end
+    if (MaxDps:FindSpell(classtable.Shiv) and CheckSpellCosts(classtable.Shiv, 'Shiv')) and (talents[classtable.ArterialPrecision] and not debuff[classtable.ShivDeBuff].up and debuff[classtable.GarroteDeBuff].up and debuff[classtable.RuptureDeBuff].up and debuff[classtable.DeathmarkDeBuff].up or ttd <= cooldown[classtable.Shiv].charges * 8) and cooldown[classtable.Shiv].ready then
+        return classtable.Shiv
+    end
+    if (MaxDps:FindSpell(classtable.Shiv) and CheckSpellCosts(classtable.Shiv, 'Shiv')) and (talents[classtable.Sepsis] and not talents[classtable.Kingsbane] and not talents[classtable.ArterialPrecision] and not debuff[classtable.ShivDeBuff].up and debuff[classtable.GarroteDeBuff].up and debuff[classtable.RuptureDeBuff].up and ( ( cooldown[classtable.Shiv].charges >0.9 + talents[classtable.LightweightShiv] and sepsis_sync_remains >5 ) or debuff[classtable.SepsisDeBuff].up or debuff[classtable.DeathmarkDeBuff].up or ttd <= cooldown[classtable.Shiv].charges * 8 )) and cooldown[classtable.Shiv].ready then
+        return classtable.Shiv
+    end
+    if (MaxDps:FindSpell(classtable.Shiv) and CheckSpellCosts(classtable.Shiv, 'Shiv')) and (not talents[classtable.Kingsbane] and not talents[classtable.ArterialPrecision] and not talents[classtable.Sepsis] and not debuff[classtable.ShivDeBuff].up and debuff[classtable.GarroteDeBuff].up and debuff[classtable.RuptureDeBuff].up and ( not talents[classtable.CrimsonTempest] or single_target or debuff[classtable.CrimsonTempestDeBuff].up ) or ttd <= cooldown[classtable.Shiv].charges * 8) and cooldown[classtable.Shiv].ready then
+        return classtable.Shiv
+    end
+end
+function Assassination:stealthed()
+    --if (MaxDps:FindSpell(classtable.PoolResource) and CheckSpellCosts(classtable.PoolResource, 'PoolResource')) and cooldown[classtable.PoolResource].ready then
+    --    return classtable.PoolResource
+    --end
+    if (MaxDps:FindSpell(classtable.Shiv) and CheckSpellCosts(classtable.Shiv, 'Shiv')) and (talents[classtable.Kingsbane] and ( debuff[classtable.KingsbaneDeBuff].up or cooldown[classtable.Kingsbane].up ) and ( not debuff[classtable.ShivDeBuff].up and debuff[classtable.ShivDeBuff].remains <1 ) and buff[classtable.EnvenomBuff].up) and cooldown[classtable.Shiv].ready then
+        return classtable.Shiv
+    end
+    if (MaxDps:FindSpell(classtable.Kingsbane) and CheckSpellCosts(classtable.Kingsbane, 'Kingsbane') and talents[classtable.Kingsbane]) and (buff[classtable.ShadowDanceBuff].remains >= 2 and buff[classtable.EnvenomBuff].up) and cooldown[classtable.Kingsbane].ready then
+        return classtable.Kingsbane
+    end
+    if (MaxDps:FindSpell(classtable.Envenom) and CheckSpellCosts(classtable.Envenom, 'Envenom')) and (calculateEffectiveComboPoints(ComboPoints) >= 4 and debuff[classtable.KingsbaneDeBuff].up and buff[classtable.EnvenomBuff].remains <= 3) and cooldown[classtable.Envenom].ready then
+        return classtable.Envenom
+    end
+    if (MaxDps:FindSpell(classtable.Envenom) and CheckSpellCosts(classtable.Envenom, 'Envenom')) and (calculateEffectiveComboPoints(ComboPoints) >= 4 and buff[classtable.MasterAssassinAuraBuff].up and not buff[classtable.ShadowDanceBuff].up and single_target) and cooldown[classtable.Envenom].ready then
+        return classtable.Envenom
+    end
+    if (MaxDps:FindSpell(classtable.CrimsonTempest) and CheckSpellCosts(classtable.CrimsonTempest, 'CrimsonTempest') and talents[classtable.CrimsonTempest]) and (targets >= 3 + (MaxDps.tier and MaxDps.tier[31].count >= 4) and debuff[classtable.CrimsonTempest].refreshable and calculateEffectiveComboPoints(ComboPoints) >= 4 and not cooldown[classtable.Deathmark].ready and ttd - buff[classtable.CrimsonTempest].remains >6) and cooldown[classtable.CrimsonTempest].ready then
+        return classtable.CrimsonTempest
+    end
+    if (MaxDps:FindSpell(classtable.Garrote) and CheckSpellCosts(classtable.Garrote, 'Garrote')) and ((IsStealthed() or buff[classtable.ShadowDanceBuff].up) and ( debuff[classtable.Garrote].remains <( 12 - buff[classtable.SepsisBuffBuff].remains ) or debuff[classtable.Garrote].remains <= 1 or ( buff[classtable.IndiscriminateCarnageBuff].up and debuff[classtable.Garrote].count <targets ) ) and not single_target and ttd - debuff[classtable.Garrote].remains >2) and cooldown[classtable.Garrote].ready then
+        return classtable.Garrote
+    end
+    if (MaxDps:FindSpell(classtable.Garrote) and CheckSpellCosts(classtable.Garrote, 'Garrote')) and ((IsStealthed() or buff[classtable.ShadowDanceBuff].up) and ( debuff[classtable.Garrote].remains <= 1 or debuff[classtable.Garrote].remains <14 or not single_target and buff[classtable.MasterAssassinAuraBuff].remains <3 ) and ComboPointsDeficit >= 1 + 2 * talents[classtable.ShroudedSuffocation]) and cooldown[classtable.Garrote].ready then
+        return classtable.Garrote
+    end
+    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (calculateEffectiveComboPoints(ComboPoints) >= 4 and ( debuff[classtable.Rupture].remains <= 1 ) and ( buff[classtable.ShadowDanceBuff].up or debuff[classtable.DeathmarkDeBuff].up )) and cooldown[classtable.Rupture].ready then
+        return classtable.Rupture
+    end
+end
+function Assassination:vanish()
+    --if (MaxDps:FindSpell(classtable.PoolResource) and CheckSpellCosts(classtable.PoolResource, 'PoolResource')) and cooldown[classtable.PoolResource].ready then
+    --    return classtable.PoolResource
+    --end
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not talents[classtable.Kingsbane] and talents[classtable.ImprovedGarrote] and cooldown[classtable.Garrote].up and ( debuff[classtable.GarroteDeBuff].remains <= 1 or debuff[classtable.GarroteDeBuff].refreshable ) and ( debuff[classtable.DeathmarkDeBuff].up or cooldown[classtable.Deathmark].remains <12 or cooldown[classtable.Deathmark].remains >60 ) and ComboPointsDeficit >= ( targets >4 )) and cooldown[classtable.ShadowDance].ready then
+        return classtable.ShadowDance
+    end
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not talents[classtable.Kingsbane] and not talents[classtable.ImprovedGarrote] and talents[classtable.MasterAssassin] and not debuff[classtable.RuptureDeBuff].refreshable and debuff[classtable.GarroteDeBuff].remains >3 and ( debuff[classtable.DeathmarkDeBuff].up or cooldown[classtable.Deathmark].remains >60 ) and ( debuff[classtable.ShivDeBuff].up or debuff[classtable.DeathmarkDeBuff].remains <4 or debuff[classtable.SepsisDeBuff].up ) and debuff[classtable.SepsisDeBuff].remains <3) and cooldown[classtable.ShadowDance].ready then
+        return classtable.ShadowDance
+    end
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not talents[classtable.MasterAssassin] and not talents[classtable.IndiscriminateCarnage] and talents[classtable.ImprovedGarrote] and cooldown[classtable.Garrote].up and ( debuff[classtable.GarroteDeBuff].remains <= 1 or debuff[classtable.GarroteDeBuff].refreshable ) and ( debuff[classtable.DeathmarkDeBuff].up or cooldown[classtable.Deathmark].remains <4 ) and ComboPointsDeficit >= ( targets >4 )) and cooldown[classtable.Vanish].ready then
+        return classtable.Vanish
+    end
+    --if (MaxDps:FindSpell(classtable.PoolResource) and CheckSpellCosts(classtable.PoolResource, 'PoolResource')) and cooldown[classtable.PoolResource].ready then
+    --    return classtable.PoolResource
+    --end
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not talents[classtable.MasterAssassin] and talents[classtable.IndiscriminateCarnage] and talents[classtable.ImprovedGarrote] and cooldown[classtable.Garrote].up and ( debuff[classtable.GarroteDeBuff].remains <= 1 or debuff[classtable.GarroteDeBuff].refreshable ) and targets >2) and cooldown[classtable.Vanish].ready then
+        return classtable.Vanish
+    end
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (talents[classtable.MasterAssassin] and talents[classtable.Kingsbane] and debuff[classtable.KingsbaneDeBuff].remains <= 3 and debuff[classtable.KingsbaneDeBuff].up and debuff[classtable.DeathmarkDeBuff].remains <= 3 and debuff[classtable.DeathmarkDeBuff].up) and cooldown[classtable.Vanish].ready then
+        return classtable.Vanish
+    end
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not talents[classtable.ImprovedGarrote] and talents[classtable.MasterAssassin] and not debuff[classtable.RuptureDeBuff].refreshable and debuff[classtable.GarroteDeBuff].remains >3 and debuff[classtable.DeathmarkDeBuff].up and ( debuff[classtable.ShivDeBuff].up or debuff[classtable.DeathmarkDeBuff].remains <4 or debuff[classtable.SepsisDeBuff].up ) and debuff[classtable.SepsisDeBuff].remains <3) and cooldown[classtable.Vanish].ready then
+        return classtable.Vanish
+    end
+end
+
+function Rogue:Assassination()
+    fd = MaxDps.FrameData
+    ttd = (fd.timeToDie and fd.timeToDie) or 500
+    gcd = fd.gcd
+    cooldown = fd.cooldown
+    buff = fd.buff
+    debuff = fd.debuff
+    talents = fd.talents
+    targets = MaxDps:SmartAoe()
+    Mana = UnitPower('player', ManaPT)
+    ManaMax = UnitPowerMax('player', ManaPT)
+    ManaDeficit = ManaMax - Mana
+    targetHP = UnitHealth('target')
+    targetmaxHP = UnitHealthMax('target')
+    targethealthPerc = (targetHP / targetmaxHP) * 100
+    curentHP = UnitHealth('player')
+    maxHP = UnitHealthMax('player')
+    healthPerc = (curentHP / maxHP) * 100
+    timeInCombat = MaxDps.combatTime or 0
+    classtable = MaxDps.SpellTable
+    SpellHaste = UnitSpellHaste('target')
+    SpellCrit = GetCritChance()
+    Energy = UnitPower('player', EnergyPT)
+    EnergyMax = UnitPowerMax('player', EnergyPT)
+    EnergyDeficit = EnergyMax - Energy
+    EnergyRegen = GetPowerRegenForPowerType(Enum.PowerType.Energy)
+    EnergyTimeToMax = EnergyDeficit / EnergyRegen
+    EnergyPerc = (Energy / EnergyMax) * 100
+    ComboPoints = UnitPower('player', ComboPointsPT)
+    ComboPointsMax = UnitPowerMax('player', ComboPointsPT)
+    ComboPointsDeficit = ComboPointsMax - ComboPoints
+    PoisonedBleeds = Rogue:PoisonedBleeds(1)
+    EnergyRegenCombined = EnergyRegen + PoisonedBleeds * 7 % (2 * SpellHaste)
+    classtable.GarroteDeBuff = 703
+    classtable.RuptureDeBuff = 1943
+    classtable.EnvenomBuff = 32645
+    classtable.DeathmarkDeBuff = 360194
+    classtable.ShivDeBuff = 319504
+    classtable.ThistleTeaBuff = 381623
+    classtable.KingsbaneDeBuff = 385627
+    classtable.AmplifyingPoisonDeBuff = 383414
+    classtable.CausticSpatterDeBuff = 421976
+    classtable.SerratedBoneSpikeDebuffDeBuff = 394036 --
+    classtable.BlindsideBuff = 121153
+    classtable.SepsisBuffBuff = 375939 --
+    classtable.ScentofBloodBuff = 394080 --
+    classtable.CrimsonTempestDeBuff = 121411
+    classtable.SepsisDeBuff = 385408 --
+    classtable.ShadowDanceBuff = 185422
+    classtable.MasterAssassinAuraBuff = 256735
+    classtable.IndiscriminateCarnageBuff = 385754 --385747
+    classtable.SliceandDiceBuff = 315496
+    PreCombatUpdate()
+    if ((IsStealthed() or buff[classtable.ShadowDanceBuff].up or buff[classtable.BlindsideBuff].up)) then
+        classtable.Ambush = 430023
+    else
+        classtable.Ambush = 8676
+    end
+
+    --if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
+    --    return classtable.Stealth
+    --end
+    --if (MaxDps:FindSpell(classtable.Kick) and CheckSpellCosts(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
+    --    return classtable.Kick
+    --end
+    single_target = targets <2
+    regen_saturated = EnergyRegenCombined >35
+    if (MaxDps.tier and MaxDps.tier[31].count >= 4) then
+        not_pooling = ( debuff[classtable.DeathmarkDeBuff].up or debuff[classtable.KingsbaneDeBuff].up or buff[classtable.ShadowDanceBuff].up or debuff[classtable.ShivDeBuff].up or cooldown[classtable.ThistleTea].fullRecharge <20 ) or ( buff[classtable.EnvenomBuff].up and buff[classtable.EnvenomBuff].remains <= 2 ) or EnergyPerc >= 80 or ttd <= 90
+    end
+    if not (MaxDps.tier and MaxDps.tier[31].count >= 4) then
+        not_pooling = ( debuff[classtable.DeathmarkDeBuff].up or debuff[classtable.KingsbaneDeBuff].up or buff[classtable.ShadowDanceBuff].up or debuff[classtable.ShivDeBuff].up or cooldown[classtable.ThistleTea].fullRecharge <20 ) or EnergyPerc >= 80
+    end
+    if cooldown[classtable.Deathmark].remains >cooldown[classtable.Sepsis].remains and cooldown[classtable.Deathmark].remains <ttd then
+        sepsis_sync_remains = cooldown[classtable.Deathmark].remains
+    else
+        sepsis_sync_remains = cooldown[classtable.Sepsis].remains
+    end
+    if ((IsStealthed() or buff[classtable.ShadowDanceBuff].up) or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) or buff[classtable.MasterAssassin].remains >0) then
+        local stealthedCheck = Assassination:stealthed()
+        if stealthedCheck then
+            return Assassination:stealthed()
+        end
+    end
+    local cdsCheck = Assassination:cds()
+    if cdsCheck then
+        return cdsCheck
+    end
+    if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and (not buff[classtable.SliceandDiceBuff].up and debuff[classtable.RuptureDeBuff].up and ComboPoints >= 2 or not talents[classtable.CutTotheChase] and buff[classtable.SliceandDiceBuff].refreshable and ComboPoints >= 4) and cooldown[classtable.SliceandDice].ready then
+        return classtable.SliceandDice
+    end
+    if (MaxDps:FindSpell(classtable.Envenom) and CheckSpellCosts(classtable.Envenom, 'Envenom')) and (talents[classtable.CutTotheChase] and buff[classtable.SliceandDiceBuff].up and buff[classtable.SliceandDiceBuff].remains <5 and ComboPoints >= 4) and cooldown[classtable.Envenom].ready then
+        return classtable.Envenom
+    end
+    local dotCheck = Assassination:dot()
+    if dotCheck then
+        return dotCheck
+    end
+    local directCheck = Assassination:direct()
+    if directCheck then
+        return directCheck
+    end
+    if (MaxDps:FindSpell(classtable.ArcanePulse) and CheckSpellCosts(classtable.ArcanePulse, 'ArcanePulse')) and cooldown[classtable.ArcanePulse].ready then
+        return classtable.ArcanePulse
+    end
+    local itemsCheck = Assassination:items()
+    if itemsCheck then
+        return itemsCheck
+    end
+    local shivCheck = Assassination:shiv()
+    if shivCheck then
+        return shivCheck
+    end
+    local misc_cdsCheck = Assassination:misc_cds()
+    if misc_cdsCheck then
+        return misc_cdsCheck
+    end
+    if (not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and buff[classtable.MasterAssassin].remains == 0) then
+        local vanishCheck = Assassination:vanish()
+        if vanishCheck then
+            return Assassination:vanish()
+        end
+    end
+
 end
