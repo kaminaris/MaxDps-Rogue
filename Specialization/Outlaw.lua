@@ -72,6 +72,8 @@ local blade_flurry_sync
 local vanish_opportunity_condition
 local shadow_dance_condition
 
+local Outlaw = {}
+
 local function CheckSpellCosts(spell,spellstring)
     --if MaxDps.learnedSpells[spell] == nil then
     --	return false
