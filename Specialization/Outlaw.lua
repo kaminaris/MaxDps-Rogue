@@ -132,7 +132,7 @@ local function calculateEffectiveComboPoints(comboPoints)
 	if comboPoints > 1 and comboPoints < 6 then
 		local aura = echoingReprimandUp(comboPoints)
 		if aura then
-			return aura.cp
+			return ComboPointsMax
 		end
 	end
 	return comboPoints
