@@ -132,7 +132,7 @@ local function calculateEffectiveComboPoints(comboPoints)
 	if comboPoints > 1 and comboPoints < 6 then
 		local aura = echoingReprimandUp(comboPoints)
 		if aura then
-			return MaxDps.FrameData.cpMaxSpend
+			return aura.cp
 		end
 	end
 	return comboPoints
@@ -257,7 +257,7 @@ function Outlaw:cds()
     if (MaxDps:FindSpell(classtable.AdrenalineRush) and CheckSpellCosts(classtable.AdrenalineRush, 'AdrenalineRush')) and (not buff[classtable.AdrenalineRushBuff] and ( not finish_condition or not talents[classtable.ImprovedAdrenalineRush] ) or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and talents[classtable.Crackshot] and talents[classtable.ImprovedAdrenalineRush] and ComboPoints <= 2) and cooldown[classtable.AdrenalineRush].ready then
         return classtable.AdrenalineRush
     end
-    if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (( targets >= 2 - talents[classtable.UnderhandedUpperHand] and not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and buff[classtable.AdrenalineRushBuff].up ) and buff[classtable.BladeFlurryBuff].remains <gcd) and cooldown[classtable.BladeFlurry].ready then
+    if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (( targets >= 2 - (talents[classtable.UnderhandedUpperHand] and 1 or 0) and not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and buff[classtable.AdrenalineRushBuff].up ) and buff[classtable.BladeFlurryBuff].remains <gcd) and cooldown[classtable.BladeFlurry].ready then
         return classtable.BladeFlurry
     end
     if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (talents[classtable.DeftManeuvers] and not finish_condition and ( targets >= 3 and ComboPointsDeficit == targets + buff[classtable.BroadsideBuff].duration or targets >= 5 )) and cooldown[classtable.BladeFlurry].ready then
@@ -352,7 +352,7 @@ function Outlaw:stealth()
     end
 end
 function Outlaw:stealth_cds()
-    vanish_opportunity_condition = not talents[classtable.ShadowDance] and talents[classtable.FantheHammer] + talents[classtable.QuickDraw] + talents[classtable.Audacity] <talents[classtable.CounttheOdds] + talents[classtable.KeepItRolling]
+    vanish_opportunity_condition = not talents[classtable.ShadowDance] and (talents[classtable.FantheHammer] and 1 or 0) + (talents[classtable.QuickDraw] and 1 or 0) + (talents[classtable.Audacity] and 1 or 0) <(talents[classtable.CounttheOdds] and 1 or 0) + (talents[classtable.KeepItRolling] and 1 or 0)
     if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (talents[classtable.HiddenOpportunity] and not talents[classtable.Crackshot] and not buff[classtable.AudacityBuff] and ( vanish_opportunity_condition or buff[classtable.OpportunityBuff].count < 1 ) and ambush_condition) and cooldown[classtable.Vanish].ready then
         return classtable.Vanish
     end
@@ -452,7 +452,7 @@ function Rogue:Outlaw()
     if ttd <12 then
         rtb_reroll = false
     end
-    ambush_condition = ( talents[classtable.HiddenOpportunity] or ComboPointsDeficit >= 2 + talents[classtable.ImprovedAmbush] + buff[classtable.BroadsideBuff].duration ) and Energy >= 50
+    ambush_condition = ( talents[classtable.HiddenOpportunity] or ComboPointsDeficit >= 2 + (talents[classtable.ImprovedAmbush] and 1 or 0) + buff[classtable.BroadsideBuff].duration ) and Energy >= 50
     finish_condition = calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax - 1 - ( (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and talents[classtable.Crackshot] and 1 or 0 )
     --blade_flurry_sync = targets <2 and TODO or buff[classtable.BladeFlurryBuff].remains >gcd
     local cdsCheck = Outlaw:cds()
