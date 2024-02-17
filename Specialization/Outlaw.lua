@@ -193,21 +193,21 @@ local function PreCombatUpdate()
 end
 
 function Outlaw:precombat()
-    if (MaxDps:FindSpell(classtable.ApplyPoison) and CheckSpellCosts(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
-        return classtable.ApplyPoison
-    end
-    if (MaxDps:FindSpell(classtable.Flask) and CheckSpellCosts(classtable.Flask, 'Flask')) and cooldown[classtable.Flask].ready then
-        return classtable.Flask
-    end
-    if (MaxDps:FindSpell(classtable.Augmentation) and CheckSpellCosts(classtable.Augmentation, 'Augmentation')) and cooldown[classtable.Augmentation].ready then
-        return classtable.Augmentation
-    end
-    if (MaxDps:FindSpell(classtable.Food) and CheckSpellCosts(classtable.Food, 'Food')) and cooldown[classtable.Food].ready then
-        return classtable.Food
-    end
-    if (MaxDps:FindSpell(classtable.SnapshotStats) and CheckSpellCosts(classtable.SnapshotStats, 'SnapshotStats')) and cooldown[classtable.SnapshotStats].ready then
-        return classtable.SnapshotStats
-    end
+    --if (MaxDps:FindSpell(classtable.ApplyPoison) and CheckSpellCosts(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
+    --    return classtable.ApplyPoison
+    --end
+    --if (MaxDps:FindSpell(classtable.Flask) and CheckSpellCosts(classtable.Flask, 'Flask')) and cooldown[classtable.Flask].ready then
+    --    return classtable.Flask
+    --end
+    --if (MaxDps:FindSpell(classtable.Augmentation) and CheckSpellCosts(classtable.Augmentation, 'Augmentation')) and cooldown[classtable.Augmentation].ready then
+    --    return classtable.Augmentation
+    --end
+    --if (MaxDps:FindSpell(classtable.Food) and CheckSpellCosts(classtable.Food, 'Food')) and cooldown[classtable.Food].ready then
+    --    return classtable.Food
+    --end
+    --if (MaxDps:FindSpell(classtable.SnapshotStats) and CheckSpellCosts(classtable.SnapshotStats, 'SnapshotStats')) and cooldown[classtable.SnapshotStats].ready then
+    --    return classtable.SnapshotStats
+    --end
     if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (talents[classtable.UnderhandedUpperHand]) and cooldown[classtable.BladeFlurry].ready then
         return classtable.BladeFlurry
     end
@@ -217,12 +217,12 @@ function Outlaw:precombat()
     if (MaxDps:FindSpell(classtable.AdrenalineRush) and CheckSpellCosts(classtable.AdrenalineRush, 'AdrenalineRush')) and (talents[classtable.ImprovedAdrenalineRush]) and cooldown[classtable.AdrenalineRush].ready then
         return classtable.AdrenalineRush
     end
-    if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and cooldown[classtable.SliceandDice].ready then
-        return classtable.SliceandDice
-    end
-    if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
-        return classtable.Stealth
-    end
+    --if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and cooldown[classtable.SliceandDice].ready then
+    --    return classtable.SliceandDice
+    --end
+    --if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
+    --    return classtable.Stealth
+    --end
 end
 function Outlaw:build()
     if (MaxDps:FindSpell(classtable.EchoingReprimand) and CheckSpellCosts(classtable.EchoingReprimand, 'EchoingReprimand')) and cooldown[classtable.EchoingReprimand].ready then
@@ -266,7 +266,7 @@ function Outlaw:cds()
     if (MaxDps:FindSpell(classtable.RolltheBones) and CheckSpellCosts(classtable.RolltheBones, 'RolltheBones')) and (rtb_reroll or calculateRtbBuffCount() == 0 or calculateRtbBuffMax() <= 2 and (MaxDps.tier and MaxDps.tier[31].count >= 4) or calculateRtbBuffMax() <= 7 and ( cooldown[classtable.ShadowDance].ready or cooldown[classtable.Vanish].ready )) and cooldown[classtable.RolltheBones].ready then
         return classtable.RolltheBones
     end
-    if (MaxDps:FindSpell(classtable.KeepItRolling) and CheckSpellCosts(classtable.KeepItRolling, 'KeepItRolling') and talents[classtable.KeepItRolling]) and (not rtb_reroll and calculateRtbBuffCount() >= 3 + (MaxDps.tier and MaxDps.tier[31].count >= 4) and ( not buff[classtable.ShadowDanceBuff].up or calculateRtbBuffCount() >= 6 )) and cooldown[classtable.KeepItRolling].ready then
+    if (MaxDps:FindSpell(classtable.KeepItRolling) and CheckSpellCosts(classtable.KeepItRolling, 'KeepItRolling') and talents[classtable.KeepItRolling]) and (not rtb_reroll and calculateRtbBuffCount() >= 3 + ((MaxDps.tier and MaxDps.tier[31].count >= 4) and 1 or 0) and ( not buff[classtable.ShadowDanceBuff].up or calculateRtbBuffCount() >= 6 )) and cooldown[classtable.KeepItRolling].ready then
         return classtable.KeepItRolling
     end
     if (MaxDps:FindSpell(classtable.GhostlyStrike) and CheckSpellCosts(classtable.GhostlyStrike, 'GhostlyStrike') and talents[classtable.GhostlyStrike]) and (calculateEffectiveComboPoints(ComboPoints) <ComboPointsMax) and cooldown[classtable.GhostlyStrike].ready then
@@ -423,7 +423,10 @@ function Rogue:Outlaw()
     classtable.SliceandDiceBuff = 315496
     classtable.GhostlyStrikeDeBuff = 196937
     classtable.ShadowmeldBuff = 58984
-    PreCombatUpdate()
+    local precombatCheck = Outlaw:precombat()
+    if precombatCheck then
+        return precombatCheck
+    end
     if ((IsStealthed() or buff[classtable.ShadowDanceBuff].up or buff[classtable.AudacityBuff].up)) then
         classtable.Ambush = 430023
     else
