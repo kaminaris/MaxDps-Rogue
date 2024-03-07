@@ -211,9 +211,9 @@ function Outlaw:precombat()
     if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (talents[classtable.UnderhandedUpperHand]) and cooldown[classtable.BladeFlurry].ready then
         return classtable.BladeFlurry
     end
-    if (MaxDps:FindSpell(classtable.RolltheBones) and CheckSpellCosts(classtable.RolltheBones, 'RolltheBones')) and cooldown[classtable.RolltheBones].ready then
-        return classtable.RolltheBones
-    end
+    --if (MaxDps:FindSpell(classtable.RolltheBones) and CheckSpellCosts(classtable.RolltheBones, 'RolltheBones')) and cooldown[classtable.RolltheBones].ready then
+    --    return classtable.RolltheBones
+    --end
     if (MaxDps:FindSpell(classtable.AdrenalineRush) and CheckSpellCosts(classtable.AdrenalineRush, 'AdrenalineRush')) and (talents[classtable.ImprovedAdrenalineRush]) and cooldown[classtable.AdrenalineRush].ready then
         return classtable.AdrenalineRush
     end
