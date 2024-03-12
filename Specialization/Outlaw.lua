@@ -65,6 +65,8 @@ local ComboPointsMax
 local ComboPointsDeficit
 local PoisonedBleeds
 
+local Outlaw = {}
+
 local rtb_reroll
 local ambush_condition
 local finish_condition
@@ -72,12 +74,8 @@ local blade_flurry_sync
 local vanish_opportunity_condition
 local shadow_dance_condition
 
-local Outlaw = {}
-
 local function CheckSpellCosts(spell,spellstring)
-    --if MaxDps.learnedSpells[spell] == nil then
-    --	return false
-    --end
+    if not IsSpellKnownOrOverridesKnown(spell) then return false end
     if spellstring == 'TouchofDeath' then
         if targethealthPerc < 15 then
             return true
@@ -231,7 +229,7 @@ function Outlaw:build()
     if (MaxDps:FindSpell(classtable.Ambush) and CheckSpellCosts(classtable.Ambush, 'Ambush')) and (talents[classtable.HiddenOpportunity] and buff[classtable.AudacityBuff].up) and cooldown[classtable.Ambush].ready then
         return classtable.Ambush
     end
-    if (MaxDps:FindSpell(classtable.PistolShot) and CheckSpellCosts(classtable.PistolShot, 'PistolShot')) and (talents[classtable.FantheHammer] and talents[classtable.Audacity] and talents[classtable.HiddenOpportunity] and buff[classtable.OpportunityBuff].up and not buff[classtable.AudacityBuff]) and cooldown[classtable.PistolShot].ready then
+    if (MaxDps:FindSpell(classtable.PistolShot) and CheckSpellCosts(classtable.PistolShot, 'PistolShot')) and (talents[classtable.FantheHammer] and talents[classtable.Audacity] and talents[classtable.HiddenOpportunity] and buff[classtable.OpportunityBuff].up and not buff[classtable.AudacityBuff].up) and cooldown[classtable.PistolShot].ready then
         return classtable.PistolShot
     end
     if (MaxDps:FindSpell(classtable.PistolShot) and CheckSpellCosts(classtable.PistolShot, 'PistolShot')) and (talents[classtable.FantheHammer] and buff[classtable.OpportunityBuff].up and ( buff[classtable.OpportunityBuff].count >= 1 or buff[classtable.OpportunityBuff].remains <2 )) and cooldown[classtable.PistolShot].ready then
@@ -240,7 +238,7 @@ function Outlaw:build()
     if (MaxDps:FindSpell(classtable.PistolShot) and CheckSpellCosts(classtable.PistolShot, 'PistolShot')) and (talents[classtable.FantheHammer] and buff[classtable.OpportunityBuff].up and ( ComboPointsDeficit >= ( 1 + ( talents[classtable.QuickDraw] + buff[classtable.BroadsideBuff].duration ) * ( talents[classtable.FantheHammer] + 1 ) ) or ComboPoints <= talents[classtable.Ruthlessness] )) and cooldown[classtable.PistolShot].ready then
         return classtable.PistolShot
     end
-    if (MaxDps:FindSpell(classtable.PistolShot) and CheckSpellCosts(classtable.PistolShot, 'PistolShot')) and (not talents[classtable.FantheHammer] and buff[classtable.OpportunityBuff].up and ( EnergyDeficit >EnergyRegen * 1.5 or ComboPointsDeficit <= 1 + buff[classtable.BroadsideBuff].duration or talents[classtable.QuickDraw] or talents[classtable.Audacity] and not buff[classtable.AudacityBuff] )) and cooldown[classtable.PistolShot].ready then
+    if (MaxDps:FindSpell(classtable.PistolShot) and CheckSpellCosts(classtable.PistolShot, 'PistolShot')) and (not talents[classtable.FantheHammer] and buff[classtable.OpportunityBuff].up and ( EnergyDeficit >EnergyRegen * 1.5 or ComboPointsDeficit <= 1 + buff[classtable.BroadsideBuff].duration or talents[classtable.QuickDraw] or talents[classtable.Audacity] and not buff[classtable.AudacityBuff].up )) and cooldown[classtable.PistolShot].ready then
         return classtable.PistolShot
     end
     if (MaxDps:FindSpell(classtable.PoolResource) and CheckSpellCosts(classtable.PoolResource, 'PoolResource')) and cooldown[classtable.PoolResource].ready then
@@ -254,7 +252,7 @@ function Outlaw:build()
     end
 end
 function Outlaw:cds()
-    if (MaxDps:FindSpell(classtable.AdrenalineRush) and CheckSpellCosts(classtable.AdrenalineRush, 'AdrenalineRush')) and (not buff[classtable.AdrenalineRushBuff] and ( not finish_condition or not talents[classtable.ImprovedAdrenalineRush] ) or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and talents[classtable.Crackshot] and talents[classtable.ImprovedAdrenalineRush] and ComboPoints <= 2) and cooldown[classtable.AdrenalineRush].ready then
+    if (MaxDps:FindSpell(classtable.AdrenalineRush) and CheckSpellCosts(classtable.AdrenalineRush, 'AdrenalineRush')) and (not buff[classtable.AdrenalineRushBuff].up and ( not finish_condition or not talents[classtable.ImprovedAdrenalineRush] ) or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and talents[classtable.Crackshot] and talents[classtable.ImprovedAdrenalineRush] and ComboPoints <= 2) and cooldown[classtable.AdrenalineRush].ready then
         return classtable.AdrenalineRush
     end
     if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (( targets >= 2 - (talents[classtable.UnderhandedUpperHand] and 1 or 0) and not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and buff[classtable.AdrenalineRushBuff].up ) and buff[classtable.BladeFlurryBuff].remains <gcd) and cooldown[classtable.BladeFlurry].ready then
@@ -263,9 +261,9 @@ function Outlaw:cds()
     if (MaxDps:FindSpell(classtable.BladeFlurry) and CheckSpellCosts(classtable.BladeFlurry, 'BladeFlurry')) and (talents[classtable.DeftManeuvers] and not finish_condition and ( targets >= 3 and ComboPointsDeficit == targets + buff[classtable.BroadsideBuff].duration or targets >= 5 )) and cooldown[classtable.BladeFlurry].ready then
         return classtable.BladeFlurry
     end
-    if (MaxDps:FindSpell(classtable.RolltheBones) and CheckSpellCosts(classtable.RolltheBones, 'RolltheBones')) and (rtb_reroll or calculateRtbBuffCount() == 0 or calculateRtbBuffMax() <= 2 and (MaxDps.tier and MaxDps.tier[31].count >= 4) or calculateRtbBuffMax() <= 7 and ( cooldown[classtable.ShadowDance].ready or cooldown[classtable.Vanish].ready )) and cooldown[classtable.RolltheBones].ready then
-        return classtable.RolltheBones
-    end
+    --if (MaxDps:FindSpell(classtable.RolltheBones) and CheckSpellCosts(classtable.RolltheBones, 'RolltheBones')) and (rtb_reroll or calculateRtbBuffCount() == 0 or calculateRtbBuffMax() <= 2 and (MaxDps.tier and MaxDps.tier[31].count >= 4) or calculateRtbBuffMax() <= 7 and ( cooldown[classtable.ShadowDance].ready or cooldown[classtable.Vanish].ready )) and cooldown[classtable.RolltheBones].ready then
+    --    return classtable.RolltheBones
+    --end
     if (MaxDps:FindSpell(classtable.KeepItRolling) and CheckSpellCosts(classtable.KeepItRolling, 'KeepItRolling') and talents[classtable.KeepItRolling]) and (not rtb_reroll and calculateRtbBuffCount() >= 3 + ((MaxDps.tier and MaxDps.tier[31].count >= 4) and 1 or 0) and ( not buff[classtable.ShadowDanceBuff].up or calculateRtbBuffCount() >= 6 )) and cooldown[classtable.KeepItRolling].ready then
         return classtable.KeepItRolling
     end
@@ -281,7 +279,7 @@ function Outlaw:cds()
             return Outlaw:stealth_cds()
         end
     end
-    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (not buff[classtable.ThistleTeaBuff] and ( EnergyDeficit >= 100 or ttd <cooldown[classtable.ThistleTea].charges * 6 )) and cooldown[classtable.ThistleTea].ready then
+    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (not buff[classtable.ThistleTeaBuff].up and ( EnergyDeficit >= 100 or ttd <cooldown[classtable.ThistleTea].charges * 6 )) and cooldown[classtable.ThistleTea].ready then
         return classtable.ThistleTea
     end
     if (MaxDps:FindSpell(classtable.BladeRush) and CheckSpellCosts(classtable.BladeRush, 'BladeRush')) and (EnergyTimeToMax >4 and not (IsStealthed() or buff[classtable.ShadowDanceBuff].up)) and cooldown[classtable.BladeRush].ready then
@@ -292,7 +290,7 @@ function Outlaw:cds()
     end
 end
 function Outlaw:finish()
-    if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (not talents[classtable.Crackshot] and ( buff[classtable.BetweentheEyesBuff].remains <4 or talents[classtable.ImprovedBetweentheEyes] or talents[classtable.GreenskinsWickers] or (MaxDps.tier and MaxDps.tier[30].count >= 4) ) and not buff[classtable.GreenskinsWickersBuff]) and cooldown[classtable.BetweentheEyes].ready then
+    if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (not talents[classtable.Crackshot] and ( buff[classtable.BetweentheEyesBuff].remains <4 or talents[classtable.ImprovedBetweentheEyes] or talents[classtable.GreenskinsWickers] or (MaxDps.tier and MaxDps.tier[30].count >= 4) ) and not buff[classtable.GreenskinsWickersBuff].up) and cooldown[classtable.BetweentheEyes].ready then
         return classtable.BetweentheEyes
     end
     if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (talents[classtable.Crackshot] and ( cooldown[classtable.Vanish].remains >45 and cooldown[classtable.ShadowDance].remains >12 )) and cooldown[classtable.BetweentheEyes].ready then
@@ -318,7 +316,7 @@ function Outlaw:stealth()
     if (MaxDps:FindSpell(classtable.ColdBlood) and CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (finish_condition) and cooldown[classtable.ColdBlood].ready then
         return classtable.ColdBlood
     end
-    if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (finish_condition and talents[classtable.Crackshot] and ( not buff[classtable.ShadowmeldBuff] or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) )) and cooldown[classtable.BetweentheEyes].ready then
+    if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (finish_condition and talents[classtable.Crackshot] and ( not buff[classtable.ShadowmeldBuff].up or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) )) and cooldown[classtable.BetweentheEyes].ready then
         return classtable.BetweentheEyes
     end
     if (MaxDps:FindSpell(classtable.Dispatch) and CheckSpellCosts(classtable.Dispatch, 'Dispatch')) and (finish_condition) and cooldown[classtable.Dispatch].ready then
@@ -331,20 +329,20 @@ function Outlaw:stealth()
         return classtable.Ambush
     end
     vanish_opportunity_condition = not talents[classtable.ShadowDance] and talents[classtable.FantheHammer] + talents[classtable.QuickDraw] + talents[classtable.Audacity] <talents[classtable.CounttheOdds] + talents[classtable.KeepItRolling]
-    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (talents[classtable.HiddenOpportunity] and not talents[classtable.Crackshot] and not buff[classtable.AudacityBuff] and ( vanish_opportunity_condition or buff[classtable.OpportunityBuff].count < 1 ) and ambush_condition) and cooldown[classtable.Vanish].ready then
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (talents[classtable.HiddenOpportunity] and not talents[classtable.Crackshot] and not buff[classtable.AudacityBuff].up and ( vanish_opportunity_condition or buff[classtable.OpportunityBuff].count < 1 ) and ambush_condition) and cooldown[classtable.Vanish].ready then
         return classtable.Vanish
     end
     if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (( not talents[classtable.HiddenOpportunity] or talents[classtable.Crackshot] ) and finish_condition) and cooldown[classtable.Vanish].ready then
         return classtable.Vanish
     end
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance') and talents[classtable.ShadowDance]) and (talents[classtable.Crackshot] and finish_condition) and cooldown[classtable.ShadowDance].ready then
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (talents[classtable.Crackshot] and finish_condition) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
-    shadow_dance_condition = buff[classtable.BetweentheEyesBuff].up and ( not talents[classtable.HiddenOpportunity] or not buff[classtable.AudacityBuff] and ( talents[classtable.FantheHammer] <2 or not buff[classtable.OpportunityBuff] ) ) and not talents[classtable.Crackshot]
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance') and talents[classtable.ShadowDance]) and (not talents[classtable.KeepItRolling] and shadow_dance_condition and buff[classtable.SliceandDiceBuff].up and ( finish_condition or talents[classtable.HiddenOpportunity] ) and ( not talents[classtable.HiddenOpportunity] or not cooldown[classtable.Vanish].ready )) and cooldown[classtable.ShadowDance].ready then
+    shadow_dance_condition = buff[classtable.BetweentheEyesBuff].up and ( not talents[classtable.HiddenOpportunity] or not buff[classtable.AudacityBuff].up and ( talents[classtable.FantheHammer] <2 or not buff[classtable.OpportunityBuff].up ) ) and not talents[classtable.Crackshot]
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not talents[classtable.KeepItRolling] and shadow_dance_condition and buff[classtable.SliceandDiceBuff].up and ( finish_condition or talents[classtable.HiddenOpportunity] ) and ( not talents[classtable.HiddenOpportunity] or not cooldown[classtable.Vanish].ready )) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance') and talents[classtable.ShadowDance]) and (talents[classtable.KeepItRolling] and shadow_dance_condition and ( cooldown[classtable.KeepItRolling].remains <= 30 or cooldown[classtable.KeepItRolling].remains >120 and ( finish_condition or talents[classtable.HiddenOpportunity] ) )) and cooldown[classtable.ShadowDance].ready then
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (talents[classtable.KeepItRolling] and shadow_dance_condition and ( cooldown[classtable.KeepItRolling].remains <= 30 or cooldown[classtable.KeepItRolling].remains >120 and ( finish_condition or talents[classtable.HiddenOpportunity] ) )) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
     if (MaxDps:FindSpell(classtable.Shadowmeld) and CheckSpellCosts(classtable.Shadowmeld, 'Shadowmeld')) and (finish_condition and not cooldown[classtable.Vanish].ready and not cooldown[classtable.ShadowDance].ready) and cooldown[classtable.Shadowmeld].ready then
@@ -353,20 +351,20 @@ function Outlaw:stealth()
 end
 function Outlaw:stealth_cds()
     vanish_opportunity_condition = not talents[classtable.ShadowDance] and (talents[classtable.FantheHammer] and 1 or 0) + (talents[classtable.QuickDraw] and 1 or 0) + (talents[classtable.Audacity] and 1 or 0) <(talents[classtable.CounttheOdds] and 1 or 0) + (talents[classtable.KeepItRolling] and 1 or 0)
-    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (talents[classtable.HiddenOpportunity] and not talents[classtable.Crackshot] and not buff[classtable.AudacityBuff] and ( vanish_opportunity_condition or buff[classtable.OpportunityBuff].count < 1 ) and ambush_condition) and cooldown[classtable.Vanish].ready then
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (talents[classtable.HiddenOpportunity] and not talents[classtable.Crackshot] and not buff[classtable.AudacityBuff].up and ( vanish_opportunity_condition or buff[classtable.OpportunityBuff].count < 1 ) and ambush_condition) and cooldown[classtable.Vanish].ready then
         return classtable.Vanish
     end
     if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (( not talents[classtable.HiddenOpportunity] or talents[classtable.Crackshot] ) and finish_condition) and cooldown[classtable.Vanish].ready then
         return classtable.Vanish
     end
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance') and talents[classtable.ShadowDance]) and (talents[classtable.Crackshot] and finish_condition) and cooldown[classtable.ShadowDance].ready then
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (talents[classtable.Crackshot] and finish_condition) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
-    shadow_dance_condition = buff[classtable.BetweentheEyesBuff].up and ( not talents[classtable.HiddenOpportunity] or not buff[classtable.AudacityBuff] and ( talents[classtable.FantheHammer] <2 or not buff[classtable.OpportunityBuff] ) ) and not talents[classtable.Crackshot]
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance') and talents[classtable.ShadowDance]) and (not talents[classtable.KeepItRolling] and shadow_dance_condition and buff[classtable.SliceandDiceBuff].up and ( finish_condition or talents[classtable.HiddenOpportunity] ) and ( not talents[classtable.HiddenOpportunity] or not cooldown[classtable.Vanish].ready )) and cooldown[classtable.ShadowDance].ready then
+    shadow_dance_condition = buff[classtable.BetweentheEyesBuff].up and ( not talents[classtable.HiddenOpportunity] or not buff[classtable.AudacityBuff].up and ( talents[classtable.FantheHammer] <2 or not buff[classtable.OpportunityBuff].up ) ) and not talents[classtable.Crackshot]
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not talents[classtable.KeepItRolling] and shadow_dance_condition and buff[classtable.SliceandDiceBuff].up and ( finish_condition or talents[classtable.HiddenOpportunity] ) and ( not talents[classtable.HiddenOpportunity] or not cooldown[classtable.Vanish].ready )) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance') and talents[classtable.ShadowDance]) and (talents[classtable.KeepItRolling] and shadow_dance_condition and ( cooldown[classtable.KeepItRolling].remains <= 30 or cooldown[classtable.KeepItRolling].remains >120 and ( finish_condition or talents[classtable.HiddenOpportunity] ) )) and cooldown[classtable.ShadowDance].ready then
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (talents[classtable.KeepItRolling] and shadow_dance_condition and ( cooldown[classtable.KeepItRolling].remains <= 30 or cooldown[classtable.KeepItRolling].remains >120 and ( finish_condition or talents[classtable.HiddenOpportunity] ) )) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
     if (MaxDps:FindSpell(classtable.Shadowmeld) and CheckSpellCosts(classtable.Shadowmeld, 'Shadowmeld')) and (finish_condition and not cooldown[classtable.Vanish].ready and not cooldown[classtable.ShadowDance].ready) and cooldown[classtable.Shadowmeld].ready then
