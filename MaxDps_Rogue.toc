@@ -1,5 +1,5 @@
 ## Title: MaxDps_Rogue
-## Version: 10.0.11
+## Version: 10.0.12
 ## Author: Kaminaris
 ## Interface: 100205
 ## Dependencies: MaxDps
