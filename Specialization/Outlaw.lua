@@ -340,7 +340,7 @@ function Outlaw:stealth_cds()
     if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (talents[classtable.Crackshot] and finish_condition) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
-    shadow_dance_condition = buff[classtable.BetweentheEyesBuff].up and ( not talents[classtable.HiddenOpportunity] or not buff[classtable.AudacityBuff].up and ( talents[classtable.FantheHammer] <2 or not buff[classtable.OpportunityBuff].up ) ) and not talents[classtable.Crackshot]
+    shadow_dance_condition = buff[classtable.BetweentheEyesBuff].up and ( not talents[classtable.HiddenOpportunity] or not buff[classtable.AudacityBuff].up and ( (talents[classtable.FantheHammer] and talents[classtable.FantheHammer] or 0) <2 or not buff[classtable.OpportunityBuff].up ) ) and not talents[classtable.Crackshot]
     if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not talents[classtable.KeepItRolling] and shadow_dance_condition and buff[classtable.SliceandDiceBuff].up and ( finish_condition or talents[classtable.HiddenOpportunity] ) and ( not talents[classtable.HiddenOpportunity] or not cooldown[classtable.Vanish].ready )) and cooldown[classtable.ShadowDance].ready then
         return classtable.ShadowDance
     end
