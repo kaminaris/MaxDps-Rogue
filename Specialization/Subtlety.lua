@@ -257,7 +257,7 @@ function Subtlety:cds()
     if (MaxDps:FindSpell(classtable.GoremawsBite) and CheckSpellCosts(classtable.GoremawsBite, 'GoremawsBite')) and (snd_condition and ComboPointsDeficit >= 3 and ( not cooldown[classtable.ShadowDance].up or talents[classtable.ShadowDance] and buff[classtable.ShadowDanceBuff].up and not talents[classtable.InvigoratingShadowdust] or targets <4 and not talents[classtable.InvigoratingShadowdust] or talents[classtable.theRotten] or targets >1 )) and cooldown[classtable.GoremawsBite].ready then
         return classtable.GoremawsBite
     end
-    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (( cooldown[classtable.SymbolsofDeath].remains >= 3 or buff[classtable.SymbolsofDeathBuff].up ) and not buff[classtable.ThistleTeaBuff].up and ( EnergyDeficit >= ( 100 ) and ( ComboPointsDeficit >= 2 or targets >= 3 ) or ( cooldown[classtable.ThistleTea].charges >= ( 2.75 - 0.15 * talents[classtable.InvigoratingShadowdust] and cooldown[classtable.Vanish].up ) ) and buff[classtable.ShadowDanceBuff].up and debuff[classtable.RuptureDeBuff].up and targets <3 ) or buff[classtable.ShadowDanceBuff].remains >= 4 and not buff[classtable.ThistleTeaBuff].up and targets >= 3 or not buff[classtable.ThistleTeaBuff].up and ttd <= ( 6 * cooldown[classtable.ThistleTea].charges )) and cooldown[classtable.ThistleTea].ready then
+    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (( cooldown[classtable.SymbolsofDeath].remains >= 3 or buff[classtable.SymbolsofDeathBuff].up ) and not buff[classtable.ThistleTeaBuff].up and ( EnergyDeficit >= ( 100 ) and ( ComboPointsDeficit >= 2 or targets >= 3 ) or ( cooldown[classtable.ThistleTea].charges >= ( 2.75 - 0.15 * (talents[classtable.InvigoratingShadowdust] and 1 or 0) and cooldown[classtable.Vanish].up ) ) and buff[classtable.ShadowDanceBuff].up and debuff[classtable.RuptureDeBuff].up and targets <3 ) or buff[classtable.ShadowDanceBuff].remains >= 4 and not buff[classtable.ThistleTeaBuff].up and targets >= 3 or not buff[classtable.ThistleTeaBuff].up and ttd <= ( 6 * cooldown[classtable.ThistleTea].charges )) and cooldown[classtable.ThistleTea].ready then
         return classtable.ThistleTea
     end
     if (MaxDps:FindSpell(classtable.Potion) and CheckSpellCosts(classtable.Potion, 'Potion')) and (MaxDps:Bloodlust() or ttd <30 or buff[classtable.SymbolsofDeathBuff].up and ( buff[classtable.ShadowBladesBuff].up or cooldown[classtable.ShadowBlades].remains <= 10 )) and cooldown[classtable.Potion].ready then
@@ -301,7 +301,7 @@ function Subtlety:finish()
     end
 end
 function Subtlety:stealth_cds()
-    shd_threshold = cooldown[classtable.ShadowDance].charges >= 0.75 + talents[classtable.ShadowDance]
+    shd_threshold = cooldown[classtable.ShadowDance].charges >= 0.75 + (talents[classtable.ShadowDance] and 1 or 0)
     rotten_cb = ( not buff[classtable.theRottenBuff].up or not (MaxDps.tier and MaxDps.tier[30].count >= 2) ) and ( not talents[classtable.ColdBlood] or cooldown[classtable.ColdBlood].remains <4 or cooldown[classtable.ColdBlood].remains >10 )
     if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (( ComboPointsDeficit >1 or buff[classtable.ShadowBladesBuff].up and talents[classtable.InvigoratingShadowdust] ) and not shd_threshold and ( cooldown[classtable.Flagellation].remains >= 60 or not talents[classtable.Flagellation] or ttd <= ( 30 * cooldown[classtable.Vanish].charges ) ) and ( cooldown[classtable.SymbolsofDeath].remains >3 or not (MaxDps.tier and MaxDps.tier[30].count >= 2) ) and ( cooldown[classtable.SecretTechnique].remains >= 10 or not talents[classtable.SecretTechnique] or cooldown[classtable.Vanish].charges >= 2 and talents[classtable.InvigoratingShadowdust] and ( buff[classtable.theRottenBuff].up or not talents[classtable.theRotten] ) and not (targets >1) )) and cooldown[classtable.Vanish].ready then
         return classtable.Vanish
@@ -333,7 +333,7 @@ function Subtlety:stealthed()
             return Subtlety:finish()
         end
     end
-    if (ComboPointsDeficit <= 1 + ( talents[classtable.DeeperStratagem] or talents[classtable.SecretStratagem] )) then
+    if (ComboPointsDeficit <= 1 + ( (talents[classtable.DeeperStratagem] and 1 or 0) or (talents[classtable.SecretStratagem]) and 1 or 0)) then
         local finishCheck = Subtlety:finish()
         if finishCheck then
             return Subtlety:finish()
@@ -481,7 +481,7 @@ function Rogue:Subtlety()
             return Subtlety:finish()
         end
     end
-    if (ComboPointsDeficit <= 1 + ( talents[classtable.DeeperStratagem] or talents[classtable.SecretStratagem] )) then
+    if (ComboPointsDeficit <= 1 + ( (talents[classtable.DeeperStratagem] and 1 or 0) or (talents[classtable.SecretStratagem]) and 1 or 0)) then
         local finishCheck = Subtlety:finish()
         if finishCheck then
             return Subtlety:finish()
