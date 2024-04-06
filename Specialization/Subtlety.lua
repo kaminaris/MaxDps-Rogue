@@ -422,8 +422,10 @@ function Rogue:Subtlety()
         local stealthedCheck = Subtlety:stealthed()
         if stealthedCheck then
             if buff[classtable.ShadowDanceBuff].up and MaxDps.spellHistory[1] then
-                if talents[classtable.DanseMacabre] and not DanseMacabreSpellList then DanseMacabreSpellList = {} end
-                table.insert(DanseMacabreSpellList,table.getn(DanseMacabreSpellList)+1,MaxDps.spellHistory[1])
+                if talents[classtable.DanseMacabre] and type(DanseMacabreSpellList) ~= "table" then
+                    DanseMacabreSpellList = {}
+                    table.insert(DanseMacabreSpellList,table.getn(DanseMacabreSpellList)+1,MaxDps.spellHistory[1])
+                end
             else
                 DanseMacabreSpellList = {}
             end
