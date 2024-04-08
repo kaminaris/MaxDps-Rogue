@@ -83,13 +83,13 @@ local function CheckSpellCosts(spell,spellstring)
             return false
         end
     end
-    local costs = GetSpellPowerCost(spell)
-    if type(costs) ~= 'table' and spellstring then print('no cost found for ',spellstring) return true end
-    for i,costtable in pairs(costs) do
-        if UnitPower('player', costtable.type) < costtable.cost then
-            return false
-        end
-    end
+    --local costs = GetSpellPowerCost(spell)
+    --if type(costs) ~= 'table' and spellstring then print('no cost found for ',spellstring) return true end
+    --for i,costtable in pairs(costs) do
+    --    if UnitPower('player', costtable.type) < costtable.cost then
+    --        return false
+    --    end
+    --end
     return true
 end
 
@@ -285,9 +285,9 @@ function Outlaw:cds()
     if (MaxDps:FindSpell(classtable.BladeRush) and CheckSpellCosts(classtable.BladeRush, 'BladeRush')) and (EnergyTimeToMax >4 and not (IsStealthed() or buff[classtable.ShadowDanceBuff].up)) and cooldown[classtable.BladeRush].ready then
         return classtable.BladeRush
     end
-    if (MaxDps:FindSpell(classtable.Potion) and CheckSpellCosts(classtable.Potion, 'Potion')) and (MaxDps:Bloodlust() or ttd <30 or buff[classtable.AdrenalineRushBuff].up) and cooldown[classtable.Potion].ready then
-        return classtable.Potion
-    end
+    --if (MaxDps:FindSpell(classtable.Potion) and CheckSpellCosts(classtable.Potion, 'Potion')) and (MaxDps:Bloodlust() or ttd <30 or buff[classtable.AdrenalineRushBuff].up) and cooldown[classtable.Potion].ready then
+    --    return classtable.Potion
+    --end
 end
 function Outlaw:finish()
     if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (not talents[classtable.Crackshot] and ( buff[classtable.BetweentheEyesBuff].remains <4 or talents[classtable.ImprovedBetweentheEyes] or talents[classtable.GreenskinsWickers] or (MaxDps.tier and MaxDps.tier[30].count >= 4) ) and not buff[classtable.GreenskinsWickersBuff].up) and cooldown[classtable.BetweentheEyes].ready then
@@ -316,6 +316,7 @@ function Outlaw:stealth()
     if (MaxDps:FindSpell(classtable.ColdBlood) and CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (finish_condition) and cooldown[classtable.ColdBlood].ready then
         return classtable.ColdBlood
     end
+    if not CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes') then return end
     if (MaxDps:FindSpell(classtable.BetweentheEyes) and CheckSpellCosts(classtable.BetweentheEyes, 'BetweentheEyes')) and (finish_condition and talents[classtable.Crackshot] and ( not buff[classtable.ShadowmeldBuff].up or (IsStealthed() or buff[classtable.ShadowDanceBuff].up) )) and cooldown[classtable.BetweentheEyes].ready then
         return classtable.BetweentheEyes
     end
