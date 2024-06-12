@@ -90,13 +90,13 @@ local function CheckSpellCosts(spell,spellstring)
             return false
         end
     end
-    local costs = GetSpellPowerCost(spell)
-    if type(costs) ~= 'table' and spellstring then print('no cost found for ',spellstring) return true end
-    for i,costtable in pairs(costs) do
-        if UnitPower('player', costtable.type) < costtable.cost then
-            return false
-        end
-    end
+    --local costs = GetSpellPowerCost(spell)
+    --if type(costs) ~= 'table' and spellstring then print('no cost found for ',spellstring) return true end
+    --for i,costtable in pairs(costs) do
+    --    if UnitPower('player', costtable.type) < costtable.cost then
+    --        return false
+    --    end
+    --end
     return true
 end
 
@@ -330,7 +330,7 @@ function Assassination:direct()
     if (MaxDps:FindSpell(classtable.EchoingReprimand) and CheckSpellCosts(classtable.EchoingReprimand, 'EchoingReprimand')) and (use_filler or ttd <20) and cooldown[classtable.EchoingReprimand].ready then
         return classtable.EchoingReprimand
     end
-    if (MaxDps:FindSpell(classtable.FanofKnives) and CheckSpellCosts(classtable.FanofKnives, 'FanofKnives')) and (use_filler and ( targets >= 2 + (IsStealthed() or buff[classtable.ShadowDanceBuff].up and 1 or 0) + (talents[classtable.DragontemperedBlades] and 1 or 0) )) and cooldown[classtable.FanofKnives].ready then
+    if (MaxDps:FindSpell(classtable.FanofKnives) and CheckSpellCosts(classtable.FanofKnives, 'FanofKnives')) and (use_filler and ( targets >= 2 + (IsStealthed() and 1 or 0 or buff[classtable.ShadowDanceBuff].up and 1 or 0)  + (talents[classtable.DragontemperedBlades] and 1 or 0) )) and cooldown[classtable.FanofKnives].ready then
         return classtable.FanofKnives
     end
     if (MaxDps:FindSpell(classtable.FanofKnives) and CheckSpellCosts(classtable.FanofKnives, 'FanofKnives')) and (use_filler and targets >= 3) and cooldown[classtable.FanofKnives].ready then
@@ -349,7 +349,7 @@ end
 function Assassination:dot()
     scent_effective_max_stacks = ( targets * (talents[classtable.ScentofBlood] and 1 or 0) * 2 )
     scent_saturation = buff[classtable.ScentofBloodBuff].count >= (scent_effective_max_stacks and 1 or 0)
-    if (MaxDps:FindSpell(classtable.CrimsonTempest) and CheckSpellCosts(classtable.CrimsonTempest, 'CrimsonTempest') and talents[classtable.CrimsonTempest]) and (targets >= 3 + (MaxDps.tier and MaxDps.tier[31].count >= 4) and debuff[classtable.CrimsonTempest].refreshable and debuff[classtable.CrimsonTempest].remains <= 1 and calculateEffectiveComboPoints(ComboPoints) >= 4 and EnergyRegenCombined >25 and not cooldown[classtable.Deathmark].ready and ttd - buff[classtable.CrimsonTempest].remains >6) and cooldown[classtable.CrimsonTempest].ready then
+    if (MaxDps:FindSpell(classtable.CrimsonTempest) and CheckSpellCosts(classtable.CrimsonTempest, 'CrimsonTempest') and talents[classtable.CrimsonTempest]) and (targets >= 3 + (MaxDps.tier and MaxDps.tier[31].count >= 4 and 1 or 0) and debuff[classtable.CrimsonTempest].refreshable and debuff[classtable.CrimsonTempest].remains <= 1 and calculateEffectiveComboPoints(ComboPoints) >= 4 and EnergyRegenCombined >25 and not cooldown[classtable.Deathmark].ready and ttd - buff[classtable.CrimsonTempest].remains >6) and cooldown[classtable.CrimsonTempest].ready then
         return classtable.CrimsonTempest
     end
     if (MaxDps:FindSpell(classtable.Garrote) and CheckSpellCosts(classtable.Garrote, 'Garrote')) and (ComboPointsDeficit >= 1 and ( debuff[classtable.Garrote].remains <= 1 ) and debuff[classtable.Garrote].refreshable and ttd - debuff[classtable.Garrote].remains >12) and cooldown[classtable.Garrote].ready then
