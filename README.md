@@ -4,7 +4,6 @@
 
 ### Discord for support: [https://discord.gg/wCSj5SD](https://discord.gg/wCSj5SD)
 [![](https://i.postimg.cc/g2R7fKHG/discord.png)](https://discord.gg/wCSj5SD)
-### Forum: http://maxdps.net
 
 ## This addon does nothing by itself, install MaxDps first.
 
