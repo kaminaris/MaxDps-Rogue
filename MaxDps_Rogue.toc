@@ -1,7 +1,7 @@
 ## Title: MaxDps_Rogue
-## Version: 10.0.25
+## Version: 10.0.26
 ## Author: Kaminaris
-## Interface: 100207
+## Interface: 110000
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1
 ## SavedVariables: MaxDpsRogueOptions
