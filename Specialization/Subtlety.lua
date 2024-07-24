@@ -5,7 +5,7 @@ if not MaxDps then return end
 
 local UnitPower = UnitPower
 local UnitHealth = UnitHealth
-local UnitAura = UnitAura
+local UnitAura = C_UnitAuras.GetAuraDataByIndex
 local GetSpellDescription = GetSpellDescription
 local GetSpellPowerCost = C_Spell.GetSpellPowerCost
 local UnitHealthMax = UnitHealthMax
