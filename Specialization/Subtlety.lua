@@ -6,12 +6,14 @@ if not MaxDps then return end
 local UnitPower = UnitPower
 local UnitHealth = UnitHealth
 local UnitAura = C_UnitAuras.GetAuraDataByIndex
-local GetSpellDescription = GetSpellDescription
-local GetSpellPowerCost = C_Spell.GetSpellPowerCost
+local UnitAuraByName = C_UnitAuras.GetAuraDataBySpellName
 local UnitHealthMax = UnitHealthMax
 local UnitPowerMax = UnitPowerMax
 local SpellHaste
 local SpellCrit
+local GetSpellInfo = C_Spell.GetSpellInfo
+local GetSpellCooldown = C_Spell.GetSpellCooldown
+local GetSpellCount = C_Spell.GetSpellCastCount
 
 local ManaPT = Enum.PowerType.Mana
 local RagePT = Enum.PowerType.Rage
@@ -36,6 +38,7 @@ local RuneUnholyPT = Enum.PowerType.RuneUnholy
 
 local fd
 local ttd
+local timeShift
 local gcd
 local cooldown
 local buff
@@ -53,6 +56,7 @@ local className, classFilename, classId = UnitClass('player')
 local currentSpec = GetSpecialization()
 local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or 'None'
 local classtable
+local LibRangeCheck = LibStub('LibRangeCheck-3.0', true)
 
 local Energy
 local EnergyMax
@@ -65,34 +69,43 @@ local ComboPoints
 local ComboPointsMax
 local ComboPointsDeficit
 local PoisonedBleeds
-local DanseMacabreSpellList
+local DanseMacabreSpellList = {}
 
 local Subtlety = {}
 
 local algethar_puzzle_box_precombat_cast
-local snd_condition
 local priority_rotation
-local stealth_threshold
-local stealth_helper
-local trinket_conditions
+local trinket_sync_slot
+local snd_condition
+local ruptures_before_flag
 local racial_sync
 local secret_condition
-local premed_snd_condition
 local skip_rupture
-local shd_threshold
-local rotten_cb
-local shd_combo_points
 
 local function CheckSpellCosts(spell,spellstring)
     if not IsSpellKnownOrOverridesKnown(spell) then return false end
+    if not C_Spell.IsSpellUsable(spell) then return false end
     if spellstring == 'TouchofDeath' then
-        if targethealthPerc < 15 then
-            return true
-        else
+        if targethealthPerc > 15 then
             return false
         end
     end
-    local costs = GetSpellPowerCost(spell)
+    if spellstring == 'KillShot' then
+        if (classtable.SicEmBuff and not buff[classtable.SicEmBuff].up) or (classtable.HuntersPreyBuff and not buff[classtable.HuntersPreyBuff].up) and targethealthPerc > 15 then
+            return false
+        end
+    end
+    if spellstring == 'HammerofWrath' then
+        if ( (classtable.AvengingWrathBuff and not buff[classtable.AvengingWrathBuff].up) or (classtable.FinalVerdictBuff and not buff[classtable.FinalVerdictBuff].up) ) and targethealthPerc > 20 then
+            return false
+        end
+    end
+    if spellstring == 'Execute' then
+        if (classtable.SuddenDeathBuff and not buff[classtable.SuddenDeathBuff].up) and targethealthPerc > 35 then
+            return false
+        end
+    end
+    local costs = C_Spell.GetSpellPowerCost(spell)
     if type(costs) ~= 'table' and spellstring then return true end
     for i,costtable in pairs(costs) do
         if UnitPower('player', costtable.type) < costtable.cost then
@@ -101,13 +114,23 @@ local function CheckSpellCosts(spell,spellstring)
     end
     return true
 end
+local function MaxGetSpellCost(spell,power)
+    local costs = C_Spell.GetSpellPowerCost(spell)
+    if type(costs) ~= 'table' then return 0 end
+    for i,costtable in pairs(costs) do
+        if costtable.name == power then
+            return costtable.cost
+        end
+    end
+    return 0
+end
 
 
 
 local function CheckEquipped(checkName)
     for i=1,14 do
         local itemID = GetInventoryItemID('player', i)
-        local itemName = itemID and GetItemInfo(itemID) or ''
+        local itemName = itemID and C_Item.GetItemInfo(itemID) or ''
         if checkName == itemName then
             return true
         end
@@ -127,7 +150,7 @@ local function CheckTrinketNames(checkName)
     --end
     for i=13,14 do
         local itemID = GetInventoryItemID('player', i)
-        local itemName = GetItemInfo(itemID)
+        local itemName = C_Item.GetItemInfo(itemID)
         if checkName == itemName then
             return true
         end
@@ -145,19 +168,19 @@ local function CheckTrinketCooldown(slot)
     end
     if slot == 13 or slot == 14 then
         local itemID = GetInventoryItemID('player', slot)
-        local _, duration, _ = GetItemCooldown(itemID)
+        local _, duration, _ = C_Item.GetItemCooldown(itemID)
         if duration == 0 then return true else return false end
     else
         local tOneitemID = GetInventoryItemID('player', 13)
         local tTwoitemID = GetInventoryItemID('player', 14)
-        local tOneitemName = GetItemInfo(tOneitemID)
-        local tTwoitemName = GetItemInfo(tTwoitemID)
+        local tOneitemName = C_Item.GetItemInfo(tOneitemID)
+        local tTwoitemName = C_Item.GetItemInfo(tTwoitemID)
         if tOneitemName == slot then
-            local _, duration, _ = GetItemCooldown(tOneitemID)
+            local _, duration, _ = C_Item.GetItemCooldown(tOneitemID)
             if duration == 0 then return true else return false end
         end
         if tTwoitemName == slot then
-            local _, duration, _ = GetItemCooldown(tTwoitemID)
+            local _, duration, _ = C_Item.GetItemCooldown(tTwoitemID)
             if duration == 0 then return true else return false end
         end
     end
@@ -189,11 +212,10 @@ local echoingReprimand = {
 
 
 local echoingReprimandUp = function(comboPoints)
-	local buff = MaxDps.FrameData.buff
 	for i in pairs(echoingReprimand.auras) do
 		local aura = echoingReprimand.auras[i]
 		if buff[aura.id].up and aura.cp == comboPoints then
-			return aura
+			return aura.cp
 		end
 	end
 	return false
@@ -204,7 +226,7 @@ local function calculateEffectiveComboPoints(comboPoints)
 	if comboPoints > 1 and comboPoints < 6 then
 		local aura = echoingReprimandUp(comboPoints)
 		if aura then
-			return MaxDps.FrameData.cpMaxSpend
+			return aura
 		end
 	end
 	return comboPoints
@@ -215,8 +237,57 @@ local function CheckDanseMacabre(spell)
 	return false
 end
 
+
+local function CheckPrevSpell(spell)
+    if MaxDps and MaxDps.spellHistory then
+        if MaxDps.spellHistory[1] then
+            if MaxDps.spellHistory[1] == spell then
+                return true
+            end
+            if MaxDps.spellHistory[1] ~= spell then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+
+local function boss()
+    if UnitExists('boss1')
+    or UnitExists('boss2')
+    or UnitExists('boss3')
+    or UnitExists('boss4')
+    or UnitExists('boss5')
+    or UnitExists('boss6')
+    or UnitExists('boss7')
+    or UnitExists('boss8')
+    or UnitExists('boss9')
+    or UnitExists('boss10') then
+        return true
+    end
+    return false
+end
+
+
+function Subtlety:precombat()
+    --if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
+    --    return classtable.Stealth
+    --end
+    --if (MaxDps:FindSpell(classtable.ApplyPoison) and CheckSpellCosts(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
+    --    return classtable.ApplyPoison
+    --end
+    algethar_puzzle_box_precombat_cast = 3
+    --if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and cooldown[classtable.SliceandDice].ready then
+    --    return classtable.SliceandDice
+    --end
+    priority_rotation = true
+end
 function Subtlety:build()
-    if (MaxDps:FindSpell(classtable.ShurikenStorm) and CheckSpellCosts(classtable.ShurikenStorm, 'ShurikenStorm')) and (targets >= 2 + ( (talents[classtable.Gloomblade] and 1 or 0) and (buff[classtable.LingeringShadowBuff].remains >= 6 and 1 or 0) or (buff[classtable.PerforatedVeinsBuff].up and 1 or 0) )) and cooldown[classtable.ShurikenStorm].ready then
+    if (MaxDps:FindSpell(classtable.ShurikenStorm) and CheckSpellCosts(classtable.ShurikenStorm, 'ShurikenStorm')) and (targets >= 2 + ( (talents[classtable.Gloomblade] and buff[classtable.LingeringShadowBuff].remains >= 6 or buff[classtable.PerforatedVeinsBuff].up) and 1 or 0) and ( buff[classtable.FlawlessFormBuff].up or not talents[classtable.UnseenBlade] )) and cooldown[classtable.ShurikenStorm].ready then
+        return classtable.ShurikenStorm
+    end
+    if (MaxDps:FindSpell(classtable.ShurikenStorm) and CheckSpellCosts(classtable.ShurikenStorm, 'ShurikenStorm')) and (buff[classtable.CleartheWitnessesBuff].up and ( not buff[classtable.SymbolsofDeathBuff].up or not talents[classtable.Inevitability] ) and ( buff[classtable.LingeringShadowBuff].remains <= 6 or not talents[classtable.LingeringShadow] )) and cooldown[classtable.ShurikenStorm].ready then
         return classtable.ShurikenStorm
     end
     if (MaxDps:FindSpell(classtable.Gloomblade) and CheckSpellCosts(classtable.Gloomblade, 'Gloomblade')) and cooldown[classtable.Gloomblade].ready then
@@ -227,139 +298,229 @@ function Subtlety:build()
     end
 end
 function Subtlety:cds()
-    trinket_conditions = ( not CheckEquipped('WitherbarksBranch') and not CheckEquipped('AshesoftheEmbersoul') or not CheckEquipped('WitherbarksBranch') and CheckTrinketCooldown('Witherbarks Branch') <= 8 or CheckEquipped('WitherbarksBranch') and CheckTrinketCooldown('Witherbarks Branch') <= 8 or CheckEquipped('BandolierofTwistedBlades') or talents[classtable.InvigoratingShadowdust] )
-    if (MaxDps:FindSpell(classtable.ColdBlood) and CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (not talents[classtable.SecretTechnique] and ComboPoints >= 5) and cooldown[classtable.ColdBlood].ready then
-        return classtable.ColdBlood
+    ruptures_before_flag = targets <= 4 or talents[classtable.InvigoratingShadowdust] and not talents[classtable.FollowtheBlood] or ( talents[classtable.ReplicatingShadows] and ( targets >= 5 and debuff[classtable.RuptureDeBuff].count  >= targets - 2 ) ) or not talents[classtable.ReplicatingShadows]
+    if (MaxDps:FindSpell(classtable.ColdBlood) and CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (not talents[classtable.SecretTechnique] and ComboPoints >= 6) and cooldown[classtable.ColdBlood].ready then
+        MaxDps:GlowCooldown(classtable.ColdBlood, cooldown[classtable.ColdBlood].ready)
     end
-    if (MaxDps:FindSpell(classtable.Sepsis) and CheckSpellCosts(classtable.Sepsis, 'Sepsis')) and (snd_condition and ttd >= 16 and ( buff[classtable.PerforatedVeinsBuff].up or not talents[classtable.PerforatedVeins] )) and cooldown[classtable.Sepsis].ready then
-        return classtable.Sepsis
+    if (MaxDps:FindSpell(classtable.Sepsis) and CheckSpellCosts(classtable.Sepsis, 'Sepsis')) and (snd_condition and ( cooldown[classtable.ShadowBlades].remains <= 3 and cooldown[classtable.SymbolsofDeath].remains <= 3 or ttd <= 12 )) and cooldown[classtable.Sepsis].ready then
+        MaxDps:GlowCooldown(classtable.Sepsis, cooldown[classtable.Sepsis].ready)
     end
-    if (MaxDps:FindSpell(classtable.Flagellation) and CheckSpellCosts(classtable.Flagellation, 'Flagellation')) and (snd_condition and ComboPoints >= 5 and ttd >10 and ( trinket_conditions and cooldown[classtable.ShadowBlades].remains <= 3 or ttd <= 28 or cooldown[classtable.ShadowBlades].remains >= 14 and talents[classtable.InvigoratingShadowdust] and talents[classtable.ShadowDance] ) and ( not talents[classtable.InvigoratingShadowdust] or talents[classtable.Sepsis] or not talents[classtable.ShadowDance] or talents[classtable.InvigoratingShadowdust] == 2 and targets >= 2 or cooldown[classtable.SymbolsofDeath].remains <= 3 or buff[classtable.SymbolsofDeathBuff].remains >3 ) and ttd) and cooldown[classtable.Flagellation].ready then
-        return classtable.Flagellation
+    if (MaxDps:FindSpell(classtable.Flagellation) and CheckSpellCosts(classtable.Flagellation, 'Flagellation')) and (snd_condition and ruptures_before_flag and ComboPoints >= 6 and ttd >10 and ( cooldown[classtable.ShadowBlades].remains <= 2 or boss and ttd <= 24 ) and ( not talents[classtable.InvigoratingShadowdust] or cooldown[classtable.SymbolsofDeath].remains <= 3 or buff[classtable.SymbolsofDeathBuff].remains >3 )) and cooldown[classtable.Flagellation].ready then
+        MaxDps:GlowCooldown(classtable.Flagellation, cooldown[classtable.Flagellation].ready)
     end
-    if (MaxDps:FindSpell(classtable.SymbolsofDeath) and CheckSpellCosts(classtable.SymbolsofDeath, 'SymbolsofDeath')) and (snd_condition and ( not buff[classtable.theRottenBuff].up or not (MaxDps.tier and MaxDps.tier[30] and MaxDps.tier[30].count and MaxDps.tier[30].count >= 2) ) and buff[classtable.SymbolsofDeathBuff].remains <= 3 and ( not talents[classtable.Flagellation] or cooldown[classtable.Flagellation].remains >10 or buff[classtable.ShadowDanceBuff].remains >= 2 and talents[classtable.InvigoratingShadowdust] or cooldown[classtable.Flagellation].up and ComboPoints >= 5 and not talents[classtable.InvigoratingShadowdust] )) and cooldown[classtable.SymbolsofDeath].ready then
-        return classtable.SymbolsofDeath
+    if (MaxDps:FindSpell(classtable.SymbolsofDeath) and CheckSpellCosts(classtable.SymbolsofDeath, 'SymbolsofDeath')) and (not talents[classtable.InvigoratingShadowdust] and snd_condition and ( buff[classtable.ShadowBladesBuff].up or cooldown[classtable.ShadowBlades].remains >20 )) and cooldown[classtable.SymbolsofDeath].ready then
+        MaxDps:GlowCooldown(classtable.SymbolsofDeath, cooldown[classtable.SymbolsofDeath].ready)
     end
-    if (MaxDps:FindSpell(classtable.ShadowBlades) and CheckSpellCosts(classtable.ShadowBlades, 'ShadowBlades')) and (snd_condition and ( ComboPoints <= 1 or (MaxDps.tier and MaxDps.tier[31] and MaxDps.tier[31].count and MaxDps.tier[31].count >= 4) ) and ( buff[classtable.FlagellationBuffBuff].up or buff[classtable.FlagellationPersistBuff].up or not talents[classtable.Flagellation] )) and cooldown[classtable.ShadowBlades].ready then
-        return classtable.ShadowBlades
+    if (MaxDps:FindSpell(classtable.SymbolsofDeath) and CheckSpellCosts(classtable.SymbolsofDeath, 'SymbolsofDeath')) and (talents[classtable.InvigoratingShadowdust] and snd_condition and buff[classtable.SymbolsofDeathBuff].remains <= 3 and not buff[classtable.TheRottenBuff].up and ( cooldown[classtable.Flagellation].remains >10 or cooldown[classtable.Flagellation].ready and cooldown[classtable.ShadowBlades].remains >= 20 or buff[classtable.ShadowDanceBuff].remains >= 2 )) and cooldown[classtable.SymbolsofDeath].ready then
+        MaxDps:GlowCooldown(classtable.SymbolsofDeath, cooldown[classtable.SymbolsofDeath].ready)
     end
-    if (MaxDps:FindSpell(classtable.EchoingReprimand) and CheckSpellCosts(classtable.EchoingReprimand, 'EchoingReprimand')) and (snd_condition and ComboPointsDeficit >= 3) and cooldown[classtable.EchoingReprimand].ready then
-        return classtable.EchoingReprimand
+    if (MaxDps:FindSpell(classtable.ShadowBlades) and CheckSpellCosts(classtable.ShadowBlades, 'ShadowBlades')) and (snd_condition and ComboPoints <= 1 and ( buff[classtable.FlagellationBuffBuff].up or not talents[classtable.Flagellation] ) or ttd <= 20) and cooldown[classtable.ShadowBlades].ready then
+        MaxDps:GlowCooldown(classtable.ShadowBlades, cooldown[classtable.ShadowBlades].ready)
+    end
+    if (MaxDps:FindSpell(classtable.EchoingReprimand) and CheckSpellCosts(classtable.EchoingReprimand, 'EchoingReprimand')) and (snd_condition and ComboPointsDeficit >= 3 and ( not talents[classtable.TheRotten] or not talents[classtable.Reverberation] or buff[classtable.ShadowDanceBuff].up )) and cooldown[classtable.EchoingReprimand].ready then
+        MaxDps:GlowCooldown(classtable.EchoingReprimand, cooldown[classtable.EchoingReprimand].ready)
     end
     if (MaxDps:FindSpell(classtable.ShurikenTornado) and CheckSpellCosts(classtable.ShurikenTornado, 'ShurikenTornado')) and (snd_condition and buff[classtable.SymbolsofDeathBuff].up and ComboPoints <= 2 and not buff[classtable.PremeditationBuff].up and ( not talents[classtable.Flagellation] or cooldown[classtable.Flagellation].remains >20 ) and targets >= 3) and cooldown[classtable.ShurikenTornado].ready then
-        return classtable.ShurikenTornado
+        MaxDps:GlowCooldown(classtable.ShurikenTornado, cooldown[classtable.ShurikenTornado].ready)
     end
     if (MaxDps:FindSpell(classtable.ShurikenTornado) and CheckSpellCosts(classtable.ShurikenTornado, 'ShurikenTornado')) and (snd_condition and not buff[classtable.ShadowDanceBuff].up and not buff[classtable.FlagellationBuffBuff].up and not buff[classtable.FlagellationPersistBuff].up and not buff[classtable.ShadowBladesBuff].up and targets <= 2 and not (targets >1)) and cooldown[classtable.ShurikenTornado].ready then
-        return classtable.ShurikenTornado
+        MaxDps:GlowCooldown(classtable.ShurikenTornado, cooldown[classtable.ShurikenTornado].ready)
     end
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not buff[classtable.ShadowDanceBuff].up and ttd <= 8 + (talents[classtable.Subterfuge] and 1 or 0)) and cooldown[classtable.ShadowDance].ready then
-        return classtable.ShadowDance
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (buff[classtable.ShadowDanceBuff].up and talents[classtable.InvigoratingShadowdust] and talents[classtable.UnseenBlade] and ( ComboPointsDeficit >1 ) and ( cooldown[classtable.Flagellation].remains >= 60 or not talents[classtable.Flagellation] or ttd <= ( 30 * cooldown[classtable.Vanish].charges ) ) and ( cooldown[classtable.SecretTechnique].remains >= 10 and not (targets >1) )) and cooldown[classtable.Vanish].ready then
+        MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
-    if (MaxDps:FindSpell(classtable.GoremawsBite) and CheckSpellCosts(classtable.GoremawsBite, 'GoremawsBite')) and (snd_condition and ComboPointsDeficit >= 3 and ( not cooldown[classtable.ShadowDance].up or talents[classtable.ShadowDance] and buff[classtable.ShadowDanceBuff].up and not talents[classtable.InvigoratingShadowdust] or targets <4 and not talents[classtable.InvigoratingShadowdust] or talents[classtable.theRotten] or targets >1 )) and cooldown[classtable.GoremawsBite].ready then
-        return classtable.GoremawsBite
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not buff[classtable.ShadowDanceBuff].up and boss and ttd <= 8 + talents[classtable.Subterfuge]) and cooldown[classtable.ShadowDance].ready then
+        MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
     end
-    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (( cooldown[classtable.SymbolsofDeath].remains >= 3 or buff[classtable.SymbolsofDeathBuff].up ) and not buff[classtable.ThistleTeaBuff].up and ( EnergyDeficit >= ( 100 ) and ( ComboPointsDeficit >= 2 or targets >= 3 ) or ( cooldown[classtable.ThistleTea].charges >= ( 2.75 - 0.15 * (talents[classtable.InvigoratingShadowdust] and 1 or 0) and cooldown[classtable.Vanish].up ) ) and buff[classtable.ShadowDanceBuff].up and debuff[classtable.RuptureDeBuff].up and targets <3 ) or buff[classtable.ShadowDanceBuff].remains >= 4 and not buff[classtable.ThistleTeaBuff].up and targets >= 3 or not buff[classtable.ThistleTeaBuff].up and ttd <= ( 6 * cooldown[classtable.ThistleTea].charges )) and cooldown[classtable.ThistleTea].ready then
-        return classtable.ThistleTea
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not buff[classtable.ShadowDanceBuff].up and talents[classtable.InvigoratingShadowdust] and talents[classtable.DeathstalkersMark] and buff[classtable.ShadowBladesBuff].up and ( buff[classtable.SubterfugeBuff].up and targets >= 4 or buff[classtable.SubterfugeBuff].remains >= 3 )) and cooldown[classtable.ShadowDance].ready then
+        MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
     end
-    if (MaxDps:FindSpell(classtable.Potion) and CheckSpellCosts(classtable.Potion, 'Potion')) and (MaxDps:Bloodlust() or ttd <30 or buff[classtable.SymbolsofDeathBuff].up and ( buff[classtable.ShadowBladesBuff].up or cooldown[classtable.ShadowBlades].remains <= 10 )) and cooldown[classtable.Potion].ready then
-        return classtable.Potion
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (not buff[classtable.ShadowDanceBuff].up and talents[classtable.UnseenBlade] and talents[classtable.InvigoratingShadowdust] and debuff[classtable.RuptureDeBuff].up and snd_condition and ( buff[classtable.SymbolsofDeathBuff].remains >= 6 and not buff[classtable.FlagellationBuffBuff].up or buff[classtable.SymbolsofDeathBuff].up and buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowBladesBuff].up and not talents[classtable.InvigoratingShadowdust] ) and ( cooldown[classtable.SecretTechnique].remains <10 + 12 * not talents[classtable.InvigoratingShadowdust] or buff[classtable.ShadowBladesBuff].up ) and ( not talents[classtable.TheFirstDance] or ( ComboPointsDeficit >= 7 and not buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowBladesBuff].up ) )) and cooldown[classtable.ShadowDance].ready then
+        MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
     end
-    racial_sync = buff[classtable.ShadowBladesBuff].up or not talents[classtable.ShadowBlades] and buff[classtable.SymbolsofDeathBuff].up or ttd <20
+    if (MaxDps:FindSpell(classtable.GoremawsBite) and CheckSpellCosts(classtable.GoremawsBite, 'GoremawsBite')) and (snd_condition and ComboPointsDeficit >= 3 and ( not cooldown[classtable.ShadowDance].ready or talents[classtable.DoubleDance] and buff[classtable.ShadowDanceBuff].up and not talents[classtable.InvigoratingShadowdust] or targets <4 and not talents[classtable.InvigoratingShadowdust] or talents[classtable.TheRotten] or (targets >1) )) and cooldown[classtable.GoremawsBite].ready then
+        MaxDps:GlowCooldown(classtable.GoremawsBite, cooldown[classtable.GoremawsBite].ready)
+    end
+    if (MaxDps:FindSpell(classtable.ThistleTea) and CheckSpellCosts(classtable.ThistleTea, 'ThistleTea')) and (not buff[classtable.ThistleTeaBuff].up and ( buff[classtable.ShadowDanceBuff].remains >= 4 and buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowDanceBuff].remains >= 4 and cooldown[classtable.ColdBlood].remains <= 3 ) or ttd <= ( 6 * cooldown[classtable.ThistleTea].charges )) and cooldown[classtable.ThistleTea].ready then
+        MaxDps:GlowCooldown(classtable.ThistleTea, cooldown[classtable.ThistleTea].ready)
+    end
+    racial_sync = buff[classtable.ShadowBladesBuff].up or not talents[classtable.ShadowBlades] and buff[classtable.SymbolsofDeathBuff].up or boss and ttd <20
+end
+function Subtlety:items()
 end
 function Subtlety:finish()
-    secret_condition = ( CheckDanseMacabre(classtable.Shadowstrike) or CheckDanseMacabre(classtable.ShurikenStorm) ) and ( CheckDanseMacabre(classtable.Eviscerate) or CheckDanseMacabre(classtable.BlackPowder) or CheckDanseMacabre(classtable.Rupture) ) or not talents[classtable.DanseMacabre]
-    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (not debuff[classtable.RuptureDeBuff].up and ttd - debuff[classtable.Rupture].remains >6) and cooldown[classtable.Rupture].ready then
+    secret_condition = not buff[classtable.DarkestNightBuff].up and ( buff[classtable.DanseMacabreBuff].count >= 2 or not talents[classtable.DanseMacabre] or ( talents[classtable.UnseenBlade] and buff[classtable.ShadowDanceBuff].up and buff[classtable.EscalatingBladeBuff].count >= 2 ) )
+    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (not debuff[classtable.RuptureDeBuff].up and ttd - debuff[classtable.RuptureDeBuff].remains >6) and cooldown[classtable.Rupture].ready then
         return classtable.Rupture
     end
-    premed_snd_condition = talents[classtable.Premeditation] and targets <5
-    if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and (not (IsStealthed() or buff[classtable.ShadowDanceBuff].up) and not premed_snd_condition and targets <6 and not buff[classtable.ShadowDanceBuff].up and buff[classtable.SliceandDiceBuff].remains <ttd and buff[classtable.SliceandDice].refreshable) and cooldown[classtable.SliceandDice].ready then
-        return classtable.SliceandDice
-    end
-    skip_rupture = buff[classtable.ThistleTeaBuff].up and targets == 1 or buff[classtable.ShadowDanceBuff].up and ( targets == 1 or debuff[classtable.RuptureDeBuff].up and targets >= 2 )
-    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (( not skip_rupture ) and ttd - debuff[classtable.Rupture].remains >6 and debuff[classtable.Rupture].refreshable) and cooldown[classtable.Rupture].ready then
+    skip_rupture = buff[classtable.ThistleTeaBuff].up and targets == 1 or buff[classtable.ShadowDanceBuff].up and ( targets == 1 or debuff[classtable.RuptureDeBuff].up and targets >= 2 ) or buff[classtable.DarkestNightBuff].up
+    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (( not skip_rupture or priority_rotation ) and ttd - debuff[classtable.RuptureDeBuff].remains >6 and debuff[classtable.RuptureDeBuff].refreshable) and cooldown[classtable.Rupture].ready then
         return classtable.Rupture
     end
-    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (buff[classtable.FinalityRuptureBuff].up and buff[classtable.ShadowDanceBuff].up and targets <= 4 and not CheckDanseMacabre(classtable.Rupture)) and cooldown[classtable.Rupture].ready then
-        return classtable.Rupture
+    if (MaxDps:FindSpell(classtable.CoupDeGrace) and CheckSpellCosts(classtable.CoupDeGrace, 'CoupDeGrace')) and (debuff[classtable.FazedDeBuff].up and ( buff[classtable.ShadowDanceBuff].up or ( buff[classtable.SymbolsofDeathBuff].up and cooldown[classtable.ShadowDance].charges <= 0.85 ) )) and cooldown[classtable.CoupDeGrace].ready then
+        return classtable.CoupDeGrace
     end
     if (MaxDps:FindSpell(classtable.ColdBlood) and CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (secret_condition and cooldown[classtable.SecretTechnique].ready) and cooldown[classtable.ColdBlood].ready then
-        return classtable.ColdBlood
+        MaxDps:GlowCooldown(classtable.ColdBlood, cooldown[classtable.ColdBlood].ready)
     end
     if (MaxDps:FindSpell(classtable.SecretTechnique) and CheckSpellCosts(classtable.SecretTechnique, 'SecretTechnique')) and (secret_condition and ( not talents[classtable.ColdBlood] or cooldown[classtable.ColdBlood].remains >buff[classtable.ShadowDanceBuff].remains - 2 or not talents[classtable.ImprovedShadowDance] )) and cooldown[classtable.SecretTechnique].ready then
         return classtable.SecretTechnique
     end
-    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (not skip_rupture and targets >= 2 and ttd >= ( 2 * ComboPoints ) and debuff[classtable.Rupture].refreshable) and cooldown[classtable.Rupture].ready then
+    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (not skip_rupture and buff[classtable.FinalityRuptureBuff].up and ( cooldown[classtable.SymbolsofDeath].remains <= 3 or buff[classtable.SymbolsofDeathBuff].up )) and cooldown[classtable.Rupture].ready then
         return classtable.Rupture
     end
-    if (MaxDps:FindSpell(classtable.Rupture) and CheckSpellCosts(classtable.Rupture, 'Rupture')) and (not skip_rupture and debuff[classtable.Rupture].remains <cooldown[classtable.SymbolsofDeath].remains + 10 and cooldown[classtable.SymbolsofDeath].remains <= 5 and ttd - debuff[classtable.Rupture].remains >cooldown[classtable.SymbolsofDeath].remains + 5) and cooldown[classtable.Rupture].ready then
-        return classtable.Rupture
-    end
-    if (MaxDps:FindSpell(classtable.BlackPowder) and CheckSpellCosts(classtable.BlackPowder, 'BlackPowder')) and (targets >= 3) and cooldown[classtable.BlackPowder].ready then
+    if (MaxDps:FindSpell(classtable.BlackPowder) and CheckSpellCosts(classtable.BlackPowder, 'BlackPowder')) and (not priority_rotation and talents[classtable.DeathstalkersMark] and targets >= 3 and not buff[classtable.DarkestNightBuff].up) and cooldown[classtable.BlackPowder].ready then
         return classtable.BlackPowder
+    end
+    if (MaxDps:FindSpell(classtable.BlackPowder) and CheckSpellCosts(classtable.BlackPowder, 'BlackPowder')) and (not priority_rotation and talents[classtable.UnseenBlade] and ( ( buff[classtable.EscalatingBladeBuff].count == 4 and not buff[classtable.ShadowDanceBuff].up ) or targets >= 3 and not buff[classtable.FlawlessFormBuff].up or targets >10 or ( not CheckDanseMacabre(classtable.Blackpowder) and buff[classtable.ShadowDanceBuff].up and talents[classtable.ShurikenTornado] and targets >= 3 ) )) and cooldown[classtable.BlackPowder].ready then
+        return classtable.BlackPowder
+    end
+    if (MaxDps:FindSpell(classtable.CoupDeGrace) and CheckSpellCosts(classtable.CoupDeGrace, 'CoupDeGrace')) and (debuff[classtable.FazedDeBuff].up) and cooldown[classtable.CoupDeGrace].ready then
+        return classtable.CoupDeGrace
     end
     if (MaxDps:FindSpell(classtable.Eviscerate) and CheckSpellCosts(classtable.Eviscerate, 'Eviscerate')) and cooldown[classtable.Eviscerate].ready then
         return classtable.Eviscerate
     end
 end
 function Subtlety:stealth_cds()
-    shd_threshold = cooldown[classtable.ShadowDance].charges >= 0.75 + (talents[classtable.ShadowDance] and 1 or 0)
-    rotten_cb = ( not buff[classtable.theRottenBuff].up or not (MaxDps.tier and MaxDps.tier[30] and MaxDps.tier[30].count and MaxDps.tier[30].count >= 2) ) and ( not talents[classtable.ColdBlood] or cooldown[classtable.ColdBlood].remains <4 or cooldown[classtable.ColdBlood].remains >10 )
-    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (( ComboPointsDeficit >1 or buff[classtable.ShadowBladesBuff].up and talents[classtable.InvigoratingShadowdust] ) and not shd_threshold and ( cooldown[classtable.Flagellation].remains >= 60 or not talents[classtable.Flagellation] or ttd <= ( 30 * cooldown[classtable.Vanish].charges ) ) and ( cooldown[classtable.SymbolsofDeath].remains >3 or not (MaxDps.tier and MaxDps.tier[30] and MaxDps.tier[30].count and MaxDps.tier[30].count >= 2) ) and ( cooldown[classtable.SecretTechnique].remains >= 10 or not talents[classtable.SecretTechnique] or cooldown[classtable.Vanish].charges >= 2 and talents[classtable.InvigoratingShadowdust] and ( buff[classtable.theRottenBuff].up or not talents[classtable.theRotten] ) and not (targets >1) )) and cooldown[classtable.Vanish].ready then
-        return classtable.Vanish
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not talents[classtable.InvigoratingShadowdust] and not talents[classtable.Subterfuge] and ComboPointsDeficit >= 3 and ( not debuff[classtable.RuptureDeBuff].up or ( buff[classtable.ShadowBladesBuff].up and buff[classtable.SymbolsofDeathBuff].up ) or talents[classtable.Premeditation] or boss and ttd <10 )) and cooldown[classtable.Vanish].ready then
+        MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
-    --if (MaxDps:FindSpell(classtable.PoolResource) and CheckSpellCosts(classtable.PoolResource, 'PoolResource')) and (CheckRace('night_elf')) and cooldown[classtable.PoolResource].ready then
-    --    return classtable.PoolResource
-    --end
-    if (MaxDps:FindSpell(classtable.Shadowmeld) and CheckSpellCosts(classtable.Shadowmeld, 'Shadowmeld')) and (Energy >= 40 and EnergyDeficit >= 10 and not shd_threshold and ComboPointsDeficit >4) and cooldown[classtable.Shadowmeld].ready then
-        return classtable.Shadowmeld
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not buff[classtable.ShadowDanceBuff].up and talents[classtable.InvigoratingShadowdust] and talents[classtable.DeathstalkersMark] and ( ComboPointsDeficit >1 or buff[classtable.ShadowBladesBuff].up ) and ( cooldown[classtable.Flagellation].remains >= 60 or not talents[classtable.Flagellation] or boss and ttd <= ( 30 * cooldown[classtable.Vanish].charges ) ) and ( cooldown[classtable.SecretTechnique].remains >= 10 and not (targets >1) )) and cooldown[classtable.Vanish].ready then
+        MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
-    shd_combo_points = ComboPointsDeficit >= 3
-    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (( debuff[classtable.RuptureDeBuff].up or talents[classtable.InvigoratingShadowdust] ) and rotten_cb and ( not talents[classtable.theFirstDance] or ComboPointsDeficit >= 4 or buff[classtable.ShadowBladesBuff].up ) and ( shd_combo_points and shd_threshold or ( buff[classtable.ShadowBladesBuff].up or cooldown[classtable.SymbolsofDeath].up and not talents[classtable.Sepsis] or buff[classtable.SymbolsofDeathBuff].remains >= 4 and not (MaxDps.tier and MaxDps.tier[30] and MaxDps.tier[30].count and MaxDps.tier[30].count >= 2) or not buff[classtable.SymbolsofDeathBuff].up and (MaxDps.tier and MaxDps.tier[30] and MaxDps.tier[30].count and MaxDps.tier[30].count >= 2) ) and cooldown[classtable.SecretTechnique].remains <10 + 12 * ( (talents[classtable.InvigoratingShadowdust] and 1 or 0) or (MaxDps.tier and MaxDps.tier[30] and MaxDps.tier[30].count and MaxDps.tier[30].count >= 2 and 1 or 0) ) )) and cooldown[classtable.ShadowDance].ready then
-        return classtable.ShadowDance
+    if (MaxDps:FindSpell(classtable.ShadowDance) and CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (debuff[classtable.RuptureDeBuff].up and snd_condition and ( buff[classtable.SymbolsofDeathBuff].remains >= 6 and not buff[classtable.FlagellationBuffBuff].up or buff[classtable.SymbolsofDeathBuff].up and buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowBladesBuff].up and not talents[classtable.InvigoratingShadowdust] ) and cooldown[classtable.SecretTechnique].remains <10 + 12 * (not talents[classtable.InvigoratingShadowdust] and 0 or 1) and ( not talents[classtable.TheFirstDance] or ( ComboPointsDeficit >= 7 and not buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowBladesBuff].up ) )) and cooldown[classtable.ShadowDance].ready then
+        MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
+    end
+    if (MaxDps:FindSpell(classtable.Vanish) and CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not talents[classtable.InvigoratingShadowdust] and talents[classtable.Subterfuge] and ComboPointsDeficit >= 3 and ( buff[classtable.SymbolsofDeathBuff].up or cooldown[classtable.SymbolsofDeath].remains >= 3 )) and cooldown[classtable.Vanish].ready then
+        MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
+    end
+    if (MaxDps:FindSpell(classtable.Shadowmeld) and CheckSpellCosts(classtable.Shadowmeld, 'Shadowmeld')) and (Energy >= 40 and ComboPointsDeficit >3) and cooldown[classtable.Shadowmeld].ready then
+        MaxDps:GlowCooldown(classtable.Shadowmeld, cooldown[classtable.Shadowmeld].ready)
     end
 end
 function Subtlety:stealthed()
-    if (MaxDps:FindSpell(classtable.Shadowstrike) and CheckSpellCosts(classtable.Shadowstrike, 'Shadowstrike')) and (buff[classtable.StealthBuff].up and ( targets <4 )) and cooldown[classtable.Shadowstrike].ready then
+    if (MaxDps:FindSpell(classtable.Shadowstrike) and CheckSpellCosts(classtable.Shadowstrike, 'Shadowstrike')) and (talents[classtable.DeathstalkersMark] and not debuff[classtable.DeathstalkersMarkDeBuff].up and not buff[classtable.DarkestNightBuff].up) and cooldown[classtable.Shadowstrike].ready then
         return classtable.Shadowstrike
     end
-    if (calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax) then
+    if (buff[classtable.DarkestNightBuff].up and ComboPoints == ComboPointsMax) then
         local finishCheck = Subtlety:finish()
         if finishCheck then
             return Subtlety:finish()
         end
     end
-    if (buff[classtable.ShurikenTornadoBuff].up and ComboPointsDeficit <= 2) then
+    if (calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax and not buff[classtable.DarkestNightBuff].up) then
         local finishCheck = Subtlety:finish()
         if finishCheck then
             return Subtlety:finish()
         end
     end
-    if (ComboPointsDeficit <= 1 + ( (talents[classtable.DeeperStratagem] and 1 or 0) or (talents[classtable.SecretStratagem]) and 1 or 0)) then
+    if (buff[classtable.ShurikenTornadoBuff].up and ComboPointsDeficit <= 2 and not buff[classtable.DarkestNightBuff].up) then
         local finishCheck = Subtlety:finish()
         if finishCheck then
             return Subtlety:finish()
         end
     end
-    if (MaxDps:FindSpell(classtable.Backstab) and CheckSpellCosts(classtable.Backstab, 'Backstab')) and (not buff[classtable.PremeditationBuff].up and buff[classtable.ShadowDanceBuff].remains >= 3 and buff[classtable.ShadowBladesBuff].up and not CheckDanseMacabre(classtable.Backstab) and talents[classtable.DanseMacabre] and targets <= 3 and not buff[classtable.theRottenBuff].up) and cooldown[classtable.Backstab].ready then
-        return classtable.Backstab
+    if (( ComboPointsDeficit <= 1 + (talents[classtable.DeathstalkersMark] and talents[classtable.DeathstalkersMark] or 0) ) and not buff[classtable.DarkestNightBuff].up) then
+        local finishCheck = Subtlety:finish()
+        if finishCheck then
+            return Subtlety:finish()
+        end
     end
-    if (MaxDps:FindSpell(classtable.Gloomblade) and CheckSpellCosts(classtable.Gloomblade, 'Gloomblade')) and (not buff[classtable.PremeditationBuff].up and buff[classtable.ShadowDanceBuff].remains >= 3 and buff[classtable.ShadowBladesBuff].up and not CheckDanseMacabre(classtable.Gloomblade) and talents[classtable.DanseMacabre] and targets <= 4) and cooldown[classtable.Gloomblade].ready then
-        return classtable.Gloomblade
-    end
-    if (MaxDps:FindSpell(classtable.Shadowstrike) and CheckSpellCosts(classtable.Shadowstrike, 'Shadowstrike')) and (not CheckDanseMacabre(classtable.Shadowstrike) and buff[classtable.ShadowBladesBuff].up) and cooldown[classtable.Shadowstrike].ready then
+    if (MaxDps:FindSpell(classtable.Shadowstrike) and CheckSpellCosts(classtable.Shadowstrike, 'Shadowstrike')) and (( not CheckDanseMacabre(classtable.Shadowstrike) and buff[classtable.ShadowBladesBuff].up ) or ( talents[classtable.UnseenBlade] and targets >= 2 )) and cooldown[classtable.Shadowstrike].ready then
         return classtable.Shadowstrike
     end
     if (MaxDps:FindSpell(classtable.ShurikenStorm) and CheckSpellCosts(classtable.ShurikenStorm, 'ShurikenStorm')) and (not buff[classtable.PremeditationBuff].up and targets >= 4) and cooldown[classtable.ShurikenStorm].ready then
         return classtable.ShurikenStorm
+    end
+    if (MaxDps:FindSpell(classtable.Gloomblade) and CheckSpellCosts(classtable.Gloomblade, 'Gloomblade')) and (buff[classtable.LingeringShadowBuff].remains >= 10 and buff[classtable.ShadowBladesBuff].up and targets == 1) and cooldown[classtable.Gloomblade].ready then
+        return classtable.Gloomblade
     end
     if (MaxDps:FindSpell(classtable.Shadowstrike) and CheckSpellCosts(classtable.Shadowstrike, 'Shadowstrike')) and cooldown[classtable.Shadowstrike].ready then
         return classtable.Shadowstrike
     end
 end
 
+function Subtlety:callaction()
+    --if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
+    --    return classtable.Stealth
+    --end
+    if (MaxDps:FindSpell(classtable.Kick) and CheckSpellCosts(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
+        MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
+    end
+    snd_condition = buff[classtable.SliceandDiceBuff].up
+    local cdsCheck = Subtlety:cds()
+    if cdsCheck then
+        return cdsCheck
+    end
+    if (trinket_sync_slot == 1) then
+        local itemsCheck = Subtlety:items()
+        if itemsCheck then
+            return Subtlety:items()
+        end
+    end
+    if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and (ComboPoints >= 1 and not snd_condition) and cooldown[classtable.SliceandDice].ready then
+        return classtable.SliceandDice
+    end
+    if ((IsStealthed() or buff[classtable.ShadowDanceBuff].up)) then
+        local stealthedCheck = Subtlety:stealthed()
+        if stealthedCheck then
+            if buff[classtable.ShadowDanceBuff].up and MaxDps.spellHistory[1] then
+                table.insert(DanseMacabreSpellList,table.getn(DanseMacabreSpellList)+1,MaxDps.spellHistory[1])
+            else
+                DanseMacabreSpellList = {}
+            end
+            return Subtlety:stealthed()
+        end
+    end
+    local stealth_cdsCheck = Subtlety:stealth_cds()
+    if stealth_cdsCheck then
+        return stealth_cdsCheck
+    end
+    if (buff[classtable.DarkestNightBuff].up and ComboPoints == ComboPointsMax or calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax and not buff[classtable.DarkestNightBuff].up or ( ComboPointsDeficit <= 1 + (talents[classtable.DeathstalkersMark] and talents[classtable.DeathstalkersMark] or 0) or ttd <= 1 and calculateEffectiveComboPoints(ComboPoints) >= 3 ) and not buff[classtable.DarkestNightBuff].up) then
+        local finishCheck = Subtlety:finish()
+        if finishCheck then
+            return Subtlety:finish()
+        end
+    end
+    if (EnergyDeficit <= 20 + (talents[classtable.Vigor] and talents[classtable.Vigor] or 0) * 25 + (talents[classtable.ThistleTea] and talents[classtable.ThistleTea] or 0) * 20 + (talents[classtable.Shadowcraft] and talents[classtable.Shadowcraft] or 0) * 20) then
+        local buildCheck = Subtlety:build()
+        if buildCheck then
+            return Subtlety:build()
+        end
+    end
+    if (MaxDps:FindSpell(classtable.ArcanePulse) and CheckSpellCosts(classtable.ArcanePulse, 'ArcanePulse')) and cooldown[classtable.ArcanePulse].ready then
+        return classtable.ArcanePulse
+    end
+    if (buff[classtable.DarkestNightBuff].up and ComboPoints == ComboPointsMax) then
+        local finishCheck = Subtlety:finish()
+        if finishCheck then
+            return Subtlety:finish()
+        end
+    end
+    if (calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax and not buff[classtable.DarkestNightBuff].up) then
+        local finishCheck = Subtlety:finish()
+        if finishCheck then
+            return Subtlety:finish()
+        end
+    end
+    if (buff[classtable.ShurikenTornadoBuff].up and ComboPointsDeficit <= 2 and not buff[classtable.DarkestNightBuff].up) then
+        local finishCheck = Subtlety:finish()
+        if finishCheck then
+            return Subtlety:finish()
+        end
+    end
+    if (( ComboPointsDeficit <= 1 + (talents[classtable.DeathstalkersMark] and talents[classtable.DeathstalkersMark] or 0) ) and not buff[classtable.DarkestNightBuff].up) then
+        local finishCheck = Subtlety:finish()
+        if finishCheck then
+            return Subtlety:finish()
+        end
+    end
+end
 function Rogue:Subtlety()
     fd = MaxDps.FrameData
     ttd = (fd.timeToDie and fd.timeToDie) or 500
+    timeShift = fd.timeShift
     gcd = fd.gcd
     cooldown = fd.cooldown
     buff = fd.buff
@@ -377,7 +538,7 @@ function Rogue:Subtlety()
     healthPerc = (curentHP / maxHP) * 100
     timeInCombat = MaxDps.combatTime or 0
     classtable = MaxDps.SpellTable
-    SpellHaste = UnitSpellHaste('target')
+    SpellHaste = UnitSpellHaste('player')
     SpellCrit = GetCritChance()
     Energy = UnitPower('player', EnergyPT)
     EnergyMax = UnitPowerMax('player', EnergyPT)
@@ -388,107 +549,40 @@ function Rogue:Subtlety()
     ComboPoints = UnitPower('player', ComboPointsPT)
     ComboPointsMax = UnitPowerMax('player', ComboPointsPT)
     ComboPointsDeficit = ComboPointsMax - ComboPoints
+    for spellId in pairs(MaxDps.Flags) do
+        self.Flags[spellId] = false
+        self:ClearGlowIndependent(spellId, spellId)
+    end
     classtable.LingeringShadowBuff = 385960
     classtable.PerforatedVeinsBuff = 394254
+    classtable.FlawlessFormBuff = 0
+    classtable.CleartheWitnessesBuff = 0
     classtable.SymbolsofDeathBuff = 212283
-    classtable.theRottenBuff = 394203
+    classtable.RuptureDeBuff = 1943
+    classtable.ShadowBladesBuff = 121471
+    classtable.TheRottenBuff = 0
     classtable.ShadowDanceBuff = 185422
     classtable.FlagellationBuffBuff = 394758
-    classtable.FlagellationPersistBuff = 384631
     classtable.PremeditationBuff = 343173
-    classtable.ShadowBladesBuff = 121471
+    classtable.FlagellationPersistBuff = 384631
+    classtable.SubterfugeBuff = 0
     classtable.ThistleTeaBuff = 381623
-    classtable.RuptureDeBuff = 1943
-    classtable.SliceandDiceBuff = 315496
+    classtable.DarkestNightBuff = 0
+    classtable.DanseMacabreBuff = 0
+    classtable.EscalatingBladeBuff = 0
+    classtable.FazedDeBuff = 0
     classtable.FinalityRuptureBuff = 385951
-    classtable.StealthBuff = 115191
+    classtable.DeathstalkersMarkDeBuff = 0
     classtable.ShurikenTornadoBuff = 277925
-    --PreCombatUpdate()
+    classtable.SliceandDiceBuff = 315496
 
-    --if (MaxDps:FindSpell(classtable.Stealth) and CheckSpellCosts(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
-    --    return classtable.Stealth
-    --end
-    --if (MaxDps:FindSpell(classtable.Kick) and CheckSpellCosts(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
-    --    return classtable.Kick
-    --end
-    snd_condition = buff[classtable.SliceandDiceBuff].up or targets >= ComboPointsMax
-    local cdsCheck = Subtlety:cds()
-    if cdsCheck then
-        return cdsCheck
-    end
-    if (MaxDps:FindSpell(classtable.SliceandDice) and CheckSpellCosts(classtable.SliceandDice, 'SliceandDice')) and (targets <ComboPointsMax and buff[classtable.SliceandDiceBuff].remains <gcd and ttd >6 and ComboPoints >= 4) and cooldown[classtable.SliceandDice].ready then
-        return classtable.SliceandDice
-    end
-    if ((IsStealthed() or buff[classtable.ShadowDanceBuff].up)) then
-        local stealthedCheck = Subtlety:stealthed()
-        if stealthedCheck then
-            if buff[classtable.ShadowDanceBuff].up and MaxDps.spellHistory[1] then
-                if talents[classtable.DanseMacabre] and type(DanseMacabreSpellList) ~= "table" then
-                    DanseMacabreSpellList = {}
-                    table.insert(DanseMacabreSpellList,table.getn(DanseMacabreSpellList)+1,MaxDps.spellHistory[1])
-                end
-            else
-                DanseMacabreSpellList = {}
-            end
-            return Subtlety:stealthed()
-        end
-    end
-    --priority_rotation = TODO
-    stealth_threshold = 20 + (talents[classtable.Vigor] and 1 or 0) * 25 + (talents[classtable.ThistleTea] and 1 or 0) * 20 + (talents[classtable.Shadowcraft] and 1 or 0) * 20
-    stealth_helper = Energy >= stealth_threshold
-    if not talents[classtable.Vigor] or talents[classtable.Shadowcraft] then
-        stealth_helper = EnergyDeficit <= stealth_threshold
-    end
-    if (stealth_helper or talents[classtable.InvigoratingShadowdust]) then
-        local stealth_cdsCheck = Subtlety:stealth_cds()
-        if stealth_cdsCheck then
-            return Subtlety:stealth_cds()
-        end
-    end
-    if (calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax) then
-        local finishCheck = Subtlety:finish()
-        if finishCheck then
-            return Subtlety:finish()
-        end
-    end
-    if (ComboPointsDeficit <= 1 or ttd <= 1 and calculateEffectiveComboPoints(ComboPoints) >= 3) then
-        local finishCheck = Subtlety:finish()
-        if finishCheck then
-            return Subtlety:finish()
-        end
-    end
-    if (targets >= 4 and calculateEffectiveComboPoints(ComboPoints) >= 4) then
-        local finishCheck = Subtlety:finish()
-        if finishCheck then
-            return Subtlety:finish()
-        end
-    end
-    if (EnergyDeficit <= stealth_threshold) then
-        local buildCheck = Subtlety:build()
-        if buildCheck then
-            return Subtlety:build()
-        end
-    end
-    if (MaxDps:FindSpell(classtable.ArcanePulse) and CheckSpellCosts(classtable.ArcanePulse, 'ArcanePulse')) and cooldown[classtable.ArcanePulse].ready then
-        return classtable.ArcanePulse
-    end
-    if (calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax) then
-        local finishCheck = Subtlety:finish()
-        if finishCheck then
-            return Subtlety:finish()
-        end
-    end
-    if (buff[classtable.ShurikenTornadoBuff].up and ComboPointsDeficit <= 2) then
-        local finishCheck = Subtlety:finish()
-        if finishCheck then
-            return Subtlety:finish()
-        end
-    end
-    if (ComboPointsDeficit <= 1 + ( (talents[classtable.DeeperStratagem] and 1 or 0) or (talents[classtable.SecretStratagem]) and 1 or 0)) then
-        local finishCheck = Subtlety:finish()
-        if finishCheck then
-            return Subtlety:finish()
-        end
+    local precombatCheck = Subtlety:precombat()
+    if precombatCheck then
+        return Subtlety:precombat()
     end
 
+    local callactionCheck = Subtlety:callaction()
+    if callactionCheck then
+        return Subtlety:callaction()
+    end
 end
