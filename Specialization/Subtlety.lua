@@ -85,26 +85,6 @@ local skip_rupture
 local function CheckSpellCosts(spell,spellstring)
     if not IsSpellKnown(spell) then return false end
     if not C_Spell.IsSpellUsable(spell) then return false end
-    if spellstring == 'TouchofDeath' then
-        if targethealthPerc > 15 then
-            return false
-        end
-    end
-    if spellstring == 'KillShot' then
-        if (classtable.SicEmBuff and not buff[classtable.SicEmBuff].up) or (classtable.HuntersPreyBuff and not buff[classtable.HuntersPreyBuff].up) and targethealthPerc > 15 then
-            return false
-        end
-    end
-    if spellstring == 'HammerofWrath' then
-        if ( (classtable.AvengingWrathBuff and not buff[classtable.AvengingWrathBuff].up) or (classtable.FinalVerdictBuff and not buff[classtable.FinalVerdictBuff].up) ) and targethealthPerc > 20 then
-            return false
-        end
-    end
-    if spellstring == 'Execute' then
-        if (classtable.SuddenDeathBuff and not buff[classtable.SuddenDeathBuff].up) and targethealthPerc > 35 then
-            return false
-        end
-    end
     local costs = C_Spell.GetSpellPowerCost(spell)
     if type(costs) ~= 'table' and spellstring then return true end
     for i,costtable in pairs(costs) do
@@ -386,7 +366,7 @@ function Subtlety:stealth_cds()
     if (CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not talents[classtable.InvigoratingShadowdust] and not talents[classtable.Subterfuge] and ComboPointsDeficit >= 3 and ( not debuff[classtable.RuptureDeBuff].up or ( buff[classtable.ShadowBladesBuff].up and buff[classtable.SymbolsofDeathBuff].up ) or talents[classtable.Premeditation] or boss and ttd <10 )) and cooldown[classtable.Vanish].ready then
         MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
-    if (CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not buff[classtable.ShadowDanceBuff].up and talents[classtable.InvigoratingShadowdust] and talents[classtable.DeathstalkersMark] and ( ComboPointsDeficit >1 or buff[classtable.ShadowBladesBuff].up ) and ( cooldown[classtable.Flagellation].remains >= 60 or not talents[classtable.Flagellation] or boss and ttd <= ( 30 * cooldown[classtable.Vanish].charges ) ) and ( cooldown[classtable.SecretTechnique].remains >= 10 and not (targets >1) )) and cooldown[classtable.Vanish].ready then
+    if (CheckSpellCosts(classtable.Vanish, 'Vanish')) and (not buff[classtable.ShadowDanceBuff].up and talents[classtable.InvigoratingShadowdust] and talents[classtable.DeathstalkersMark] and ( ComboPointsDeficit >1 or buff[classtable.ShadowBladesBuff].up ) and ( cooldown[classtable.Flagellation].remains >= 60 or not talents[classtable.Flagellation] or ttd <= ( 30 * cooldown[classtable.Vanish].charges ) ) and cooldown[classtable.SecretTechnique].remains >= 10) and cooldown[classtable.Vanish].ready then
         MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
     if (CheckSpellCosts(classtable.ShadowDance, 'ShadowDance')) and (debuff[classtable.RuptureDeBuff].up and snd_condition and ( buff[classtable.SymbolsofDeathBuff].remains >= 6 and not buff[classtable.FlagellationBuffBuff].up or buff[classtable.SymbolsofDeathBuff].up and buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowBladesBuff].up and not talents[classtable.InvigoratingShadowdust] ) and cooldown[classtable.SecretTechnique].remains <10 + 12 * (not talents[classtable.InvigoratingShadowdust] and 0 or 1) and ( not talents[classtable.TheFirstDance] or ( ComboPointsDeficit >= 7 and not buff[classtable.ShadowBladesBuff].up or buff[classtable.ShadowBladesBuff].up ) )) and cooldown[classtable.ShadowDance].ready then

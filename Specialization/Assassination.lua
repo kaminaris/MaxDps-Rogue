@@ -91,26 +91,6 @@ local shiv_kingsbane_condition
 local function CheckSpellCosts(spell,spellstring)
     if not IsSpellKnown(spell) then return false end
     if not C_Spell.IsSpellUsable(spell) then return false end
-    if spellstring == 'TouchofDeath' then
-        if targethealthPerc > 15 then
-            return false
-        end
-    end
-    if spellstring == 'KillShot' then
-        if (classtable.SicEmBuff and not buff[classtable.SicEmBuff].up) or (classtable.HuntersPreyBuff and not buff[classtable.HuntersPreyBuff].up) and targethealthPerc > 15 then
-            return false
-        end
-    end
-    if spellstring == 'HammerofWrath' then
-        if ( (classtable.AvengingWrathBuff and not buff[classtable.AvengingWrathBuff].up) or (classtable.FinalVerdictBuff and not buff[classtable.FinalVerdictBuff].up) ) and targethealthPerc > 20 then
-            return false
-        end
-    end
-    if spellstring == 'Execute' then
-        if (classtable.SuddenDeathBuff and not buff[classtable.SuddenDeathBuff].up) and targethealthPerc > 35 then
-            return false
-        end
-    end
     local costs = C_Spell.GetSpellPowerCost(spell)
     if type(costs) ~= 'table' and spellstring then return true end
     for i,costtable in pairs(costs) do
@@ -328,7 +308,7 @@ function Assassination:cds()
         end
     end
     if (CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and (ComboPoints >= 5 and not debuff[classtable.RuptureDeBuff].refreshable and not buff[classtable.EdgeCaseBuff].up and cooldown[classtable.Deathmark].remains >10) and cooldown[classtable.ColdBlood].ready then
-        return classtable.ColdBlood
+        MaxDps:GlowCooldown(classtable.ColdBlood, cooldown[classtable.ColdBlood].ready)
     end
 end
 function Assassination:direct()
@@ -347,7 +327,7 @@ function Assassination:direct()
         return classtable.Ambush
     end
     if (CheckSpellCosts(classtable.EchoingReprimand, 'EchoingReprimand')) and (use_filler or boss and ttd <20) and cooldown[classtable.EchoingReprimand].ready then
-        return classtable.EchoingReprimand
+        MaxDps:GlowCooldown(classtable.EchoingReprimand, cooldown[classtable.EchoingReprimand].ready)
     end
     if (CheckSpellCosts(classtable.FanofKnives, 'FanofKnives')) and (use_filler and ( targets >= 3 or buff[classtable.CleartheWitnessesBuff].up )) and cooldown[classtable.FanofKnives].ready then
         return classtable.FanofKnives
@@ -468,7 +448,7 @@ function Assassination:callaction()
         MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
     end
     single_target = targets <2
-    regen_saturated = EnergyRegenCombined >35
+    regen_saturated = EnergyRegenCombined >15
     not_pooling = ( debuff[classtable.DeathmarkDeBuff].up or debuff[classtable.KingsbaneDeBuff].up or debuff[classtable.ShivDeBuff].up ) or ( buff[classtable.EnvenomBuff].up and buff[classtable.EnvenomBuff].remains <= 1 ) or EnergyPerc >= ( 40 + 30 * (talents[classtable.HandofFate] and talents[classtable.HandofFate] or 0) - 15 * (talents[classtable.ViciousVenoms] and talents[classtable.ViciousVenoms] or 0) ) or boss and ttd <= 20
     scent_effective_max_stacks = ( targets * (talents[classtable.ScentofBlood] and talents[classtable.ScentofBlood] or 0) * 2 )
     scent_saturation = buff[classtable.ScentofBloodBuff].count >= scent_effective_max_stacks
