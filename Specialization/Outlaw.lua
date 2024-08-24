@@ -403,8 +403,8 @@ function Outlaw:finish()
     if (CheckSpellCosts(classtable.ColdBlood, 'ColdBlood')) and cooldown[classtable.ColdBlood].ready then
         MaxDps:GlowCooldown(classtable.ColdBlood, cooldown[classtable.ColdBlood].ready)
     end
-    if (CheckSpellCosts(classtable.CoupDeGrace, 'CoupDeGrace')) and cooldown[classtable.CoupDeGrace].ready then
-        return classtable.CoupDeGrace
+    if (CheckSpellCosts(classtable.CoupdeGrace, 'CoupdeGrace')) and cooldown[classtable.CoupdeGrace].ready then
+        return classtable.CoupdeGrace
     end
     if (CheckSpellCosts(classtable.Dispatch, 'Dispatch')) and cooldown[classtable.Dispatch].ready then
         return classtable.Dispatch
