@@ -218,8 +218,8 @@ function Subtlety:finish()
     if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (( not skip_rupture or priority_rotation ) and ttd - debuff[classtable.RuptureDeBuff].remains >6 and debuff[classtable.RuptureDeBuff].refreshable) and cooldown[classtable.Rupture].ready then
         return classtable.Rupture
     end
-    if (MaxDps:CheckSpellUsable(classtable.CoupDeGrace, 'CoupDeGrace')) and (debuff[classtable.FazedDeBuff].up and ( buff[classtable.ShadowDanceBuff].up or ( buff[classtable.SymbolsofDeathBuff].up and cooldown[classtable.ShadowDance].charges <= 0.85 ) )) and cooldown[classtable.CoupDeGrace].ready then
-        return classtable.CoupDeGrace
+    if (MaxDps:CheckSpellUsable(classtable.CoupdeGrace, 'CoupdeGrace')) and (debuff[classtable.FazedDeBuff].up and ( buff[classtable.ShadowDanceBuff].up or ( buff[classtable.SymbolsofDeathBuff].up and cooldown[classtable.ShadowDance].charges <= 0.85 ) )) and cooldown[classtable.CoupdeGrace].ready then
+        return classtable.CoupdeGrace
     end
     if (MaxDps:CheckSpellUsable(classtable.ColdBlood, 'ColdBlood')) and (secret_condition and cooldown[classtable.SecretTechnique].ready) and cooldown[classtable.ColdBlood].ready then
         MaxDps:GlowCooldown(classtable.ColdBlood, cooldown[classtable.ColdBlood].ready)
@@ -236,8 +236,8 @@ function Subtlety:finish()
     if (MaxDps:CheckSpellUsable(classtable.BlackPowder, 'BlackPowder')) and (not priority_rotation and talents[classtable.UnseenBlade] and ( ( buff[classtable.EscalatingBladeBuff].count == 4 and not buff[classtable.ShadowDanceBuff].up ) or targets >= 3 and not buff[classtable.FlawlessFormBuff].up or targets >10 or ( not CheckDanseMacabre(classtable.Blackpowder) and buff[classtable.ShadowDanceBuff].up and talents[classtable.ShurikenTornado] and targets >= 3 ) )) and cooldown[classtable.BlackPowder].ready then
         return classtable.BlackPowder
     end
-    if (MaxDps:CheckSpellUsable(classtable.CoupDeGrace, 'CoupDeGrace')) and (debuff[classtable.FazedDeBuff].up) and cooldown[classtable.CoupDeGrace].ready then
-        return classtable.CoupDeGrace
+    if (MaxDps:CheckSpellUsable(classtable.CoupdeGrace, 'CoupdeGrace')) and (debuff[classtable.FazedDeBuff].up) and cooldown[classtable.CoupdeGrace].ready then
+        return classtable.CoupdeGrace
     end
     if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and cooldown[classtable.Eviscerate].ready then
         return classtable.Eviscerate
