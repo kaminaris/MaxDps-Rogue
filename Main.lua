@@ -14,8 +14,10 @@ Rogue.spellMeta = {
 }
 
 function Rogue:Enable()
-	Rogue:InitializeDatabase()
-	Rogue:CreateConfig()
+	if MaxDps:IsRetailWow() then
+	    Rogue:InitializeDatabase()
+	    Rogue:CreateConfig()
+	end
 
 	if MaxDps.Spec == 1 then
 		MaxDps.NextSpell = Rogue.Assassination

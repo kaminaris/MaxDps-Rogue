@@ -53,9 +53,6 @@ local curentHP
 local maxHP
 local healthPerc
 local timeInCombat
-local className, classFilename, classId = UnitClass('player')
-local currentSpec = GetSpecialization()
-local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or 'None'
 local classtable
 local LibRangeCheck = LibStub('LibRangeCheck-3.0', true)
 
@@ -134,6 +131,12 @@ local function ClearCDs()
 end
 
 function Subtlety:callaction()
+    if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
+        if not setSpell then setSpell = classtable.ApplyPoison end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not in_combat or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
+        if not setSpell then setSpell = classtable.TolvirPotion end
+    end
     if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
         if not setSpell then setSpell = classtable.Stealth end
     end
@@ -143,8 +146,14 @@ function Subtlety:callaction()
     if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[12].count >= 4) or (MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
         if not setSpell then setSpell = classtable.TricksoftheTrade end
     end
+    if (MaxDps:CheckSpellUsable(classtable.PoolEnergy, 'PoolEnergy')) and cooldown[classtable.PoolEnergy].ready then
+        if not setSpell then setSpell = classtable.PoolEnergy end
+    end
     if (MaxDps:CheckSpellUsable(classtable.ShadowDance, 'ShadowDance')) and (Energy >85 and ComboPoints <5 and not buff[classtable.StealthedBuff].up) and cooldown[classtable.ShadowDance].ready then
         MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
+    end
+    if (MaxDps:CheckSpellUsable(classtable.PoolEnergy, 'PoolEnergy')) and cooldown[classtable.PoolEnergy].ready then
+        if not setSpell then setSpell = classtable.PoolEnergy end
     end
     if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (timeInCombat >10 and Energy >60 and ComboPoints <= 1 and cooldown[classtable.Shadowstep].remains <= 0 and not buff[classtable.ShadowDanceBuff].up and not buff[classtable.MasterofSubtletyBuff].up and not buff[classtable.FindWeaknessBuff].up) and cooldown[classtable.Vanish].ready then
         MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
