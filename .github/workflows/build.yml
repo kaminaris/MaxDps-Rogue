@@ -28,3 +28,8 @@ jobs:
         uses: BigWigsMods/packager@master
         with:
             args: -g retail
+
+      - name: Package Cata Classic
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g cata
