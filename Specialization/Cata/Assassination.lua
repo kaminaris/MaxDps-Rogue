@@ -152,18 +152,18 @@ local function ClearCDs()
 end
 
 function Assassination:callaction()
-    if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
-        if not setSpell then setSpell = classtable.ApplyPoison end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not in_combat or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
-        if not setSpell then setSpell = classtable.TolvirPotion end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
-        if not setSpell then setSpell = classtable.Stealth end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
-        MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
+    --    if not setSpell then setSpell = classtable.ApplyPoison end
+    --end
+    --if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not UnitAffectingCombat('player') or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
+    --    if not setSpell then setSpell = classtable.TolvirPotion end
+    --end
+    --if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
+    --    if not setSpell then setSpell = classtable.Stealth end
+    --end
+    --if (MaxDps:CheckSpellUsable(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
+    --    MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
+    --end
     if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[12].count >= 4) or (MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
         if not setSpell then setSpell = classtable.TricksoftheTrade end
     end
@@ -173,13 +173,13 @@ function Assassination:callaction()
     if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (not buff[classtable.SliceandDiceBuff].up) and cooldown[classtable.SliceandDice].ready then
         if not setSpell then setSpell = classtable.SliceandDice end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (( not debuff[classtable.RuptureDeBuff].up or ticks_remain <2 ) and timeInCombat <6) and cooldown[classtable.Rupture].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (( not debuff[classtable.RuptureDeBuff].up or debuff[classtable.RuptureDeBuff].refreshable ) and timeInCombat <6) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
     end
     if (MaxDps:CheckSpellUsable(classtable.Vendetta, 'Vendetta')) and cooldown[classtable.Vendetta].ready then
         if not setSpell then setSpell = classtable.Vendetta end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (( not debuff[classtable.RuptureDeBuff].up or ticks_remain <2 ) and buff[classtable.SliceandDiceBuff].remains >6) and cooldown[classtable.Rupture].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (( not debuff[classtable.RuptureDeBuff].up or debuff[classtable.RuptureDeBuff].refreshable ) and buff[classtable.SliceandDiceBuff].remains >6) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
     end
     if (MaxDps:CheckSpellUsable(classtable.ColdBlood, 'ColdBlood')) and cooldown[classtable.ColdBlood].ready then
@@ -197,7 +197,7 @@ function Assassination:callaction()
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <5 and targetHP <35) and cooldown[classtable.Backstab].ready then
         if not setSpell then setSpell = classtable.Backstab end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Mutilate, 'Mutilate')) and (position_front and ComboPoints <5 and targetHP <35) and cooldown[classtable.Mutilate].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Mutilate, 'Mutilate')) and (ComboPoints <5 and targetHP <35) and cooldown[classtable.Mutilate].ready then
         if not setSpell then setSpell = classtable.Mutilate end
     end
     if (MaxDps:CheckSpellUsable(classtable.Mutilate, 'Mutilate')) and (ComboPoints <4 and targetHP >= 35) and cooldown[classtable.Mutilate].ready then
