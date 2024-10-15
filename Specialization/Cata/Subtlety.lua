@@ -131,12 +131,12 @@ local function ClearCDs()
 end
 
 function Subtlety:callaction()
-    if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
-        if not setSpell then setSpell = classtable.ApplyPoison end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not in_combat or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
-        if not setSpell then setSpell = classtable.TolvirPotion end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
+        --if not setSpell then setSpell = classtable.ApplyPoison end
+    --end
+    --if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not in_combat or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
+        --if not setSpell then setSpell = classtable.TolvirPotion end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
         if not setSpell then setSpell = classtable.Stealth end
     end
