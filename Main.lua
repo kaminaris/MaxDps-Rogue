@@ -23,8 +23,13 @@ function Rogue:Enable()
 		MaxDps.NextSpell = Rogue.Assassination
 		MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Assassination', "info")
 	elseif MaxDps.Spec == 2 then
-		MaxDps.NextSpell = Rogue.Outlaw
-		MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Outlaw', "info")
+		if MaxDps:IsRetailWow() then
+		    MaxDps.NextSpell = Rogue.Outlaw
+		    MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Outlaw', "info")
+		else
+			MaxDps.NextSpell = Rogue.Combat
+		    MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Combat', "info")
+		end
 	elseif MaxDps.Spec == 3 then
 		MaxDps.NextSpell = Rogue.Subtlety
 		MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Subtlety', "info")
