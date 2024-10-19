@@ -212,8 +212,7 @@ function Assassination:core_dot()
 end
 function Assassination:aoe_dot()
     scent_effective_max_stacks = 20--( targets * (talents[classtable.ScentofBlood] and talents[classtable.ScentofBlood] or 0) * 2 ) >20
-    scent_saturation = buff[classtable.ScentofBloodBuff].count >= scent_effective_max_stacks
-    dot_finisher_condition = calculateEffectiveComboPoints(ComboPoints) >= effective_spend_cp and ( debuff[classtable.DeBuff].remains <= 1 )
+    dot_finisher_condition = calculateEffectiveComboPoints(ComboPoints) >= effective_spend_cp and ( debuff[classtable.RuptureDeBuff].refreshable or debuff[classtable.GarroteDeBuff].refreshable  )
     if (MaxDps:CheckSpellUsable(classtable.CrimsonTempest, 'CrimsonTempest')) and (targets >= 2 and dot_finisher_condition and debuff[classtable.CrimsonTempestDeBuff].refreshable and ttd - debuff[classtable.CrimsonTempestDeBuff].remains >6) and cooldown[classtable.CrimsonTempest].ready then
         if not setSpell then setSpell = classtable.CrimsonTempest end
     end
@@ -259,9 +258,6 @@ function Assassination:direct()
     end
     if (MaxDps:CheckSpellUsable(classtable.Mutilate, 'Mutilate')) and (not debuff[classtable.DeadlyPoisonDebuffDeBuff].up and not debuff[classtable.AmplifyingPoisonDeBuff].up and use_filler and targets == 2) and cooldown[classtable.Mutilate].ready then
         if not setSpell then setSpell = classtable.Mutilate end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Envenom, 'Envenom')) and (not use_filler and ComboPointsDeficit <= 1 and ( EnergyPerc >= ( 40 + 30 * (talents[classtable.HandofFate] and talents[classtable.HandofFate] or 0) - 15 * (talents[classtable.ViciousVenoms] and talents[classtable.ViciousVenoms] or 0) ) or MaxDps:boss() and ttd <= 20 )) and cooldown[classtable.Envenom].ready then
-        if not setSpell then setSpell = classtable.Envenom end
     end
     if (MaxDps:CheckSpellUsable(classtable.Mutilate, 'Mutilate')) and (use_filler) and cooldown[classtable.Mutilate].ready then
         if not setSpell then setSpell = classtable.Mutilate end
@@ -336,9 +332,6 @@ function Assassination:vanish()
         MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
     if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (talents[classtable.ImprovedGarrote] and cooldown[classtable.Garrote].ready and ( debuff[classtable.GarroteDeBuff].remains <= 1 or debuff[classtable.GarroteDeBuff].refreshable ) and ( debuff[classtable.DeathmarkDeBuff].up or cooldown[classtable.Deathmark].remains <4 ) and math.huge >30) and cooldown[classtable.Vanish].ready then
-        MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (not talents[classtable.ImprovedGarrote] and buff[classtable.DarkestNightBuff].up and ComboPointsDeficit >= 3 and single_target) and cooldown[classtable.Vanish].ready then
         MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
     end
 end
@@ -438,10 +431,9 @@ function Rogue:Assassination()
     classtable.VanishBuff = 11327
     classtable.CrimsonTempestDeBuff = 121411
     classtable.MomentumofDespairBuff = 0
-    classtable.ScentofBloodBuff = 394080
     classtable.DeBuff = 0
     classtable.KingsbaneDeBuff = 385627
-    classtable.ColdBloodBuff = 0
+    classtable.ColdBloodBuff = 382245
     classtable.CausticSpatterDeBuff = 421976
     classtable.CleartheWitnessesBuff = 0
     classtable.DeadlyPoisonDebuffDeBuff = 2818
@@ -452,6 +444,7 @@ function Rogue:Assassination()
     classtable.FateboundCoinTailsBuff = 0
     classtable.FateboundCoinHeadsBuff = 0
     classtable.VanishDeBuff = 0
+    classtable.ScentofBloodBuff = 394080
     setSpell = nil
     ClearCDs()
 
