@@ -153,7 +153,7 @@ function Subtlety:build()
     if (MaxDps:CheckSpellUsable(classtable.ShurikenStorm, 'ShurikenStorm')) and (buff[classtable.CleartheWitnessesBuff].up and ( not buff[classtable.SymbolsofDeathBuff].up or not talents[classtable.Inevitability] ) and ( buff[classtable.LingeringShadowBuff].remains <= 6 or not talents[classtable.LingeringShadow] )) and cooldown[classtable.ShurikenStorm].ready then
         if not setSpell then setSpell = classtable.ShurikenStorm end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and cooldown[classtable.Gloomblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and talents[classtable.Gloomblade] and cooldown[classtable.Gloomblade].ready then
         if not setSpell then setSpell = classtable.Gloomblade end
     end
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and cooldown[classtable.Backstab].ready then
@@ -269,7 +269,7 @@ function Subtlety:stealthed()
     if (MaxDps:CheckSpellUsable(classtable.ShurikenStorm, 'ShurikenStorm')) and (not buff[classtable.PremeditationBuff].up and targets >= 4) and cooldown[classtable.ShurikenStorm].ready then
         if not setSpell then setSpell = classtable.ShurikenStorm end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and (buff[classtable.LingeringShadowBuff].remains >= 10 and buff[classtable.ShadowBladesBuff].up and targets == 1) and cooldown[classtable.Gloomblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and talents[classtable.Gloomblade] and (buff[classtable.LingeringShadowBuff].remains >= 10 and buff[classtable.ShadowBladesBuff].up and targets == 1) and cooldown[classtable.Gloomblade].ready then
         if not setSpell then setSpell = classtable.Gloomblade end
     end
     if (MaxDps:CheckSpellUsable(classtable.Shadowstrike, 'Shadowstrike')) and cooldown[classtable.Shadowstrike].ready then
