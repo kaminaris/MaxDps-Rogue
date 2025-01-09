@@ -116,53 +116,88 @@ local function calculateEffectiveComboPoints(comboPoints)
 end
 
 
+function Combat:precombat()
+end
+function Combat:build()
+    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (not buff[classtable.SliceandDiceBuff].up and ComboPoints == 0) and cooldown[classtable.SinisterStrike].ready then
+        if not setSpell then setSpell = classtable.SinisterStrike end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (not buff[classtable.SliceandDiceBuff].up and ComboPoints >0) and cooldown[classtable.SliceandDice].ready then
+        if not setSpell then setSpell = classtable.SliceandDice end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.AdrenalineRush, 'AdrenalineRush')) and (buff[classtable.SliceandDiceBuff].up) and cooldown[classtable.AdrenalineRush].ready then
+        if not setSpell then setSpell = classtable.AdrenalineRush end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.RevealingStrike, 'RevealingStrike')) and (ComboPoints <3 and not debuff[classtable.RevealingStrikeDeBuff].up and buff[classtable.SliceandDiceBuff].remains >5) and cooldown[classtable.RevealingStrike].ready then
+        if not setSpell then setSpell = classtable.RevealingStrike end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Gouge, 'Gouge')) and (ComboPoints == 4 and debuff[classtable.RevealingStrikeDeBuff].up) and cooldown[classtable.Gouge].ready then
+        if not setSpell then setSpell = classtable.Gouge end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
+        if not setSpell then setSpell = classtable.SinisterStrike end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.KillingSpree, 'KillingSpree')) and (Energy <50 and buff[classtable.DeepInsightBuff].up) and cooldown[classtable.KillingSpree].ready then
+        if not setSpell then setSpell = classtable.KillingSpree end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <3 and ComboPoints <3 or not buff[classtable.SliceandDiceBuff].up) and cooldown[classtable.SliceandDice].ready then
+        if not setSpell then setSpell = classtable.SliceandDice end
+    end
+end
+function Combat:finish()
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints == 5 and not debuff[classtable.RuptureDeBuff].up and ( MaxDps:boss() or targets == 1 or MaxDps:NumGroupFriends() <= 1 ) and not buff[classtable.DeepInsightBuff].up and not buff[classtable.BladeFlurryBuff].up and not buff[classtable.AdrenalineRushBuff].up and ttd >12 and not MaxDps:Bloodlust()) and cooldown[classtable.Rupture].ready then
+        if not setSpell then setSpell = classtable.Rupture end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5 and ttd <12) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+end
+function Combat:cds()
+    if (MaxDps:CheckSpellUsable(classtable.AdrenalineRush, 'AdrenalineRush')) and (Energy <80 and cooldown[classtable.KillingSpree].remains >15) and cooldown[classtable.AdrenalineRush].ready then
+        if not setSpell then setSpell = classtable.AdrenalineRush end
+    end
+end
+function Combat:defensives()
+    if (MaxDps:CheckSpellUsable(classtable.CloakofShadows, 'CloakofShadows')) and (curentHP <= 20 and not buff[classtable.CloakofShadowsBuff].up) and cooldown[classtable.CloakofShadows].ready then
+        if not setSpell then setSpell = classtable.CloakofShadows end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Evasion, 'Evasion')) and (curentHP <= 35 and not buff[classtable.EvasionBuff].up) and cooldown[classtable.Evasion].ready then
+        if not setSpell then setSpell = classtable.Evasion end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Recuperate, 'Recuperate')) and (curentHP <30 and ComboPoints >= 3 and not buff[classtable.RecuperateBuff].up) and cooldown[classtable.Recuperate].ready then
+        if not setSpell then setSpell = classtable.Recuperate end
+    end
+end
 
 
 local function ClearCDs()
     MaxDps:GlowCooldown(classtable.Kick, false)
-    MaxDps:GlowCooldown(classtable.KillingSpree, false)
-    MaxDps:GlowCooldown(classtable.AdrenalineRush, false)
 end
 
 function Combat:callaction()
-    --if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
-    --    if not setSpell then setSpell = classtable.ApplyPoison end
-    --end
-    --if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not UnitAffectingCombat('player') or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
-    --    if not setSpell then setSpell = classtable.TolvirPotion end
-    --end
-    --if (MaxDps:CheckSpellUsable(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
-    --    MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
-    --end
-    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[12].count >= 4) or (MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
-    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
-    --end
-    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (not buff[classtable.SliceandDiceBuff].up) and cooldown[classtable.SliceandDice].ready then
-        if not setSpell then setSpell = classtable.SliceandDice end
+    if (MaxDps:CheckSpellUsable(classtable.Shiv, 'Shiv')) and (debuff[classtable.DispellableEnrageDeBuff].up) and cooldown[classtable.Shiv].ready then
+        if not setSpell then setSpell = classtable.Shiv end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <2) and cooldown[classtable.SliceandDice].ready then
-        if not setSpell then setSpell = classtable.SliceandDice end
+    if (MaxDps:CheckSpellUsable(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
+        MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
     end
-    if (MaxDps:CheckSpellUsable(classtable.KillingSpree, 'KillingSpree')) and (Energy <35 and buff[classtable.SliceandDiceBuff].remains >4 and not buff[classtable.AdrenalineRushBuff].up) and cooldown[classtable.KillingSpree].ready then
-        MaxDps:GlowCooldown(classtable.KillingSpree, cooldown[classtable.KillingSpree].ready)
+    Combat:cds()
+    if (ComboPoints == 5) then
+        Combat:finish()
     end
-    if (MaxDps:CheckSpellUsable(classtable.AdrenalineRush, 'AdrenalineRush')) and (Energy <35) and cooldown[classtable.AdrenalineRush].ready then
-        MaxDps:GlowCooldown(classtable.AdrenalineRush, cooldown[classtable.AdrenalineRush].ready)
+    Combat:build()
+    Combat:defensives()
+    if (MaxDps:CheckSpellUsable(classtable.Redirect, 'Redirect')) and (ttd <5 and targets >2) and cooldown[classtable.Redirect].ready then
+        if not setSpell then setSpell = classtable.Redirect end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5 and buff[classtable.BanditsGuileBuff].count >= 12) and cooldown[classtable.Eviscerate].ready then
-        if not setSpell then setSpell = classtable.Eviscerate end
+    if (MaxDps:CheckSpellUsable(classtable.BladeFlurry, 'BladeFlurry')) and (targets >1 and not buff[classtable.BladeFlurryBuff].up) and cooldown[classtable.BladeFlurry].ready then
+        if not setSpell then setSpell = classtable.BladeFlurry end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (not debuff[classtable.RuptureDeBuff].up and ComboPoints == 5 and ttd >10) and cooldown[classtable.Rupture].ready then
-        if not setSpell then setSpell = classtable.Rupture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
-        if not setSpell then setSpell = classtable.Eviscerate end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.RevealingStrike, 'RevealingStrike')) and (ComboPoints == 4 and not buff[classtable.RevealingStrikeBuff].up) and cooldown[classtable.RevealingStrike].ready then
-        if not setSpell then setSpell = classtable.RevealingStrike end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
-        if not setSpell then setSpell = classtable.SinisterStrike end
+    if (MaxDps:CheckSpellUsable(classtable.FanofKnives, 'FanofKnives')) and (targets >5 and Energy <50 and buff[classtable.DeepInsightBuff].up) and cooldown[classtable.FanofKnives].ready then
+        if not setSpell then setSpell = classtable.FanofKnives end
     end
 end
 function Rogue:Combat()
@@ -201,14 +236,43 @@ function Rogue:Combat()
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
     --end
-    classtable.bloodlust = 0
     classtable.SliceandDiceBuff = 0
-    classtable.AdrenalineRushBuff = 0
-    classtable.BanditsGuileBuff = 0
-    classtable.RuptureDeBuff = 0
-    classtable.RevealingStrikeBuff = 0
+    classtable.RevealingStrikeDeBuff = 84617
+    classtable.DeepInsightBuff = 84747
+    classtable.RuptureDeBuff = 1943
+    classtable.BladeFlurryBuff = 13877
+    classtable.AdrenalineRushBuff = 13750
+    classtable.bloodlust = 0
+    classtable.CloakofShadowsBuff = 0
+    classtable.EvasionBuff = 26669
+    classtable.RecuperateBuff = 73651
+    classtable.DispellableEnrageDeBuff = 0
+    classtable.SinisterStrike = 1752
+    classtable.AdrenalineRush = 13750
+    classtable.RevealingStrike = 84617
+    classtable.Gouge = 1776
+    classtable.KillingSpree = 51690
+    classtable.Eviscerate = 2098
+    classtable.Rupture = 1943
+    classtable.BladeFlurry = 13877
+    classtable.Evasion = 5277
+    classtable.Recuperate = 73651
+    classtable.Shiv = 5938
+    classtable.Kick = 1766
+    classtable.Redirect = 73981
+
+    local function debugg()
+    end
+
+
+    if MaxDps.db.global.debugMode then
+        debugg()
+    end
+
     setSpell = nil
     ClearCDs()
+
+    Combat:precombat()
 
     Combat:callaction()
     if setSpell then return setSpell end

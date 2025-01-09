@@ -122,77 +122,106 @@ local function CheckDanseMacabre(spell)
 end
 
 
+function Subtlety:precombat()
+    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (ComboPoints >= 5) and cooldown[classtable.SliceandDice].ready and not UnitAffectingCombat('player') then
+        if not setSpell then setSpell = classtable.SliceandDice end
+    end
+end
+function Subtlety:mr()
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 6 and target.debuff.rupture.remains <3) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (buff[classtable.ShadowDanceBuff].up and ComboPoints >= 5) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 5 and target.debuff.rupture.remains <3) and cooldown[classtable.Rupture].ready then
+        if not setSpell then setSpell = classtable.Rupture end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (buff[classtable.FindWeaknessBuff].remains <= 3) and cooldown[classtable.Vanish].ready then
+        if not setSpell then setSpell = classtable.Vanish end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Premeditation, 'Premeditation')) and (buff[classtable.VanishBuff].up) and cooldown[classtable.Premeditation].ready then
+        if not setSpell then setSpell = classtable.Premeditation end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (buff[classtable.VanishBuff].up) and cooldown[classtable.Ambush].ready then
+        if not setSpell then setSpell = classtable.Ambush end
+    end
+end
+function Subtlety:sr()
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 6 and target.debuff.rupture.remains <3) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 5 and target.debuff.rupture.remains <3) and cooldown[classtable.Rupture].ready then
+        if not setSpell then setSpell = classtable.Rupture end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (target.debuff.hemorrhage.remains <3) and cooldown[classtable.Hemorrhage].ready then
+        if not setSpell then setSpell = classtable.Hemorrhage end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Recuperate, 'Recuperate')) and (not buff[classtable.RecuperateBuff].up and EnergyTimeToMax >2.5) and cooldown[classtable.Recuperate].ready then
+        if not setSpell then setSpell = classtable.Recuperate end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Preparation, 'Preparation')) and (( not buff[classtable.VanishBuff].up and cooldown[classtable.Vanish].remains <5 ) or ( not buff[classtable.ShadowDanceBuff].up and cooldown[classtable.ShadowDance].remains <5 )) and cooldown[classtable.Preparation].ready then
+        if not setSpell then setSpell = classtable.Preparation end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <5) and cooldown[classtable.Backstab].ready then
+        if not setSpell then setSpell = classtable.Backstab end
+    end
+end
+function Subtlety:cooldowns()
+    if (MaxDps:CheckSpellUsable(classtable.ShadowDance, 'ShadowDance')) and (cooldown[classtable.ShadowDance].ready) and cooldown[classtable.ShadowDance].ready then
+        if not setSpell then setSpell = classtable.ShadowDance end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (cooldown[classtable.Vanish].ready and EnergyTimeToMax >2.5) and cooldown[classtable.Vanish].ready then
+        if not setSpell then setSpell = classtable.Vanish end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shadowstep, 'Shadowstep')) and (buff[classtable.ShadowDanceBuff].up) and cooldown[classtable.Shadowstep].ready then
+        if not setSpell then setSpell = classtable.Shadowstep end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (buff[classtable.ShadowDanceBuff].up or buff[classtable.StealthBuff].up) and cooldown[classtable.Ambush].ready then
+        if not setSpell then setSpell = classtable.Ambush end
+    end
+end
 
 
 local function ClearCDs()
-    MaxDps:GlowCooldown(classtable.Kick, false)
-    MaxDps:GlowCooldown(classtable.ShadowDance, false)
-    MaxDps:GlowCooldown(classtable.Vanish, false)
 end
 
 function Subtlety:callaction()
-    --if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready then
-        --if not setSpell then setSpell = classtable.ApplyPoison end
-    --end
-    --if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and (not in_combat or MaxDps:Bloodlust() or ttd <30) and cooldown[classtable.TolvirPotion].ready then
-        --if not setSpell then setSpell = classtable.TolvirPotion end
-    --end
-    if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready then
-        if not setSpell then setSpell = classtable.Stealth end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
-        MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
-    end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[12].count >= 4) or (MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.PoolEnergy, 'PoolEnergy')) and cooldown[classtable.PoolEnergy].ready then
-        if not setSpell then setSpell = classtable.PoolEnergy end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.ShadowDance, 'ShadowDance')) and (Energy >85 and ComboPoints <5 and not buff[classtable.StealthedBuff].up) and cooldown[classtable.ShadowDance].ready then
-        MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.PoolEnergy, 'PoolEnergy')) and cooldown[classtable.PoolEnergy].ready then
-        if not setSpell then setSpell = classtable.PoolEnergy end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (timeInCombat >10 and Energy >60 and ComboPoints <= 1 and cooldown[classtable.Shadowstep].remains <= 0 and not buff[classtable.ShadowDanceBuff].up and not buff[classtable.MasterofSubtletyBuff].up and not buff[classtable.FindWeaknessBuff].up) and cooldown[classtable.Vanish].ready then
-        MaxDps:GlowCooldown(classtable.Vanish, cooldown[classtable.Vanish].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Shadowstep, 'Shadowstep')) and (buff[classtable.StealthedBuff].up or buff[classtable.ShadowDanceBuff].up) and cooldown[classtable.Shadowstep].ready then
-        if not setSpell then setSpell = classtable.Shadowstep end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Premeditation, 'Premeditation')) and (( ComboPoints <= 3 and cooldown[classtable.HonorAmongThieves].remains >1.75 ) or ComboPoints <= 2) and cooldown[classtable.Premeditation].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Premeditation, 'Premeditation')) and cooldown[classtable.Premeditation].ready then
         if not setSpell then setSpell = classtable.Premeditation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (ComboPoints <= 4) and cooldown[classtable.Ambush].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and ((IsStealthed() or buff[classtable.ShadowDanceBuff].up)) and cooldown[classtable.Ambush].ready then
         if not setSpell then setSpell = classtable.Ambush end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Preparation, 'Preparation')) and (cooldown[classtable.Vanish].remains >60) and cooldown[classtable.Preparation].ready then
-        if not setSpell then setSpell = classtable.Preparation end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <3 and ComboPoints == 5) and cooldown[classtable.SliceandDice].ready then
-        if not setSpell then setSpell = classtable.SliceandDice end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints == 5 and not debuff[classtable.RuptureDeBuff].up) and cooldown[classtable.Rupture].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >1 and not debuff[classtable.RuptureDeBuff].up) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Recuperate, 'Recuperate')) and (ComboPoints == 5 and debuff[classtable.RecuperateDeBuff].remains <3) and cooldown[classtable.Recuperate].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (not debuff[classtable.HemorrhageDeBuff].up) and cooldown[classtable.Hemorrhage].ready then
+        if not setSpell then setSpell = classtable.Hemorrhage end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.ShadowDance, 'ShadowDance')) and (not buff[classtable.ShadowDanceBuff].up) and cooldown[classtable.ShadowDance].ready then
+        if not setSpell then setSpell = classtable.ShadowDance end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shadowstep, 'Shadowstep')) and cooldown[classtable.Shadowstep].ready then
+        if not setSpell then setSpell = classtable.Shadowstep end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (buff[classtable.ShadowstepBuff].up) and cooldown[classtable.Ambush].ready then
+        if not setSpell then setSpell = classtable.Ambush end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Recuperate, 'Recuperate')) and (ComboPoints >1 and not buff[classtable.RecupateBuff].up) and cooldown[classtable.Recuperate].ready then
         if not setSpell then setSpell = classtable.Recuperate end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5 and debuff[classtable.RuptureDeBuff].remains >1) and cooldown[classtable.Eviscerate].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (ComboPoints <5 and (IsStealthed() or buff[classtable.ShadowDanceBuff].up)) and cooldown[classtable.Ambush].ready then
+        if not setSpell then setSpell = classtable.Ambush end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 5) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints <4 and ( debuff[classtable.HemorrhageDeBuff].remains <4 or position_front )) and cooldown[classtable.Hemorrhage].ready then
-        if not setSpell then setSpell = classtable.Hemorrhage end
+    if (buff[classtable.FindWeaknessBuff].up) then
+        Subtlety:mr()
     end
-    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints <5 and Energy >80 and ( debuff[classtable.HemorrhageDeBuff].remains <4 or position_front )) and cooldown[classtable.Hemorrhage].ready then
-        if not setSpell then setSpell = classtable.Hemorrhage end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <4) and cooldown[classtable.Backstab].ready then
-        if not setSpell then setSpell = classtable.Backstab end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <5 and Energy >80) and cooldown[classtable.Backstab].ready then
-        if not setSpell then setSpell = classtable.Backstab end
+    if (not buff[classtable.FindWeaknessBuff].up) then
+        Subtlety:sr()
     end
 end
 function Rogue:Subtlety()
@@ -231,17 +260,39 @@ function Rogue:Subtlety()
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
     --end
-    classtable.bloodlust = 0
-    classtable.StealthedBuff = 0
-    classtable.ShadowDanceBuff = 185422
-    classtable.MasterofSubtletyBuff = 0
+    classtable.ShadowDanceBuff = 51713
     classtable.FindWeaknessBuff = 0
-    classtable.SliceandDiceBuff = 315496
+    classtable.VanishBuff = 11327
+    classtable.RecuperateBuff = 73651
+    classtable.StealthBuff = 1784
     classtable.RuptureDeBuff = 1943
-    classtable.RecuperateDeBuff = 0
-    classtable.HemorrhageDeBuff = 0
+    classtable.HemorrhageDeBuff = 16511
+    classtable.ShadowstepBuff = 36563
+    classtable.RecupateBuff = 0
+    classtable.Eviscerate = 2098
+    classtable.ShadowDance = 51713
+    classtable.Rupture = 1943
+    classtable.Vanish = 1856
+    classtable.Premeditation = 14183
+    classtable.Ambush = 8676
+    classtable.Hemorrhage = 16511
+    classtable.Recuperate = 73651
+    classtable.Preparation = 14185
+    classtable.Backstab = 53
+    classtable.Shadowstep = 36554
+
+    local function debugg()
+    end
+
+
+    if MaxDps.db.global.debugMode then
+        debugg()
+    end
+
     setSpell = nil
     ClearCDs()
+
+    Subtlety:precombat()
 
     Subtlety:callaction()
     if setSpell then return setSpell end
