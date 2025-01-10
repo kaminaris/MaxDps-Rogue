@@ -279,7 +279,7 @@ function Rogue:Assasination()
     classtable.EnvenomBuff = 57993
     classtable.DeadlyPoisonDebuffDeBuff = 0
     classtable.VendettaDeBuff = 79140
-    classtable.SliceandDiceBuff = 0
+    classtable.SliceandDiceBuff = 5171
     classtable.StealthBuff = 1784
     classtable.SwordguardEmbroideryBuff = 0
     classtable.bloodlust = 0

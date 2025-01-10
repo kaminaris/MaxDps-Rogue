@@ -134,14 +134,14 @@ function Combat:build()
     if (MaxDps:CheckSpellUsable(classtable.Gouge, 'Gouge')) and (ComboPoints == 4 and debuff[classtable.RevealingStrikeDeBuff].up) and cooldown[classtable.Gouge].ready then
         if not setSpell then setSpell = classtable.Gouge end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
-        if not setSpell then setSpell = classtable.SinisterStrike end
-    end
     if (MaxDps:CheckSpellUsable(classtable.KillingSpree, 'KillingSpree')) and (Energy <50 and buff[classtable.DeepInsightBuff].up) and cooldown[classtable.KillingSpree].ready then
         if not setSpell then setSpell = classtable.KillingSpree end
     end
     if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <3 and ComboPoints <3 or not buff[classtable.SliceandDiceBuff].up) and cooldown[classtable.SliceandDice].ready then
         if not setSpell then setSpell = classtable.SliceandDice end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
+        if not setSpell then setSpell = classtable.SinisterStrike end
     end
 end
 function Combat:finish()
@@ -236,7 +236,7 @@ function Rogue:Combat()
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
     --end
-    classtable.SliceandDiceBuff = 0
+    classtable.SliceandDiceBuff = 5171
     classtable.RevealingStrikeDeBuff = 84617
     classtable.DeepInsightBuff = 84747
     classtable.RuptureDeBuff = 1943
