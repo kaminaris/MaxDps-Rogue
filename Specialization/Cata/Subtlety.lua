@@ -260,6 +260,13 @@ function Rogue:Subtlety()
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
     --end
+    classtable.RuptureBuff = 1943
+    classtable.HemorrhageBuff = 16511
+    classtable.ShadowDanceBuff = 51713
+    classtable.ShadowstepBuff = 36563
+    classtable.VanishBuff = 11327
+    classtable.RecuperateBuff = 73651
+    classtable.StealthBuff = 1784
     classtable.RuptureDeBuff = 1943
     classtable.HemorrhageDeBuff = 16511
     classtable.SliceandDice = 5171
