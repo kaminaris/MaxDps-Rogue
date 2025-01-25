@@ -128,13 +128,13 @@ function Subtlety:precombat()
     end
 end
 function Subtlety:mr()
-    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 6 and target.debuff.rupture.remains <3) and cooldown[classtable.Eviscerate].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 6 and debuff[classtable.RuptureDeBuff].remains <3) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
     end
     if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (buff[classtable.ShadowDanceBuff].up and ComboPoints >= 5) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 5 and target.debuff.rupture.remains <3) and cooldown[classtable.Rupture].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 5 and debuff[classtable.RuptureDeBuff].remains <3) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
     end
     if (MaxDps:CheckSpellUsable(classtable.Vanish, 'Vanish')) and (buff[classtable.FindWeaknessBuff].remains <= 3) and cooldown[classtable.Vanish].ready then
@@ -148,13 +148,13 @@ function Subtlety:mr()
     end
 end
 function Subtlety:sr()
-    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 6 and target.debuff.rupture.remains <3) and cooldown[classtable.Eviscerate].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints >= 6 and debuff[classtable.RuptureDeBuff].remains <3) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 5 and target.debuff.rupture.remains <3) and cooldown[classtable.Rupture].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 5 and debuff[classtable.RuptureDeBuff].remains <3) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (target.debuff.hemorrhage.remains <3) and cooldown[classtable.Hemorrhage].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (debuff[classtable.HemorrhageDeBuff].remains <3) and cooldown[classtable.Hemorrhage].ready then
         if not setSpell then setSpell = classtable.Hemorrhage end
     end
     if (MaxDps:CheckSpellUsable(classtable.Recuperate, 'Recuperate')) and (not buff[classtable.RecuperateBuff].up and EnergyTimeToMax >2.5) and cooldown[classtable.Recuperate].ready then
@@ -260,17 +260,10 @@ function Rogue:Subtlety()
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
     --end
-    classtable.ShadowDanceBuff = 51713
-    classtable.FindWeaknessBuff = 0
-    classtable.VanishBuff = 11327
-    classtable.RecuperateBuff = 73651
-    classtable.StealthBuff = 1784
     classtable.RuptureDeBuff = 1943
     classtable.HemorrhageDeBuff = 16511
-    classtable.ShadowstepBuff = 36563
-    classtable.RecupateBuff = 0
+    classtable.SliceandDice = 5171
     classtable.Eviscerate = 2098
-    classtable.ShadowDance = 51713
     classtable.Rupture = 1943
     classtable.Vanish = 1856
     classtable.Premeditation = 14183
@@ -278,6 +271,7 @@ function Rogue:Subtlety()
     classtable.Hemorrhage = 16511
     classtable.Recuperate = 73651
     classtable.Preparation = 14185
+    classtable.ShadowDance = 51713
     classtable.Backstab = 53
     classtable.Shadowstep = 36554
 
