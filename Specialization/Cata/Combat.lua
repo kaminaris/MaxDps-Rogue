@@ -242,7 +242,6 @@ function Rogue:Combat()
     classtable.BladeFlurryBuff = 13877
     classtable.DeepInsightBuff = 84747
     classtable.SliceandDiceBuff = 6774
-    classtable.RevealingStrikeBuff = 84617
     classtable.AdrenalineRushBuff = 13750
     classtable.CloakofShadowsBuff = 31224
     classtable.EvasionBuff = 26669
