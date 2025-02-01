@@ -78,7 +78,7 @@ function Subtlety:callaction()
     if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (buff[classtable.Stealth].up) and cooldown[classtable.Ambush].ready then
         if not setSpell then setSpell = classtable.Ambush end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints < 5 and not debuff[classtable.Hemorrhage].up or debuff[classtable.Hemorrhage].refreshable) and cooldown[classtable.Hemorrhage].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints < 5 and not MaxDps:FindADAuraData(classtable.Hemorrhage).up or MaxDps:FindADAuraData(classtable.Hemorrhage).refreshable) and cooldown[classtable.Hemorrhage].ready then
         if not setSpell then setSpell = classtable.Hemorrhage end
     end
     if (MaxDps:CheckSpellUsable(classtable.GhostlyStrike, 'Ghostly Strike')) and (ComboPoints < 5) and cooldown[classtable.GhostlyStrike].ready then
