@@ -33,3 +33,8 @@ jobs:
         uses: BigWigsMods/packager@master
         with:
           args: -g cata
+
+      - name: Package Classic
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g classic

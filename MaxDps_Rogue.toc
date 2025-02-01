@@ -27,3 +27,9 @@ Specialization\Cata\Assassination.lua
 Specialization\Cata\Combat.lua
 Specialization\Cata\Subtlety.lua
 #@end-version-cata@
+
+#@version-classic@
+Specialization\Classic\Assassination.lua
+Specialization\Classic\Combat.lua
+Specialization\Classic\Subtlety.lua
+#@end-version-classic@
