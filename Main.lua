@@ -33,6 +33,11 @@ function Rogue:Enable()
 	elseif MaxDps.Spec == 3 then
 		MaxDps.NextSpell = Rogue.Subtlety
 		MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Subtlety', "info")
+	else
+		if MaxDps:IsClassicWow() then
+			MaxDps.NextSpell = Rogue.Combat
+		    MaxDps:Print(MaxDps.Colors.Info .. 'Rogue Combat', "info")
+		end
 	end
 
 	return true
