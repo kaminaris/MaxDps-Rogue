@@ -124,6 +124,10 @@ function Rogue:Combat()
     classtable.SwordSpecialization = 12815
     classtable.DaggerSpecialization = 13807
     classtable.Stealth = 1787
+    classtable.SinisterStrike = 11294
+    classtable.Backstab = 25300
+    classtable.SliceandDice = 6774
+    classtable.Eviscerate = 31016
 
     local function debugg()
     end
