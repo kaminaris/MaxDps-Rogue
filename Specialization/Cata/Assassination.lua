@@ -230,7 +230,7 @@ function Assassination:callaction()
         if not setSpell then setSpell = classtable.SliceandDice end
     end
     Assassination:st()
-    regen_saturated = EnergyRegenCombined >false
+    regen_saturated = EnergyRegenCombined >EnergyMax
     single_target = targets <2
     if (MaxDps.spellHistory[1] == classtable.ColdBlood) then
         cold_blood_casted = 1
