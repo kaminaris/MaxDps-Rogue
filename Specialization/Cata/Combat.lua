@@ -148,11 +148,11 @@ function Combat:build()
     end
 end
 function Combat:finish()
-    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
-        if not setSpell then setSpell = classtable.Eviscerate end
-    end
     if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints == 5 and not debuff[classtable.RuptureDeBuff].up and ( MaxDps:boss() or targets == 1 or MaxDps:NumGroupFriends() <= 1 ) and not buff[classtable.DeepInsightBuff].up and not buff[classtable.BladeFlurryBuff].up and not buff[classtable.AdrenalineRushBuff].up and ttd >12 and not MaxDps:Bloodlust(1)) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
     end
     if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5 and ttd <12) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
@@ -241,12 +241,13 @@ function Rogue:Combat()
     --end
     classtable.BladeFlurryBuff = 13877
     classtable.DeepInsightBuff = 84747
-    classtable.SliceandDiceBuff = 6774
+    classtable.SliceandDiceBuff = 5171
     classtable.AdrenalineRushBuff = 13750
     classtable.CloakofShadowsBuff = 31224
     classtable.EvasionBuff = 26669
     classtable.RecuperateBuff = 73651
     classtable.RevealingStrikeDeBuff = 84617
+    classtable.RuptureDeBuff = 1943
     classtable.TolVirPotion = 58145
     classtable.SinisterStrike = 1752
     classtable.SliceandDice = 5171
