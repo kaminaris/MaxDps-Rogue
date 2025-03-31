@@ -297,7 +297,7 @@ function Rogue:Assassination()
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
     --end
-    classtable.SliceandDiceBuff = 6774
+    classtable.SliceandDiceBuff = 5171
     classtable.EnvenomBuff = 57993
     classtable.OverkillBuff = 58427
     classtable.StealthBuff = 1784
