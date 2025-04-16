@@ -309,12 +309,12 @@ function Subtlety:callaction()
     end
     if ((IsStealthed() or buff[classtable.ShadowDanceBuff].up or buff[classtable.SubterfugeBuff].up)) then
         Subtlety:stealthed()
-            if buff[classtable.ShadowDanceBuff].up and MaxDps.spellHistory[1] then
-                if talents[classtable.DanseMacabre] and not DanseMacabreSpellList then DanseMacabreSpellList = {} end
-                table.insert(DanseMacabreSpellList,table.getn(DanseMacabreSpellList)+1,MaxDps.spellHistory[1])
-            else
-                DanseMacabreSpellList = {}
-            end
+        if buff[classtable.ShadowDanceBuff].up and MaxDps.spellHistory[1] then
+            DanseMacabreSpellList = DanseMacabreSpellList or {}
+            table.insert(DanseMacabreSpellList, #DanseMacabreSpellList + 1, MaxDps.spellHistory[1])
+        else
+            DanseMacabreSpellList = {}
+        end
     end
     Subtlety:stealth_cds()
     if (buff[classtable.DarkestNightBuff].up and ComboPoints == ComboPointsMax or calculateEffectiveComboPoints(ComboPoints) >= ComboPointsMax and not buff[classtable.DarkestNightBuff].up or ( ComboPointsDeficit <= 1 + (talents[classtable.DeathstalkersMark] and talents[classtable.DeathstalkersMark] or 0) or ttd <= 1 and calculateEffectiveComboPoints(ComboPoints) >= 3 ) and not buff[classtable.DarkestNightBuff].up) then
