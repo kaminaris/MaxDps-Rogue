@@ -135,8 +135,8 @@ end
 
 
 function Subtlety:precombat()
-    if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready and not UnitAffectingCombat('player') then
-        if not setSpell then setSpell = classtable.ApplyPoison end
+    if (MaxDps:CheckSpellUsable(classtable.InstantPoison, 'InstantPoison')) and not buff[classtable.InstantPoison].up and cooldown[classtable.InstantPoison].ready and not UnitAffectingCombat('player') then
+        if not setSpell then setSpell = classtable.InstantPoison end
     end
     priority_rotation = false
     if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready and not UnitAffectingCombat('player') then
@@ -185,7 +185,7 @@ function Subtlety:cds()
     if (MaxDps:CheckSpellUsable(classtable.ColdBlood, 'ColdBlood')) and (cooldown[classtable.SecretTechnique].ready and buff[classtable.ShadowDanceBuff].up and ComboPoints >= 6 and secret and ( not talents[classtable.Flagellation] or buff[classtable.FlagellationPersistBuff].up )) and cooldown[classtable.ColdBlood].ready then
         MaxDps:GlowCooldown(classtable.ColdBlood, cooldown[classtable.ColdBlood].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.SymbolsofDeath, 'SymbolsofDeath')) and (( buff[classtable.SymbolsofDeathBuff].remains <= 3 and maintenance and ( targets >= 3 or not buff[classtable.FlagellationBuffBuff].up or debuff[classtable.RuptureDeBuff].remains >= 30 ) and ( not talents[classtable.Flagellation] or cooldown[classtable.Flagellation].remains >= 30 - 15 * (talents[classtable.DeathPerception] and 0 or 1) and cooldown[classtable.SecretTechnique].remains <8 or not talents[classtable.DeathPerception] ) or MaxDps:boss() and ttd <= 15 and ( raid or not buff[classtable.SymbolsofDeathBuff].up ) )) and cooldown[classtable.SymbolsofDeath].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SymbolsofDeath, 'SymbolsofDeath')) and (( buff[classtable.SymbolsofDeathBuff].remains <= 3 and maintenance and ( targets >= 3 or not buff[classtable.FlagellationBuffBuff].up or debuff[classtable.RuptureDeBuff].remains >= 30 ) and ( not talents[classtable.Flagellation] or cooldown[classtable.Flagellation].remains >= 30 - 15 * (talents[classtable.DeathPerception] and 0 or 1) and cooldown[classtable.SecretTechnique].remains <8 or not talents[classtable.DeathPerception] ) or MaxDps:boss() and ttd <= 15 and ( MaxDps:boss() or not buff[classtable.SymbolsofDeathBuff].up ) )) and cooldown[classtable.SymbolsofDeath].ready then
         MaxDps:GlowCooldown(classtable.SymbolsofDeath, cooldown[classtable.SymbolsofDeath].ready)
     end
     if (MaxDps:CheckSpellUsable(classtable.ShadowBlades, 'ShadowBlades')) and (maintenance and shd_cp and buff[classtable.ShadowDanceBuff].up and not buff[classtable.PremeditationBuff].up) and cooldown[classtable.ShadowBlades].ready then
@@ -223,7 +223,7 @@ function Subtlety:finish()
     if (MaxDps:CheckSpellUsable(classtable.CoupdeGrace, 'CoupdeGrace')) and (debuff[classtable.FazedDeBuff].up and cooldown[classtable.Flagellation].remains >= 20 or ttd <= 10) and cooldown[classtable.CoupdeGrace].ready then
         if not setSpell then setSpell = classtable.CoupdeGrace end
     end
-    if (MaxDps:CheckSpellUsable(classtable.BlackPowder, 'BlackPowder')) and (not priority_rotation and maintenance and ( ( ( targets >= 2 and talents[classtable.DeathstalkersMark] and ( not buff[classtable.DarkestNightBuff].up or buff[classtable.ShadowDanceBuff].up and targets >= 5 ) ) or talents[classtable.UnseenBlade] and fw_targets >= 5 ) or cooldown[classtable.CoupdeGrace].ready and targets >= 3 )) and cooldown[classtable.BlackPowder].ready then
+    if (MaxDps:CheckSpellUsable(classtable.BlackPowder, 'BlackPowder')) and (not priority_rotation and maintenance and ( ( ( targets >= 2 and talents[classtable.DeathstalkersMark] and ( not buff[classtable.DarkestNightBuff].up or buff[classtable.ShadowDanceBuff].up and targets >= 5 ) ) or talents[classtable.UnseenBlade] and targets >= 5 ) or cooldown[classtable.CoupdeGrace].ready and targets >= 3 )) and cooldown[classtable.BlackPowder].ready then
         if not setSpell then setSpell = classtable.BlackPowder end
     end
     if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (cooldown[classtable.Flagellation].remains >= 10 or targets >= 3) and cooldown[classtable.Eviscerate].ready then
@@ -314,6 +314,8 @@ function Rogue:Subtlety()
     ComboPoints = UnitPower('player', ComboPointsPT)
     ComboPointsMax = UnitPowerMax('player', ComboPointsPT)
     ComboPointsDeficit = ComboPointsMax - ComboPoints
+
+    classtable.InstantPoison = 315584
     --for spellId in pairs(MaxDps.Flags) do
     --    self.Flags[spellId] = false
     --    self:ClearGlowIndependent(spellId, spellId)
