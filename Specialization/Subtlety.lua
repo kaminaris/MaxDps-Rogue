@@ -128,9 +128,72 @@ local function calculateEffectiveComboPoints(comboPoints)
 	return comboPoints
 end
 
+local frame = CreateFrame("Frame")
+local shadowDanceActive = false
+local usedSpells = {}
+
+-- List of spells that count for Danse Macabre
+local danseMacabreSpells = {
+    [185438] = "Shadowstrike",
+    [196819] = "Eviscerate",
+    [53] = "Backstab",
+    [197835] = "Shuriken Storm",
+    [1943] = "Rupture",
+    [319175] = "Black Powder",
+    [280719] = "Secret Technique",
+    [212283] = "Symbols of Death",
+    [114014] = "Shuriken Toss",
+    [200758] = "Gloomblade",
+}
+
+-- Function to reset tracking
+local function ResetDanseMacabre()
+    shadowDanceActive = false
+    wipe(usedSpells) -- Clears the table
+end
+
+-- Event handler
+frame:SetScript("OnEvent", function(self, event, ...)
+    if event == "UNIT_AURA" then
+        local unit = ...
+        if unit == "player" then
+            -- Check if Shadow Dance is active
+            local shadowDanceFound = false
+            for i = 1, 40 do
+                local data = C_UnitAuras.GetAuraDataByIndex("player", i)
+                local name = data and data.name
+                local spellId = data and data.spellId
+                if not name then break end
+                if spellId == 185422 then -- Shadow Dance spell ID
+                    shadowDanceFound = true
+                    break
+                end
+            end
+
+            if shadowDanceFound and not shadowDanceActive then
+                shadowDanceActive = true
+                wipe(usedSpells) -- Reset spells when Shadow Dance starts
+            elseif not shadowDanceFound and shadowDanceActive then
+                ResetDanseMacabre()
+            end
+        end
+    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        local _, subEvent, _, _, _, _, _, _, destName, _, _, spellId = CombatLogGetCurrentEventInfo()
+        if shadowDanceActive and subEvent == "SPELL_CAST_SUCCESS" and danseMacabreSpells[spellId] then
+            if not usedSpells[spellId] then
+                usedSpells[spellId] = true
+                --print("Spell used for Danse Macabre: " .. danseMacabreSpells[spellId])
+            end
+        end
+    end
+end)
+
+-- Register events
+frame:RegisterEvent("UNIT_AURA")
+frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
 local function CheckDanseMacabre(spell)
-	return false
+	return (not talents[classtable.DanseMacabre] and true) or (usedSpells[spell] and true) or (not usedSpells[spell] and false)
 end
 
 
