@@ -147,7 +147,7 @@ function Subtlety:build()
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (buff[classtable.ShadowDanceBuff].up and not CheckDanseMacabre(classtable.Backstab) or not stealth and buff[classtable.ShadowBladesBuff].up) and cooldown[classtable.Backstab].ready then
         if not setSpell then setSpell = classtable.Backstab end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and (buff[classtable.ShadowDanceBuff].up and not CheckDanseMacabre(classtable.Gloomblade) or not stealth and buff[classtable.ShadowBladesBuff].up) and cooldown[classtable.Gloomblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and talents[classtable.Gloomblade] and (buff[classtable.ShadowDanceBuff].up and not CheckDanseMacabre(classtable.Gloomblade) or not stealth and buff[classtable.ShadowBladesBuff].up) and cooldown[classtable.Gloomblade].ready then
         if not setSpell then setSpell = classtable.Gloomblade end
     end
     if (MaxDps:CheckSpellUsable(classtable.Shadowstrike, 'Shadowstrike')) and (debuff[classtable.FindWeaknessDeBuff].remains <= 2 and targets == 2 and talents[classtable.UnseenBlade] or not CheckDanseMacabre(classtable.Shadowstrike) and not talents[classtable.Premeditation]) and cooldown[classtable.Shadowstrike].ready then
@@ -174,7 +174,7 @@ function Subtlety:build()
     if (MaxDps:CheckSpellUsable(classtable.GoremawsBite, 'GoremawsBite')) and (ComboPointsDeficit >= 3) and cooldown[classtable.GoremawsBite].ready then
         MaxDps:GlowCooldown(classtable.GoremawsBite, cooldown[classtable.GoremawsBite].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and cooldown[classtable.Gloomblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Gloomblade, 'Gloomblade')) and talents[classtable.Gloomblade] and cooldown[classtable.Gloomblade].ready then
         if not setSpell then setSpell = classtable.Gloomblade end
     end
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and cooldown[classtable.Backstab].ready then
