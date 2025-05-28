@@ -75,7 +75,7 @@ local function ClearCDs()
 end
 
 function Combat:callaction()
-    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'Sinister Strike')) and (ComboPoints < 5 and talents[classtable.SwordSpecialization] or not talents[classtable.DaggerSpecialization]) and cooldown[classtable.SinisterStrike].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'Sinister Strike')) and (ComboPoints < 5 and (talents[classtable.SwordSpecialization] or not talents[classtable.DaggerSpecialization])) and cooldown[classtable.SinisterStrike].ready then
         if not setSpell then setSpell = classtable.SinisterStrike end
     end
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and ((UnitThreatSituation("player") == 0) and ComboPoints < 5 and talents[classtable.DaggerSpecialization]) and cooldown[classtable.Backstab].ready then
