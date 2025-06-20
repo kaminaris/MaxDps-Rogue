@@ -33,3 +33,9 @@ Specialization\Classic\Assassination.lua
 Specialization\Classic\Combat.lua
 Specialization\Classic\Subtlety.lua
 #@end-version-classic@
+
+#@version-mists@
+Specialization\Mop\Assassination.lua
+Specialization\Mop\Combat.lua
+Specialization\Mop\Subtlety.lua
+#@end-version-mists@
