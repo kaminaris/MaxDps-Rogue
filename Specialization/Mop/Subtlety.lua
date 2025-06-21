@@ -56,8 +56,6 @@ local maxHP
 local healthPerc
 local timeInCombat
 local className, classFilename, classId = UnitClass('player')
-local currentSpec = GetSpecialization()
-local currentSpecName = currentSpec and select(2, GetSpecializationInfo(currentSpec)) or 'None'
 local classtable
 local LibRangeCheck = LibStub('LibRangeCheck-3.0', true)
 
