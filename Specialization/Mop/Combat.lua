@@ -120,12 +120,12 @@ end
 
 
 function Combat:precombat()
-    if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready and not UnitAffectingCombat('player') then
-        if not setSpell then setSpell = classtable.ApplyPoison end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and cooldown[classtable.TolvirPotion].ready and not UnitAffectingCombat('player') then
-        if not setSpell then setSpell = classtable.TolvirPotion end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.ApplyPoison, 'ApplyPoison')) and cooldown[classtable.ApplyPoison].ready and not UnitAffectingCombat('player') then
+    --    if not setSpell then setSpell = classtable.ApplyPoison end
+    --end
+    --if (MaxDps:CheckSpellUsable(classtable.TolvirPotion, 'TolvirPotion')) and cooldown[classtable.TolvirPotion].ready and not UnitAffectingCombat('player') then
+    --    if not setSpell then setSpell = classtable.TolvirPotion end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.Stealth, 'Stealth')) and cooldown[classtable.Stealth].ready and not UnitAffectingCombat('player') then
         if not setSpell then setSpell = classtable.Stealth end
     end
@@ -227,6 +227,13 @@ function Rogue:Combat()
         talents[classtable.Preparation] = 1
     end
 
+    classtable.VanishBuff = 11327
+    classtable.StealthedBuff = 1784
+    classtable.SliceandDiceBuff = 5171
+    classtable.AdrenalineRushBuff = 13750
+    classtable.DeepInsightBuff = 84745
+    classtable.RuptureDeBuff = 1943
+    classtable.RevealingStrikeDeBuff = 84617
 
     --if MaxDps.db.global.debugMode then
     --   debugg()
