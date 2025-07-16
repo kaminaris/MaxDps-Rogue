@@ -150,7 +150,7 @@ local function ClearCDs()
     MaxDps:GlowCooldown(classtable.Vanish, false)
 end
 
-function Subtlety:callaction()
+function Subtlety:single()
     if (MaxDps:CheckSpellUsable(classtable.Preparation, 'Preparation') and talents[classtable.Preparation]) and ((talents[classtable.Preparation] and true or false) and not buff[classtable.VanishBuff].up and cooldown[classtable.Vanish].remains >60) and cooldown[classtable.Preparation].ready then
         if not setSpell then setSpell = classtable.Preparation end
     end
@@ -200,6 +200,46 @@ function Subtlety:callaction()
         if not setSpell then setSpell = classtable.Backstab end
     end
 end
+
+function Subtlety:aoe()
+    -- Maintain Slice and Dice
+    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains < 2) and cooldown[classtable.SliceandDice].ready then
+        if not setSpell then setSpell = classtable.SliceandDice end
+    end
+
+    -- Maintain Crimson Tempest
+    if (MaxDps:CheckSpellUsable(classtable.CrimsonTempest, 'CrimsonTempest')) and (ComboPoints == 5 and debuff[classtable.CrimsonTempestDebuff].remains < 2) and cooldown[classtable.CrimsonTempest].ready then
+        if not setSpell then setSpell = classtable.CrimsonTempest end
+    end
+
+    -- Cast Eviscerate if 5 Combo Points
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+
+    -- Cast Ambush
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and cooldown[classtable.Ambush].ready then
+        if not setSpell then setSpell = classtable.Ambush end
+    end
+
+    -- Maintain Hemorrhage
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (debuff[classtable.HemorrhageDeBuff].remains < 4) and cooldown[classtable.Hemorrhage].ready then
+        if not setSpell then setSpell = classtable.Hemorrhage end
+    end
+
+    -- Cast Fan of Knives
+    if (MaxDps:CheckSpellUsable(classtable.FanofKnives, 'FanofKnives')) and cooldown[classtable.FanofKnives].ready then
+        if not setSpell then setSpell = classtable.FanofKnives end
+    end
+end
+
+function Subtlety:callaction()
+    if targets >= 3 then
+        Subtlety:aoe()
+    end
+    Subtlety:single()
+end
+
 function Rogue:Subtlety()
     fd = MaxDps.FrameData
     ttd = (fd.timeToDie and fd.timeToDie) or 500
@@ -246,6 +286,7 @@ function Rogue:Subtlety()
     classtable.SliceandDiceBuff = 5171
     classtable.ShadowDanceBuff = 185422
     classtable.MasterofSubtletyBuff = 31665
+    classtable.CrimsonTempestDebuff = 121411
     classtable.FindWeaknessDeBuff = 91021
     classtable.RuptureDeBuff = 1943
     classtable.HemorrhageDeBuff = 89775
