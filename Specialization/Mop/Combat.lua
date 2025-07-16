@@ -139,7 +139,7 @@ local function ClearCDs()
     MaxDps:GlowCooldown(classtable.KillingSpree, false)
 end
 
-function Combat:callaction()
+function Combat:single()
     if (MaxDps:CheckSpellUsable(classtable.Preparation, 'Preparation') and talents[classtable.Preparation]) and ((talents[classtable.Preparation] and true or false) and not buff[classtable.VanishBuff].up and cooldown[classtable.Vanish].remains >60) and cooldown[classtable.Preparation].ready then
         if not setSpell then setSpell = classtable.Preparation end
     end
@@ -154,6 +154,9 @@ function Combat:callaction()
     end
     if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
         if not setSpell then setSpell = classtable.TricksoftheTrade end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.BladeFlurry, 'BladeFlurry')) and (targets >= 2 and not buff[classtable.BladeFlurryBuff].up) and cooldown[classtable.BladeFlurry].ready then
+        if not setSpell then setSpell = classtable.BladeFlurry end
     end
     if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <2) and cooldown[classtable.SliceandDice].ready then
         if not setSpell then setSpell = classtable.SliceandDice end
@@ -186,6 +189,36 @@ function Combat:callaction()
         if not setSpell then setSpell = classtable.SinisterStrike end
     end
 end
+
+function Combat:aoe()
+    -- Activate Blade Flurry
+    if (MaxDps:CheckSpellUsable(classtable.BladeFlurry, 'BladeFlurry')) and (not buff[classtable.BladeFlurryBuff].up) and cooldown[classtable.BladeFlurry].ready then
+        if not setSpell then setSpell = classtable.BladeFlurry end
+    end
+
+    -- Maintain Slice and Dice
+    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains < 2) and cooldown[classtable.SliceandDice].ready then
+        if not setSpell then setSpell = classtable.SliceandDice end
+    end
+
+    -- Cast Crimson Tempest (5 Combo Points) if enemies will live for 12 seconds
+    if (MaxDps:CheckSpellUsable(classtable.CrimsonTempest, 'CrimsonTempest')) and (ComboPoints == 5 and ttd > 12) and cooldown[classtable.CrimsonTempest].ready then
+        if not setSpell then setSpell = classtable.CrimsonTempest end
+    end
+
+    -- Cast Fan of Knives
+    if (MaxDps:CheckSpellUsable(classtable.FanofKnives, 'FanofKnives')) and cooldown[classtable.FanofKnives].ready then
+        if not setSpell then setSpell = classtable.FanofKnives end
+    end
+end
+
+function Combat:callaction()
+    if targets >= 8 then
+        Combat:aoe()
+    end
+    Combat:single()
+end
+
 function Rogue:Combat()
     fd = MaxDps.FrameData
     ttd = (fd.timeToDie and fd.timeToDie) or 500
@@ -228,6 +261,7 @@ function Rogue:Combat()
     end
 
     classtable.VanishBuff = 11327
+    classtable.BladeFlurryBuff = 13877
     classtable.StealthedBuff = 1784
     classtable.SliceandDiceBuff = 5171
     classtable.AdrenalineRushBuff = 13750
