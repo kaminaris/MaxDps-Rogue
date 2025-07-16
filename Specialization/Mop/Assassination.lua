@@ -164,7 +164,7 @@ local function ClearCDs()
     MaxDps:GlowCooldown(classtable.Vanish, false)
 end
 
-function Assassination:callaction()
+function Assassination:single()
     if (MaxDps:CheckSpellUsable(classtable.Preparation, 'Preparation') and talents[classtable.Preparation]) and ((talents[classtable.Preparation] and true or false) and not buff[classtable.VanishBuff].up and cooldown[classtable.Vanish].remains >60) and cooldown[classtable.Preparation].ready then
         if not setSpell then setSpell = classtable.Preparation end
     end
@@ -214,6 +214,58 @@ function Assassination:callaction()
         if not setSpell then setSpell = classtable.Mutilate end
     end
 end
+
+function Assassination:aoe()
+    if targets >= 3 and targets <= 7 then
+        -- Apply Rupture (2-3 Combo Points)
+        if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints >= 2 and ComboPoints <= 3 and debuff[classtable.RuptureDeBuff].remains < 2) and cooldown[classtable.Rupture].ready then
+            if not setSpell then setSpell = classtable.Rupture end
+        end
+
+        -- Reapply Slice and Dice if missing
+        if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains < 2) and cooldown[classtable.SliceandDice].ready then
+            if not setSpell then setSpell = classtable.SliceandDice end
+        end
+
+        -- Cast Envenom to maintain Slice and Dice
+        if (MaxDps:CheckSpellUsable(classtable.Envenom, 'Envenom')) and (ComboPoints >= 2 and buff[classtable.SliceandDiceBuff].remains < 3) and cooldown[classtable.Envenom].ready then
+            if not setSpell then setSpell = classtable.Envenom end
+        end
+
+        -- Cast Fan of Knives
+        if (MaxDps:CheckSpellUsable(classtable.FanofKnives, 'FanofKnives')) and cooldown[classtable.FanofKnives].ready then
+            if not setSpell then setSpell = classtable.FanofKnives end
+        end
+    elseif targets >= 8 then
+        -- Cast Crimson Tempest (5 Combo Points)
+        if (MaxDps:CheckSpellUsable(classtable.CrimsonTempest, 'CrimsonTempest')) and (ComboPoints == 5) and cooldown[classtable.CrimsonTempest].ready then
+            if not setSpell then setSpell = classtable.CrimsonTempest end
+        end
+
+        -- Reapply Slice and Dice if missing
+        if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains < 2) and cooldown[classtable.SliceandDice].ready then
+            if not setSpell then setSpell = classtable.SliceandDice end
+        end
+
+        -- Cast Envenom to maintain Slice and Dice
+        if (MaxDps:CheckSpellUsable(classtable.Envenom, 'Envenom')) and (ComboPoints >= 2 and buff[classtable.SliceandDiceBuff].remains < 3) and cooldown[classtable.Envenom].ready then
+            if not setSpell then setSpell = classtable.Envenom end
+        end
+
+        -- Cast Fan of Knives
+        if (MaxDps:CheckSpellUsable(classtable.FanofKnives, 'FanofKnives')) and cooldown[classtable.FanofKnives].ready then
+            if not setSpell then setSpell = classtable.FanofKnives end
+        end
+    end
+end
+
+function Assassination:callaction()
+    if targets > 3 then
+        Assassination:aoe()
+    end
+    Assassination:single()
+end
+
 function Rogue:Assassination()
     fd = MaxDps.FrameData
     ttd = (fd.timeToDie and fd.timeToDie) or 500
