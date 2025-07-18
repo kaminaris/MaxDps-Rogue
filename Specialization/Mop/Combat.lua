@@ -152,9 +152,9 @@ function Combat:single()
     if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and cooldown[classtable.Ambush].ready then
         if not setSpell then setSpell = classtable.Ambush end
     end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
+    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.BladeFlurry, 'BladeFlurry')) and (targets >= 2 and not buff[classtable.BladeFlurryBuff].up) and cooldown[classtable.BladeFlurry].ready then
         if not setSpell then setSpell = classtable.BladeFlurry end
     end
@@ -182,9 +182,9 @@ function Combat:single()
     if (MaxDps:CheckSpellUsable(classtable.RevealingStrike, 'RevealingStrike')) and (ComboPoints <5 and debuff[classtable.RevealingStrikeDeBuff].remains <2) and cooldown[classtable.RevealingStrike].ready then
         if not setSpell then setSpell = classtable.RevealingStrike end
     end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
+    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
         if not setSpell then setSpell = classtable.SinisterStrike end
     end

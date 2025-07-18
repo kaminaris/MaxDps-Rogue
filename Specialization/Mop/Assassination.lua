@@ -177,9 +177,9 @@ function Assassination:single()
     if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and cooldown[classtable.Ambush].ready then
         if not setSpell then setSpell = classtable.Ambush end
     end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
+    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <2) and cooldown[classtable.SliceandDice].ready then
         if not setSpell then setSpell = classtable.SliceandDice end
     end
@@ -207,9 +207,9 @@ function Assassination:single()
     if (MaxDps:CheckSpellUsable(classtable.Dispatch, 'Dispatch')) and (ComboPoints <5) and cooldown[classtable.Dispatch].ready then
         if not setSpell then setSpell = classtable.Dispatch end
     end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
+    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.Mutilate, 'Mutilate')) and cooldown[classtable.Mutilate].ready then
         if not setSpell then setSpell = classtable.Mutilate end
     end

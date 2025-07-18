@@ -157,9 +157,9 @@ function Subtlety:single()
     if (MaxDps:CheckSpellUsable(classtable.Kick, 'Kick')) and cooldown[classtable.Kick].ready then
         MaxDps:GlowCooldown(classtable.Kick, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
     end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and ((MaxDps.tier and MaxDps.tier[13].count >= 2)) and cooldown[classtable.TricksoftheTrade].ready then
+    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.ShadowDance, 'ShadowDance')) and (Energy >= 75 and not buff[classtable.StealthedBuff].up and not debuff[classtable.FindWeaknessDeBuff].up) and cooldown[classtable.ShadowDance].ready then
         MaxDps:GlowCooldown(classtable.ShadowDance, cooldown[classtable.ShadowDance].ready)
     end
@@ -193,9 +193,9 @@ function Subtlety:single()
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <4 and ( cooldown[classtable.ShadowDance].remains >7 or ( cooldown[classtable.ShadowDance].remains == 0 and timeInCombat <= 9 ) )) and cooldown[classtable.Backstab].ready then
         if not setSpell then setSpell = classtable.Backstab end
     end
-    if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
-        if not setSpell then setSpell = classtable.TricksoftheTrade end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
+    --    if not setSpell then setSpell = classtable.TricksoftheTrade end
+    --end
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <5 and Energy >80 and cooldown[classtable.ShadowDance].remains >= 2) and cooldown[classtable.Backstab].ready then
         if not setSpell then setSpell = classtable.Backstab end
     end
