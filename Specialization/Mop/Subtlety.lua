@@ -281,6 +281,8 @@ function Rogue:Subtlety()
         talents[classtable.Preparation] = 1
     end
 
+    classtable.Hemorrhage = 16511
+
     classtable.AnticipationBuff = 115189
     classtable.VanishBuff = 11327
     classtable.StealthedBuff = 1784
