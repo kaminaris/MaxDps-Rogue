@@ -169,7 +169,7 @@ function Subtlety:single()
     if (MaxDps:CheckSpellUsable(classtable.Premeditation, 'Premeditation')) and (( ComboPoints <= 3 and cooldown[classtable.HonorAmongThieves].remains >1.75 ) or ComboPoints <= 2) and cooldown[classtable.Premeditation].ready then
         if not setSpell then setSpell = classtable.Premeditation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (ComboPoints <= 5 and anticipation_charges == 0) and cooldown[classtable.Ambush].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (ComboPoints <= 5 and buff[classtable.AnticipationBuff].count == 0) and cooldown[classtable.Ambush].ready then
         if not setSpell then setSpell = classtable.Ambush end
     end
     if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'SliceandDice')) and (buff[classtable.SliceandDiceBuff].remains <3 and ComboPoints == 5) and cooldown[classtable.SliceandDice].ready then
@@ -178,16 +178,16 @@ function Subtlety:single()
     if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and (ComboPoints == 5 and debuff[classtable.RuptureDeBuff].remains <5) and cooldown[classtable.Rupture].ready then
         if not setSpell then setSpell = classtable.Rupture end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (anticipation_charges <3 and buff[classtable.ShadowDanceBuff].remains <= 2) and cooldown[classtable.Ambush].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Ambush, 'Ambush')) and (buff[classtable.AnticipationBuff].count <3 and buff[classtable.ShadowDanceBuff].remains <= 2) and cooldown[classtable.Ambush].ready then
         if not setSpell then setSpell = classtable.Ambush end
     end
     if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints <4 and ( debuff[classtable.HemorrhageDeBuff].remains <4 or position_front )) and cooldown[classtable.Hemorrhage].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints <4 and ( debuff[classtable.HemorrhageDeBuff].remains <4 )) and cooldown[classtable.Hemorrhage].ready then
         if not setSpell then setSpell = classtable.Hemorrhage end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints <5 and Energy >80 and ( debuff[classtable.HemorrhageDeBuff].remains <4 or position_front )) and cooldown[classtable.Hemorrhage].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Hemorrhage, 'Hemorrhage')) and (ComboPoints <5 and Energy >80 and ( debuff[classtable.HemorrhageDeBuff].remains <4 )) and cooldown[classtable.Hemorrhage].ready then
         if not setSpell then setSpell = classtable.Hemorrhage end
     end
     if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and (ComboPoints <4 and ( cooldown[classtable.ShadowDance].remains >7 or ( cooldown[classtable.ShadowDance].remains == 0 and timeInCombat <= 9 ) )) and cooldown[classtable.Backstab].ready then
@@ -281,6 +281,7 @@ function Rogue:Subtlety()
         talents[classtable.Preparation] = 1
     end
 
+    classtable.AnticipationBuff = 115189
     classtable.VanishBuff = 11327
     classtable.StealthedBuff = 1784
     classtable.SliceandDiceBuff = 5171
