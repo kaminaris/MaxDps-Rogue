@@ -162,6 +162,7 @@ end
 local function ClearCDs()
     MaxDps:GlowCooldown(classtable.Kick, false)
     MaxDps:GlowCooldown(classtable.Vanish, false)
+    MaxDps:GlowCooldown(classtable.Vendetta, false)
 end
 
 function Assassination:single()
@@ -193,7 +194,8 @@ function Assassination:single()
         if not setSpell then setSpell = classtable.Rupture end
     end
     if (MaxDps:CheckSpellUsable(classtable.Vendetta, 'Vendetta')) and cooldown[classtable.Vendetta].ready then
-        if not setSpell then setSpell = classtable.Vendetta end
+        --if not setSpell then setSpell = classtable.Vendetta end
+        MaxDps:GlowCooldown(classtable.Vendetta, true)
     end
     if (MaxDps:CheckSpellUsable(classtable.Envenom, 'Envenom')) and (ComboPoints >= 4 and buff[classtable.EnvenomBuff].remains <1) and cooldown[classtable.Envenom].ready then
         if not setSpell then setSpell = classtable.Envenom end
@@ -260,6 +262,7 @@ function Assassination:aoe()
 end
 
 function Assassination:callaction()
+    MaxDps:GlowCooldown(classtable.ShadowBlades, cooldown[classtable.ShadowBlades].ready)
     if targets > 3 then
         Assassination:aoe()
     end
@@ -276,9 +279,9 @@ function Rogue:Assassination()
     debuff = fd.debuff
     talents = fd.talents
     targets = MaxDps:SmartAoe()
-    Mana = UnitPower('player', ManaPT)
-    ManaMax = UnitPowerMax('player', ManaPT)
-    ManaDeficit = ManaMax - Mana
+    --Mana = UnitPower('player', ManaPT)
+    --ManaMax = UnitPowerMax('player', ManaPT)
+    --ManaDeficit = ManaMax - Mana
     targetHP = UnitHealth('target')
     targetmaxHP = UnitHealthMax('target')
     targethealthPerc = (targetHP >0 and targetmaxHP >0 and (targetHP / targetmaxHP) * 100) or 100
