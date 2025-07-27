@@ -213,6 +213,7 @@ function Combat:aoe()
 end
 
 function Combat:callaction()
+    MaxDps:GlowCooldown(classtable.ShadowBlades, (buff[classtable.AdrenalineRush].up or cooldown[classtable.AdrenalineRush].ready and cooldown[classtable.ShadowBlades].ready ))
     if targets >= 8 then
         Combat:aoe()
     end
