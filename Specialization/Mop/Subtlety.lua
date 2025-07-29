@@ -250,9 +250,6 @@ function Rogue:Subtlety()
     debuff = fd.debuff
     talents = fd.talents
     targets = MaxDps:SmartAoe()
-    Mana = UnitPower('player', ManaPT)
-    ManaMax = UnitPowerMax('player', ManaPT)
-    ManaDeficit = ManaMax - Mana
     targetHP = UnitHealth('target')
     targetmaxHP = UnitHealthMax('target')
     targethealthPerc = (targetHP >0 and targetmaxHP >0 and (targetHP / targetmaxHP) * 100) or 100
@@ -269,8 +266,8 @@ function Rogue:Subtlety()
     EnergyRegen = GetPowerRegenForPowerType(Enum.PowerType.Energy)
     EnergyTimeToMax = EnergyDeficit / EnergyRegen
     EnergyPerc = (Energy / EnergyMax) * 100
-    ComboPoints = UnitPower('player', ComboPointsPT)
-    ComboPointsMax = UnitPowerMax('player', ComboPointsPT)
+    ComboPoints = GetComboPoints("player", "target")
+    ComboPointsMax = 5
     ComboPointsDeficit = ComboPointsMax - ComboPoints
     --for spellId in pairs(MaxDps.Flags) do
     --    self.Flags[spellId] = false

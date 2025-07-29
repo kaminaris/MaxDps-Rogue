@@ -298,8 +298,8 @@ function Rogue:Assassination()
     EnergyRegen = GetPowerRegenForPowerType(Enum.PowerType.Energy)
     EnergyTimeToMax = EnergyDeficit / EnergyRegen
     EnergyPerc = (Energy / EnergyMax) * 100
-    ComboPoints = UnitPower('player', ComboPointsPT)
-    ComboPointsMax = UnitPowerMax('player', ComboPointsPT)
+    ComboPoints = GetComboPoints("player", "target")
+    ComboPointsMax = 5
     ComboPointsDeficit = ComboPointsMax - ComboPoints
     PoisonedBleeds = Rogue:PoisonedBleeds()
     EnergyRegenCombined = EnergyRegen + PoisonedBleeds * 7 % (2 * SpellHaste)
