@@ -72,6 +72,8 @@ local DanseMacabreSpellList
 local Combat = {}
 
 local function ClearCDs()
+    MaxDps:GlowCooldown(classtable.BladeFlurry, false)
+    MaxDps:GlowCooldown(classtable.AdrenalineRush, false)
 end
 
 -- TBC Classic Combat Rogue Rotation based on Icy Veins guide
@@ -88,13 +90,13 @@ function Combat:callaction()
     if (MaxDps:CheckSpellUsable(classtable.BladeFlurry, 'Blade Flurry')) and cooldown[classtable.BladeFlurry].ready and
         buff[classtable.SliceandDice].up and ttd > 10 then
         --if not setSpell then setSpell = classtable.BladeFlurry end
-        MaxDps:GetSpellCooldown(classtable.BladeFlurry, true)
+        MaxDps:GlowCooldown(classtable.BladeFlurry, true)
     end
 
     if (MaxDps:CheckSpellUsable(classtable.AdrenalineRush, 'Adrenaline Rush')) and cooldown[classtable.AdrenalineRush].ready and
         buff[classtable.SliceandDice].up and ttd > 10 then
         --if not setSpell then setSpell = classtable.AdrenalineRush end
-        MaxDps:GetSpellCooldown(classtable.AdrenalineRush, true)
+        MaxDps:GlowCooldown(classtable.AdrenalineRush, true)
     end
 
     -- Refresh Slice and Dice - maintains 100% uptime (priority)
