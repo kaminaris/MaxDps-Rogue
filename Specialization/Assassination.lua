@@ -6,5 +6,27 @@ if not MaxDps then return end
 local Assassination = {}
 
 function Rogue:Assassination()
+    local _, class = UnitClass("player")
+    local specIndex = GetSpecialization()
+    local specName = specIndex and select(2, GetSpecializationInfo(specIndex))
 
+    if class and specName and MaxDps.classCooldowns[class] and MaxDps.classCooldowns[class][specName] then
+        for _, spellID in pairs(MaxDps.classCooldowns[class][specName].defensive) do
+            --print("Defensive:", spellName, spellID)
+            if MaxDps:CheckSpellUsable(spellID) then
+                MaxDps:GlowDefensiveHPMidnight(spellID, true)
+            end
+        end
+    end
+    if class and specName
+        and MaxDps.classInterrupts[class]
+        and MaxDps.classInterrupts[class][specName]
+    then
+        for _, spellID in pairs(MaxDps.classInterrupts[class][specName]) do
+            --print("Defensive:", spellName, spellID)
+            if MaxDps:CheckSpellUsable(spellID) then
+                MaxDps:GlowInteruptMidnight(spellID)
+            end
+        end
+    end
 end
