@@ -29,4 +29,14 @@ function Rogue:Outlaw()
             end
         end
     end
+    if class and specName and MaxDps.classCooldowns[class] and MaxDps.classCooldowns[class][specName] then
+        for _, spellID in pairs(MaxDps.classCooldowns[class][specName].offensive) do
+            --print("Defensive:", spellName, spellID)
+            if not MaxDps.FrameData.ACSpells or not MaxDps.FrameData.ACSpells[spellID] then
+                if MaxDps:CheckSpellUsable(spellID) then
+                    MaxDps:GlowCooldownMidnight(spellID, true)
+                end
+            end
+        end
+    end
 end
