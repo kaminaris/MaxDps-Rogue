@@ -36,6 +36,15 @@ function Rogue:Subtlety()
                 if MaxDps:CheckSpellUsable(spellID) then
                     MaxDps:GlowCooldownMidnight(spellID, true)
                 end
+            else
+                if MaxDps and MaxDps.Spells and MaxDps.Spells[spellID] and not InCombatLockdown() then
+                    for i=1,#MaxDps.Spells[spellID] do
+                        C_ActionBar.UnregisterActionUIButton(MaxDps.Spells[spellID][i])
+                    end
+                end
+                if MaxDps and MaxDps.FrameData and MaxDps.FrameData.ACSpells and MaxDps.FrameData.ACSpells[spellID] then
+                    MaxDps.FrameData.ACSpells[spellID] = nil
+                end
             end
         end
     end
