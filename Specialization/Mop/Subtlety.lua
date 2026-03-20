@@ -146,6 +146,7 @@ end
 
 local function ClearCDs()
     MaxDps:GlowCooldown(classtable.Kick, false)
+    MaxDps:GlowCooldown(classtable.ShadowBlades, false)
     MaxDps:GlowCooldown(classtable.ShadowDance, false)
     MaxDps:GlowCooldown(classtable.Vanish, false)
 end
@@ -234,6 +235,10 @@ function Subtlety:aoe()
 end
 
 function Subtlety:callaction()
+    if (MaxDps:CheckSpellUsable(classtable.ShadowBlades, 'ShadowBlades')) and cooldown[classtable.ShadowBlades].ready then
+        --if not setSpell then setSpell = classtable.ShadowBlades end
+        MaxDps:GlowCooldown(classtable.ShadowBlades, true)
+    end
     if targets >= 3 then
         Subtlety:aoe()
     end
@@ -279,6 +284,7 @@ function Rogue:Subtlety()
     end
 
     classtable.Hemorrhage = 16511
+    classtable.ShadowBlades = 115189
 
     classtable.AnticipationBuff = 115189
     classtable.VanishBuff = 11327
