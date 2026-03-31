@@ -36,6 +36,7 @@ function Rogue:Assassination()
                 if MaxDps:CheckSpellUsable(spellID) then
                     MaxDps:GlowCooldownMidnight(spellID, true)
                 end
+            end
             --else
             --    if MaxDps and MaxDps.Spells and MaxDps.Spells[spellID] and not InCombatLockdown() then
             --        for i=1,#MaxDps.Spells[spellID] do
@@ -45,6 +46,11 @@ function Rogue:Assassination()
             --    if MaxDps and MaxDps.FrameData and MaxDps.FrameData.ACSpells and MaxDps.FrameData.ACSpells[spellID] then
             --        MaxDps.FrameData.ACSpells[spellID] = nil
             --    end
+            if MaxDps and MaxDps.FrameData and MaxDps.FrameData.ACSpells and MaxDps.FrameData.ACSpells[spellID] then
+                if self.Flags[spellID] then
+                    MaxDps:GlowCooldownMidnight(spellID, false)
+                    self.Flags[spellID] = nil
+                end
             end
         end
     end
