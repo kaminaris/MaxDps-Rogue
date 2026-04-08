@@ -54,4 +54,16 @@ function Rogue:Outlaw()
             end
         end
     end
+    if MaxDps.ItemSpells then
+        for itemID, spellID in pairs(MaxDps.ItemSpells) do
+            --print("Defensive:", spellName, spellID)
+            local itemID1 = GetInventoryItemID("player", 13)
+            local itemID2 = GetInventoryItemID("player", 14)
+            if itemID1 == itemID or itemID2 == itemID then
+                if C_Item.IsUsableItem(itemID) then
+                    MaxDps:GlowCooldownMidnight(spellID, true)
+                end
+            end
+        end
+    end
 end
