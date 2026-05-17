@@ -10,8 +10,9 @@ local Assassination = {}
 
 function Rogue:Assassination()
     local _, class = UnitClass("player")
-    local specIndex = GetSpecialization()
-    local specName = specIndex and select(2, GetSpecializationInfo(specIndex))
+    local currentSpec = GetSpecialization()
+    local specIndex = GetSpecializationInfo(currentSpec)
+    local specName = specIndex and MaxDps.idtospec[specIndex]
 
     if class and specName and MaxDps.classCooldowns[class] and MaxDps.classCooldowns[class][specName] then
         for _, spellID in pairs(MaxDps.classCooldowns[class][specName].defensive) do
