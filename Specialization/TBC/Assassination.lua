@@ -72,11 +72,75 @@ local DanseMacabreSpellList
 local Assassination = {}
 
 local function ClearCDs()
+    MaxDps:GlowCooldown(classtable.BladeFlurry, false)
+    MaxDps:GlowCooldown(classtable.AdrenalineRush, false)
 end
+
+-- TBC Classic Combat Rogue Rotation based on Icy Veins guide
+-- Priorities:
+-- 1. Keep Slice and Dice up at 100% uptime
+-- 2. Maintain Expose Armor if spec'd into Improved Expose Armor
+-- 3. Apply/maintain Rupture for filler damage
+-- 4. Use cooldowns (Blade Flurry, Adrenaline Rush) with Haste Potions
+-- 5. Build combo points with Sinister Strike/Backstab
+-- 6. Use Eviscerate when target is dying or extra combo points available
 
 function Assassination:callaction()
-end
+    -- Cooldown usage with Blade Flurry and Adrenaline Rush
+    if (MaxDps:CheckSpellUsable(classtable.BladeFlurry, 'Blade Flurry')) and cooldown[classtable.BladeFlurry].ready and
+        buff[classtable.SliceandDice].up and ttd > 10 then
+        --if not setSpell then setSpell = classtable.BladeFlurry end
+        MaxDps:GlowCooldown(classtable.BladeFlurry, true)
+    end
 
+    if (MaxDps:CheckSpellUsable(classtable.AdrenalineRush, 'Adrenaline Rush')) and cooldown[classtable.AdrenalineRush].ready and
+        buff[classtable.SliceandDice].up and ttd > 10 then
+        --if not setSpell then setSpell = classtable.AdrenalineRush end
+        MaxDps:GlowCooldown(classtable.AdrenalineRush, true)
+    end
+
+    -- Refresh Slice and Dice - maintains 100% uptime (priority)
+    if (MaxDps:CheckSpellUsable(classtable.SliceandDice, 'Slice and Dice')) and
+        (ComboPoints >= 2 and (not buff[classtable.SliceandDice].up or buff[classtable.SliceandDice].remains <= 3)) and
+        cooldown[classtable.SliceandDice].ready then
+        if not setSpell then setSpell = classtable.SliceandDice end
+    end
+
+    -- Maintain Expose Armor at full uptime if spec'd into Improved Expose Armor
+    if (MaxDps:CheckSpellUsable(classtable.ExposeArmor, 'Expose Armor')) and talents[classtable.ImprovedExposeArmor] and
+        (ComboPoints >= 5 and (not debuff[classtable.ExposeArmor].up or debuff[classtable.ExposeArmor].remains <= 2)) and
+        cooldown[classtable.ExposeArmor].ready then
+        if not setSpell then setSpell = classtable.ExposeArmor end
+    end
+
+    -- Apply/maintain Rupture for filler damage (especially with extra combo points)
+    if (MaxDps:CheckSpellUsable(classtable.Rupture, 'Rupture')) and
+        (ComboPoints >= 3 and (not debuff[classtable.Rupture].up or debuff[classtable.Rupture].remains <= 2)) and
+        cooldown[classtable.Rupture].ready and ttd > 10 then
+        if not setSpell then setSpell = classtable.Rupture end
+    end
+
+    -- Use Eviscerate if target is close to death or extra combo points
+    if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and
+        (ComboPoints >= 5 and (targethealthPerc < 25 or buff[classtable.BladeFlurry].up)) and
+        cooldown[classtable.Eviscerate].ready then
+        if not setSpell then setSpell = classtable.Eviscerate end
+    end
+
+    -- Build combo points with Sinister Strike (primary builder for Combat spec)
+    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'Sinister Strike')) and
+        (ComboPoints < 5 and Energy >= 45) and
+        cooldown[classtable.SinisterStrike].ready then
+        if not setSpell then setSpell = classtable.SinisterStrike end
+    end
+
+    -- Backstab only in stealth or if behind target
+    if (MaxDps:CheckSpellUsable(classtable.Backstab, 'Backstab')) and
+        ((UnitThreatSituation("player") == 0 or buff[classtable.Stealth].up) and ComboPoints < 5 and Energy >= 60) and
+        cooldown[classtable.Backstab].ready then
+        if not setSpell then setSpell = classtable.Backstab end
+    end
+end
 function Rogue:Assassination()
     fd = MaxDps.FrameData
     ttd = (fd.timeToDie and fd.timeToDie) or 500
@@ -107,13 +171,17 @@ function Rogue:Assassination()
     ComboPointsMax = UnitPowerMax('player', ComboPointsPT)
     ComboPointsDeficit = ComboPointsMax - ComboPoints
 
-    classtable.SwordSpecialization = 12815
-    classtable.DaggerSpecialization = 13807
-    classtable.Stealth = 1787
-    classtable.SinisterStrike = 11294
-    classtable.Backstab = 25300
+    -- Spell IDs for TBC Assassination Rogue
+    classtable.SinisterStrike = 26861
+    classtable.Backstab = 26863
     classtable.SliceandDice = 6774
+    classtable.Rupture = 26867
+    classtable.ExposeArmor = 26866
     classtable.Eviscerate = 31016
+    classtable.BladeFlurry = 13877
+    classtable.AdrenalineRush = 13750
+    classtable.Stealth = 1787
+    classtable.ImprovedExposeArmor = 14072
 
     setSpell = nil
     ClearCDs()
