@@ -41,15 +41,7 @@ function Rogue:Outlaw()
                     MaxDps:GlowCooldownMidnight(spellID, true)
                 end
             end
-            --else
-            --    if MaxDps and MaxDps.Spells and MaxDps.Spells[spellID] and not InCombatLockdown() then
-            --        for i=1,#MaxDps.Spells[spellID] do
-            --            C_ActionBar.UnregisterActionUIButton(MaxDps.Spells[spellID][i])
-            --        end
-            --    end
-            --    if MaxDps and MaxDps.FrameData and MaxDps.FrameData.ACSpells and MaxDps.FrameData.ACSpells[spellID] then
-            --        MaxDps.FrameData.ACSpells[spellID] = nil
-            --    end
+
             if MaxDps and MaxDps.FrameData and MaxDps.FrameData.ACSpells and MaxDps.FrameData.ACSpells[spellID] then
                 if self.Flags[spellID] then
                     MaxDps:GlowCooldownMidnight(spellID, false)
