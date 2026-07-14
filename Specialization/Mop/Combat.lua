@@ -179,15 +179,18 @@ function Combat:single()
     if (MaxDps:CheckSpellUsable(classtable.Eviscerate, 'Eviscerate')) and (ComboPoints == 5) and cooldown[classtable.Eviscerate].ready then
         if not setSpell then setSpell = classtable.Eviscerate end
     end
-    if (MaxDps:CheckSpellUsable(classtable.RevealingStrike, 'RevealingStrike')) and (ComboPoints <5 and debuff[classtable.RevealingStrikeDeBuff].remains <2) and cooldown[classtable.RevealingStrike].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5 and buff[classtable.AdrenalineRushBuff].up) and cooldown[classtable.SinisterStrike].ready then
+        if not setSpell then setSpell = classtable.SinisterStrike end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.RevealingStrike, 'RevealingStrike')) and (ComboPoints <5 and not buff[classtable.AdrenalineRushBuff].up) and cooldown[classtable.RevealingStrike].ready then
         if not setSpell then setSpell = classtable.RevealingStrike end
     end
     --if (MaxDps:CheckSpellUsable(classtable.TricksoftheTrade, 'TricksoftheTrade')) and cooldown[classtable.TricksoftheTrade].ready then
     --    if not setSpell then setSpell = classtable.TricksoftheTrade end
     --end
-    if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
-        if not setSpell then setSpell = classtable.SinisterStrike end
-    end
+    --if (MaxDps:CheckSpellUsable(classtable.SinisterStrike, 'SinisterStrike')) and (ComboPoints <5) and cooldown[classtable.SinisterStrike].ready then
+    --    if not setSpell then setSpell = classtable.SinisterStrike end
+    --end
 end
 
 function Combat:aoe()
