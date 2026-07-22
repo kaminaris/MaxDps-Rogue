@@ -27,7 +27,6 @@ function Rogue:Outlaw()
         and MaxDps.classInterrupts[class][specName]
     then
         for _, spellID in pairs(MaxDps.classInterrupts[class][specName]) do
-            --print("Defensive:", spellName, spellID)
             if MaxDps:CheckSpellUsable(spellID) then
                 MaxDps:GlowInteruptMidnight(spellID)
             end
