@@ -51,7 +51,9 @@ function Rogue:Outlaw()
         end
     end
     if MaxDpsOptions.global.enableNewAuraSystem and MaxDps.SetupAuraContainer and aurasSetup then
-        --MaxDps:SetupAuraContainer()
+        MaxDps:SetupAuraContainer({
+            [185763] = true, -- Pistol Shot
+        }, {[195627] = true}) -- Opportunity
         aurasSetup = false
     end
     for itemID, spellID in pairs(usedTrinkets) do
