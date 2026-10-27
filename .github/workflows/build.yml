@@ -48,3 +48,8 @@ jobs:
         uses: BigWigsMods/packager@master
         with:
           args: -g mists
+
+      - name: Package Forever Classic
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g forever
