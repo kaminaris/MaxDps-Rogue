@@ -1,4 +1,4 @@
-## Title: MaxDps_Rogue
+﻿## Title: MaxDps_Rogue
 ## Version: @project-version@
 ## Author: Kaminaris
 ## Interface: 120105
@@ -17,33 +17,27 @@
 ## X-Wago-ID: 2jK8bqNy
 
 Main.lua
-#@retail@
-Config.lua
-Specialization\Assassination.lua
-Specialization\Outlaw.lua
-Specialization\Subtlety.lua
-#@end-retail@
+Config.lua [AllowLoadGameType standard]
+Specialization\Assassination.lua [AllowLoadGameType standard]
+Specialization\Outlaw.lua [AllowLoadGameType standard]
+Specialization\Subtlety.lua [AllowLoadGameType standard]
 
-#@version-cata@
-Specialization\Cata\Assassination.lua
-Specialization\Cata\Combat.lua
-Specialization\Cata\Subtlety.lua
-#@end-version-cata@
+Specialization\Cata\Assassination.lua [AllowLoadGameType cata]
+Specialization\Cata\Combat.lua [AllowLoadGameType cata]
+Specialization\Cata\Subtlety.lua [AllowLoadGameType cata]
 
-#@version-bcc@
-Specialization\TBC\Assassination.lua
-Specialization\TBC\Combat.lua
-Specialization\TBC\Subtlety.lua
-#@end-version-bcc@
+Specialization\TBC\Assassination.lua [AllowLoadGameType tbc]
+Specialization\TBC\Combat.lua [AllowLoadGameType tbc]
+Specialization\TBC\Subtlety.lua [AllowLoadGameType tbc]
 
-#@version-classic@
-Specialization\Classic\Assassination.lua
-Specialization\Classic\Combat.lua
-Specialization\Classic\Subtlety.lua
-#@end-version-classic@
+Specialization\Classic\Assassination.lua [AllowLoadGameType vanilla]
+Specialization\Classic\Combat.lua [AllowLoadGameType vanilla]
+Specialization\Classic\Subtlety.lua [AllowLoadGameType vanilla]
 
-#@version-mists@
-Specialization\Mop\Assassination.lua
-Specialization\Mop\Combat.lua
-Specialization\Mop\Subtlety.lua
-#@end-version-mists@
+Specialization\Mop\Assassination.lua [AllowLoadGameType mists]
+Specialization\Mop\Combat.lua [AllowLoadGameType mists]
+Specialization\Mop\Subtlety.lua [AllowLoadGameType mists]
+
+Specialization\Forever\Assassination.lua [AllowLoadGameType forever]
+Specialization\Forever\Combat.lua [AllowLoadGameType forever]
+Specialization\Forever\Subtlety.lua [AllowLoadGameType forever]
