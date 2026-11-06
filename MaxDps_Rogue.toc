@@ -39,5 +39,5 @@ Specialization\Mop\Combat.lua [AllowLoadGameType mists]
 Specialization\Mop\Subtlety.lua [AllowLoadGameType mists]
 
 Specialization\Forever\Assassination.lua [ExcludeLoadGameType standard, mists, cata, wrath, tbc, vanilla]
-Specialization\Forever\Combat.lua [ExcludeLoadGameType standard, mists, cata, wrath, tbc, vanilla]
+Specialization\Forever\Outlaw.lua [ExcludeLoadGameType standard, mists, cata, wrath, tbc, vanilla]
 Specialization\Forever\Subtlety.lua [ExcludeLoadGameType standard, mists, cata, wrath, tbc, vanilla]
