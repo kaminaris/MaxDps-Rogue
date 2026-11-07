@@ -11,5 +11,5 @@ function Rogue:Assassination()
     if (MaxDps.Power("combo_points", false) >= 1 and not MaxDps.IsTrackedAuraActive(5171)) and not MaxDps.IsSpellOnCooldown(5171, true) then return 5171 end --  Slice and Dice
     if (MaxDps.IsTrackedAuraActive(5171)) and not MaxDps.IsSpellOnCooldown(14177, true) then return 14177 end --  Cold Blood
     if (MaxDps.Power("combo_points", false) >= 4 and (MaxDps.IsTrackedAuraActive(5171) or MaxDps.Power("energy", false) >= 79)) and not MaxDps.IsSpellOnCooldown(2098, true) then return 2098 end -- Eviscerate
-    if not MaxDps.IsSpellOnCooldown(1310707, true) then return 1310707 end --  Mutilate
+    if not MaxDps.IsSpellOnCooldown(399956, true) then return 399956 end --  Mutilate
 end
